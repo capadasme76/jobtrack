@@ -56,6 +56,10 @@
   .jt-login-info{font-family:var(--font-mono);font-size:13px;color:var(--teal-dark,#0F4A2E);margin-bottom:12px;display:none;}
   .jt-login-back{display:block;text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);text-decoration:none;margin-top:18px;}
   .jt-login-back:hover{color:var(--ink-soft);}
+  .jt-login-session-notice{font-family:var(--font-body);font-size:13.5px;color:var(--ink);background:var(--paper-dim);border:1px solid var(--line);padding:14px;margin-bottom:16px;display:none;}
+  .jt-login-session-notice p{margin:0 0 10px;}
+  .jt-login-session-notice button{width:100%;font-family:var(--font-body);font-weight:600;font-size:13.5px;background:var(--card-bg);color:var(--ink);border:1px solid var(--line);padding:9px 12px;cursor:pointer;}
+  .jt-login-session-notice button:hover{border-color:var(--ink-soft);}
 </style>
 
 <div class="jt-login-box">
@@ -65,6 +69,10 @@
   </div>
   <div class="jt-login-card">
     <h1 id="jt-login-title">Iniciar sesión</h1>
+    <div class="jt-login-session-notice" id="jt-login-session-notice">
+      <p id="jt-login-session-text"></p>
+      <button type="button" id="jt-login-session-signout">Cerrar esa sesión y continuar</button>
+    </div>
     <div class="jt-login-err" id="jt-login-err"></div>
     <div class="jt-login-info" id="jt-login-info"></div>
     <form id="jt-login-form">
@@ -104,6 +112,9 @@
   const form = document.getElementById("jt-login-form");
   const emailInput = document.getElementById("jt-login-email");
   const passwordInput = document.getElementById("jt-login-password");
+  const sessionNotice = document.getElementById("jt-login-session-notice");
+  const sessionText = document.getElementById("jt-login-session-text");
+  const sessionSignoutBtn = document.getElementById("jt-login-session-signout");
 
   function applyMode(){
     if(mode === "signup"){
@@ -122,16 +133,41 @@
   }
   applyMode();
 
+  // Si ya hay sesión activa: en modo login, saltar directo al dashboard.
+  // En modo signup, NUNCA saltar en silencio (eso metía al usuario a una cuenta
+  // ajena que seguía abierta en ese navegador) — hay que avisar y pedir confirmación.
+  function checkSessionAndApply(){
+    supabase.auth.getSession().then(function(res){
+      var session = res.data.session;
+      if(!session){
+        sessionNotice.style.display = "none";
+        form.style.display = "block";
+        return;
+      }
+      if(mode === "signup"){
+        sessionText.textContent = "Ya hay una sesión abierta en este navegador como " + session.user.email + ". Para crear una cuenta nueva, primero cierra esa sesión.";
+        sessionNotice.style.display = "block";
+        form.style.display = "none";
+      } else {
+        location.href = "jobtrack-dashboard-cristian.html";
+      }
+    });
+  }
+
   switchBtn.addEventListener("click", function(){
     mode = mode === "signup" ? "login" : "signup";
     applyMode();
+    checkSessionAndApply();
   });
 
-  // Si ya hay sesión activa, saltar directo al dashboard.
-  supabase.auth.getSession().then(function(res){
-    if(res.data.session){
-      location.href = "jobtrack-dashboard-cristian.html";
-    }
+  checkSessionAndApply();
+
+  sessionSignoutBtn.addEventListener("click", async function(){
+    sessionSignoutBtn.disabled = true;
+    await supabase.auth.signOut();
+    sessionNotice.style.display = "none";
+    form.style.display = "block";
+    sessionSignoutBtn.disabled = false;
   });
 
   form.addEventListener("submit", async function(e){
