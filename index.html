@@ -95,15 +95,43 @@
 
   .jt-home-footer{max-width:1100px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;font-family:var(--font-body);font-size:13px;color:var(--ink);opacity:.6;}
 
+  .jt-faq{max-width:1100px;margin:0 auto;padding:64px 24px;}
+  .jt-faq h2{font-family:var(--font-display);font-size:32px;font-weight:800;margin:0 0 8px;}
+  .jt-faq > p{font-size:15px;color:var(--ink);opacity:.7;margin:0 0 28px;}
+  .jt-faq-item{border-bottom:1px solid var(--line);}
+  .jt-faq-item:first-of-type{border-top:1px solid var(--line);}
+  .jt-faq-q{width:100%;text-align:left;background:none;border:none;padding:18px 0;font-family:var(--font-body);font-weight:600;font-size:15.5px;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;}
+  .jt-faq-q .plus{font-family:var(--font-display);font-size:20px;color:var(--brick);flex-shrink:0;}
+  .jt-faq-a{font-size:14.5px;line-height:1.6;color:var(--ink);opacity:.78;max-width:760px;margin:0 0 18px;display:none;}
+  .jt-faq-item.open .jt-faq-a{display:block;}
+  .jt-faq-item.open .jt-faq-q .plus{transform:rotate(45deg);}
+
+  .jt-contact{max-width:1100px;margin:0 auto;padding:64px 24px;display:grid;grid-template-columns:1fr 1fr;gap:56px;}
+  .jt-contact h2{font-family:var(--font-display);font-size:32px;font-weight:800;margin:0 0 12px;}
+  .jt-contact > div > p{font-size:15px;line-height:1.6;color:var(--ink);opacity:.8;margin:0 0 20px;max-width:440px;}
+  .jt-contact-links{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+  .jt-bot{background:var(--paper-dim);padding:22px;}
+  .jt-bot h3{font-family:var(--font-display);font-size:15px;font-weight:800;margin:0 0 4px;}
+  .jt-bot > p{font-size:13px;color:var(--ink);opacity:.65;margin:0 0 14px;}
+  .jt-bot-row{display:flex;gap:8px;}
+  .jt-bot-row input{flex:1;font-family:var(--font-body);font-size:14px;padding:10px 12px;border:1px solid var(--line);background:var(--card-bg);color:var(--ink);}
+  .jt-bot-row button{font-family:var(--font-body);font-weight:700;font-size:13px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:0 16px;cursor:pointer;}
+  .jt-bot-row button:hover{background:var(--brick-dark);}
+  .jt-bot-answer{margin-top:14px;font-size:13.5px;line-height:1.55;color:var(--ink);background:var(--card-bg);padding:14px;border:1px solid var(--line);display:none;}
+  .jt-bot-answer.show{display:block;}
+  .jt-bot-answer a{color:var(--brick);}
+
   @media (max-width:800px){
     .jt-grid4{grid-template-columns:repeat(2,1fr);}
     .jt-about{grid-template-columns:1fr;gap:20px;}
     .jt-how-grid{grid-template-columns:1fr;gap:24px;}
+    .jt-contact{grid-template-columns:1fr;gap:28px;}
   }
   @media (max-width:560px){
     .jt-hero h1{font-size:34px;}
     .jt-grid4{grid-template-columns:1fr;}
     .jt-home-header-inner{flex-wrap:wrap;gap:10px;}
+    .jt-bot-row{flex-direction:column;}
   }
 </style>
 
@@ -214,6 +242,33 @@
 </section>
 
 <hr class="hr">
+<section class="jt-faq" id="sec-faq">
+  <h2>Preguntas frecuentes</h2>
+  <p>Lo que más nos preguntan.</p>
+  <div id="jt-faq-list"></div>
+</section>
+
+<hr class="hr">
+<section class="jt-contact" id="sec-contacto">
+  <div>
+    <h2>Contáctanos</h2>
+    <p>¿Algo no funciona, tienes una duda o una idea para JobTrack? Escríbenos directamente, te respondemos nosotros mismos.</p>
+    <div class="jt-contact-links">
+      <a class="jt-btn-secondary" href="mailto:hola@jobtrack.cl">✉ hola@jobtrack.cl</a>
+    </div>
+  </div>
+  <div class="jt-bot">
+    <h3>Pregúntale a JobTrack</h3>
+    <p>Escribe tu duda y te mostramos la respuesta más parecida de nuestras preguntas frecuentes.</p>
+    <div class="jt-bot-row">
+      <input type="text" id="jt-bot-input" placeholder="Ej: ¿cómo exporto mis datos?" />
+      <button type="button" id="jt-bot-ask">Preguntar</button>
+    </div>
+    <div class="jt-bot-answer" id="jt-bot-answer"></div>
+  </div>
+</section>
+
+<hr class="hr">
 <section class="jt-cta">
   <a class="jt-btn-primary" href="login.html?mode=signup">Crear cuenta gratis
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
@@ -225,6 +280,108 @@
   <span>JobTrack</span>
   <span>© 2026</span>
 </footer>
+
+<script>
+(function(){
+  var FAQS = [
+    {
+      q: "¿Qué es JobTrack?",
+      a: "Un dashboard para organizar tu búsqueda de empleo: pipeline de postulaciones, red de contactos, match de tu CV contra vacantes, reuniones y métricas — todo en un solo lugar, en vez de un Excel y quince pestañas.",
+      k: ["que es", "jobtrack", "para que sirve", "que hace"]
+    },
+    {
+      q: "¿Cuánto cuesta?",
+      a: "Por ahora JobTrack es gratis mientras está en etapa de prueba con los primeros usuarios.",
+      k: ["cuanto cuesta", "precio", "gratis", "vale", "pagar"]
+    },
+    {
+      q: "¿Dónde se guardan mis datos?",
+      a: "En una base de datos privada, protegida con tu propia cuenta. Nadie más puede ver tu información — no se comparte ni se vende.",
+      k: ["donde se guardan", "datos", "privacidad", "seguro", "informacion"]
+    },
+    {
+      q: "¿JobTrack busca trabajos por mí automáticamente?",
+      a: "Todavía no: hoy tú cargas tus oportunidades y contactos, y la app te ayuda a organizarlos, compararlos contra tu perfil y darles seguimiento. La búsqueda automática de avisos está en evaluación.",
+      k: ["busca trabajos", "automatico", "avisos", "busqueda automatica", "sola"]
+    },
+    {
+      q: "¿Puedo exportar mis datos?",
+      a: "Sí. En Pipeline y en Contactos hay un botón \"Exportar a Excel\" que descarga toda tu información.",
+      k: ["exportar", "excel", "descargar mis datos", "backup", "respaldo"]
+    },
+    {
+      q: "¿Cómo actualizo mi perfil o mi CV?",
+      a: "Entra a \"Mi perfil\" dentro de tu cuenta y usa el botón \"Editar\". Ese perfil se reutiliza automáticamente en el match de CV y en tus cartas de presentación.",
+      k: ["actualizar perfil", "cv", "editar perfil", "curriculum"]
+    },
+    {
+      q: "¿Cómo elimino mi cuenta o mis datos?",
+      a: "Escríbenos a hola@jobtrack.cl y lo hacemos por ti — todavía no existe un botón de autoservicio para esto.",
+      k: ["eliminar cuenta", "borrar datos", "cerrar cuenta", "dar de baja"]
+    },
+    {
+      q: "¿Tienen soporte si tengo un problema?",
+      a: "Sí, escríbenos a hola@jobtrack.cl contándonos qué pasó y te respondemos directamente.",
+      k: ["soporte", "problema", "ayuda", "contacto", "error", "no funciona"]
+    }
+  ];
+
+  var list = document.getElementById("jt-faq-list");
+  list.innerHTML = FAQS.map(function(f, i){
+    return '<div class="jt-faq-item" data-faq-item="'+i+'">'
+      + '<button class="jt-faq-q" type="button" data-faq-toggle="'+i+'">'+f.q+'<span class="plus">+</span></button>'
+      + '<p class="jt-faq-a">'+f.a+'</p>'
+      + '</div>';
+  }).join("");
+  document.querySelectorAll('[data-faq-toggle]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var item = btn.closest('[data-faq-item]');
+      item.classList.toggle("open");
+    });
+  });
+
+  function normalize(s){
+    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+
+  function stem(w){ return w.length > 5 ? w.slice(0, 5) : w; }
+
+  function wordStems(s){
+    return normalize(s).replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(function(w){ return w.length >= 3; }).map(stem);
+  }
+
+  function bestMatch(query){
+    var qStems = wordStems(query);
+    var best = null, bestScore = 0;
+    FAQS.forEach(function(f){
+      var kStems = wordStems(f.k.concat([f.q]).join(" "));
+      var score = 0;
+      qStems.forEach(function(qs){ if(kStems.indexOf(qs) !== -1) score++; });
+      if(score > bestScore){ bestScore = score; best = f; }
+    });
+    return bestScore > 0 ? best : null;
+  }
+
+  function askBot(){
+    var input = document.getElementById("jt-bot-input");
+    var out = document.getElementById("jt-bot-answer");
+    var q = input.value.trim();
+    if(!q) return;
+    var match = bestMatch(q);
+    if(match){
+      out.innerHTML = '<strong>'+match.q+'</strong><br>'+match.a;
+    } else {
+      out.innerHTML = 'No encontramos una respuesta exacta para eso. Escríbenos directo a <a href="mailto:hola@jobtrack.cl">hola@jobtrack.cl</a> y te ayudamos.';
+    }
+    out.classList.add("show");
+  }
+
+  document.getElementById("jt-bot-ask").addEventListener("click", askBot);
+  document.getElementById("jt-bot-input").addEventListener("keydown", function(e){
+    if(e.key === "Enter") askBot();
+  });
+})();
+</script>
 
 </body>
 </html>
