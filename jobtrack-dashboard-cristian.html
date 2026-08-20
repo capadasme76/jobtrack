@@ -118,7 +118,7 @@
   .jt-tag.alta{border-color:var(--brick);color:var(--brick);}
   .jt-card select{width:100%;}
   .jt-net{display:flex;flex-direction:column;gap:0;}
-  .jt-net-row{display:grid;grid-template-columns:1.3fr 1.1fr 60px 90px 105px 130px;gap:8px;padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;align-items:center;}
+  .jt-net-row{display:grid;grid-template-columns:1.2fr 1fr .9fr 55px 90px 105px 130px;gap:8px;padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;align-items:center;}
   .jt-net-row:nth-child(even){background:var(--paper-dim);}
   .jt-net-row.head{font-weight:600;background:transparent !important;border-bottom:2px solid var(--ink);font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;color:var(--ink-faint);letter-spacing:.5px;}
   .jt-tier-badge{font-family:var(--font-mono);font-size:11.5px;padding:2px 7px;border-radius:var(--radius-pill);text-align:center;display:inline-block;}
@@ -260,9 +260,12 @@
   /* ---- Responsive: tablet & mobile ---- */
   @media (max-width: 640px){
     .jt-mast{flex-direction:column;align-items:flex-start;gap:4px;}
-    .jt-mast h1{font-size:24px;}
+    .jt-mast > div{width:100%;min-width:0;}
+    .jt-mast h1{font-size:24px;word-break:break-word;}
+    .jt-mast .sub{white-space:normal;word-break:break-word;}
     .jt-edition{text-align:left;}
-    .jt-app{flex-direction:column;}
+    .jt-app{flex-direction:column;align-items:stretch;}
+    .jt-main{width:100%;}
     .jt-sidebar{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 12px;border-right:none;border-bottom:1px solid var(--line);gap:4px;}
     .jt-sidebar-brand{padding:2px 10px 2px 0;border-right:1px solid var(--line);margin-right:6px;}
     .jt-sidebar a{white-space:nowrap;padding:8px 12px;}
@@ -283,7 +286,8 @@
     .jt-search{min-width:0;}
     .jt-io-row{flex-direction:column;align-items:stretch;}
     .jt-stats{grid-template-columns:repeat(2,1fr);}
-    .jt-profile-head{flex-direction:column;align-items:flex-start;gap:8px;}
+    .jt-profile-head{flex-direction:column;align-items:stretch;gap:8px;}
+    .jt-profile-head h2{word-break:break-word;}
     .jt-profile-grid{grid-template-columns:1fr;}
     .jt-profile-head span{display:flex;flex-wrap:wrap;gap:6px;}
     .jt-match-cols{grid-template-columns:1fr;}
@@ -359,6 +363,7 @@
   <div class="jt-controls">
     <input type="text" id="jt-search" class="jt-search" placeholder="Buscar por empresa o cargo..." />
     <select id="jt-filter-sector"></select>
+    <select id="jt-filter-region"></select>
     <select id="jt-filter-priority">
       <option value="">Toda prioridad</option>
       <option value="Alta">Alta</option>
@@ -389,6 +394,7 @@
       <option value="Baja">Baja</option>
     </select>
     <input type="text" id="jt-opp-renta" placeholder="Renta estimada (ej. $4M–$6M)" />
+    <select id="jt-opp-region"></select>
     <input type="text" id="jt-opp-link" placeholder="Link para postular (opcional)" style="grid-column:1/-1;" />
     <div class="jt-err" id="jt-opp-err">Completa empresa, cargo y sector.</div>
     <div class="jt-form-actions">
@@ -424,6 +430,7 @@
       <option value="2">Tier 2 — a desarrollar</option>
       <option value="3">Tier 3 — headhunter</option>
     </select>
+    <select id="jt-net-region"></select>
     <div class="jt-err" id="jt-net-err">Completa nombre y empresa.</div>
     <div class="jt-form-actions">
       <button class="jt-btn-ghost" id="jt-net-cancel" type="button">Cancelar</button>
@@ -431,7 +438,7 @@
     </div>
   </div>
   <div class="jt-net">
-    <div class="jt-net-row head"><div>Nombre</div><div>Empresa</div><div>Tier</div><div>Últ. reunión</div><div>Relación</div><div>Acciones</div></div>
+    <div class="jt-net-row head"><div>Nombre</div><div>Empresa</div><div>Región</div><div>Tier</div><div>Últ. reunión</div><div>Relación</div><div>Acciones</div></div>
     <div id="jt-net-body"></div>
   </div>
 
@@ -524,6 +531,7 @@
       <a class="jt-portal-card" href="https://www.roberthalf.com/cl/es" target="_blank" rel="noopener"><div class="name">Robert Half</div><div class="note">Finanzas, tecnología, gerencial</div></a>
       <a class="jt-portal-card" href="https://www.spencerstuart.com/" target="_blank" rel="noopener"><div class="name">Spencer Stuart</div><div class="note">Posiciones $6M+</div></a>
       <a class="jt-portal-card" href="https://reqlut.com/" target="_blank" rel="noopener"><div class="name">Reqlut</div><div class="note">Ofertas con renta visible, nivel profesional</div></a>
+      <a class="jt-portal-card" href="https://www.pegasconsentido.cl/" target="_blank" rel="noopener"><div class="name">Pegas con Sentido</div><div class="note">Talento con foco en impacto social y sostenibilidad</div></a>
     </div>
   </div>
 
@@ -553,6 +561,13 @@ var currentUserId = null;
 
 var STATUSES = ["Por postular","Contactado","En proceso","Entrevista agendada","Entrevista realizada","Propuesta recibida","Oferta","Descartado","En pausa"];
 var REL_STATUSES = ["Sin contacto","Conocido","Cercano","En proceso","Activo"];
+var CHILE_REGIONS = ["Arica y Parinacota","Tarapacá","Antofagasta","Atacama","Coquimbo","Valparaíso","Metropolitana","O'Higgins","Maule","Ñuble","Biobío","La Araucanía","Los Ríos","Los Lagos","Aysén","Magallanes"];
+
+function regionOptionsHtml(selected){
+  return '<option value="">Sin especificar</option>' + CHILE_REGIONS.map(function(r){
+    return '<option value="'+esc(r)+'"'+(r===selected?' selected':'')+'>'+esc(r)+'</option>';
+  }).join("");
+}
 
 var seedOpportunities = [
   {id:"op1",sector:"Minería",priority:"Alta",empresa:"Colbún",cargo:"Gerente Comunicaciones Corporativas",renta:"$5M–$8M",status:"Por postular"},
@@ -634,7 +649,7 @@ var seedProfile = {
 };
 
 var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", dismissedDispatchIds: [], welcomeBannerDismissed: true, meetings: seedMeetings };
-var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"" };
+var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"", region:"" };
 var saveTimer = null;
 var editingOppId = null;
 var editingNetId = null;
@@ -916,12 +931,17 @@ function populateFilterSector(){
   var html = '<option value="">Todo sector</option>';
   sectors.forEach(function(s){ html += '<option value="'+esc(s)+'">'+esc(s)+'</option>'; });
   sel.innerHTML = html;
+  var regionSel = document.getElementById("jt-filter-region");
+  regionSel.innerHTML = '<option value="">Toda región</option>' + CHILE_REGIONS.map(function(r){
+    return '<option value="'+esc(r)+'">'+esc(r)+'</option>';
+  }).join("");
 }
 
 function renderBoard(){
   var cols = STATUSES;
   var filtered = state.opportunities.filter(function(o){
     if(filters.sector && o.sector !== filters.sector) return false;
+    if(filters.region && o.region !== filters.region) return false;
     if(filters.priority && o.priority !== filters.priority) return false;
     if(filters.text){
       var t = filters.text.toLowerCase();
@@ -961,6 +981,7 @@ function renderBoard(){
           + ["Alta","Media","Baja"].map(function(p){ return '<option value="'+p+'"'+(p===o.priority?' selected':'')+'>'+p+'</option>'; }).join("")
           + '</select>'
           + '<input type="text" id="edit-renta" value="'+esc(o.renta)+'" placeholder="Renta" />'
+          + '<select id="edit-region">'+regionOptionsHtml(o.region||"")+'</select>'
           + '<input type="text" id="edit-link" value="'+esc(o.link||"")+'" placeholder="Link para postular" style="grid-column:1/-1;" />'
           + '<select id="edit-contact">'+contactOptions+'</select>'
           + '<div><label style="font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:2px;">Fecha límite de postulación</label><input type="date" id="edit-fechalimite" value="'+esc(o.fechaLimite||"")+'" /></div>'
@@ -1032,7 +1053,7 @@ function renderBoard(){
       html += '<div class="jt-card">'
         + '<div class="co">'+esc(o.empresa)+followup+deadlineBadge+incompleteBadge+'</div>'
         + '<div class="role">'+esc(o.cargo)+'</div>'
-        + '<div class="tags"><span class="jt-tag'+tagCls+'">'+esc(o.priority)+'</span></div>'
+        + '<div class="tags"><span class="jt-tag'+tagCls+'">'+esc(o.priority)+'</span>'+(o.region?'<span class="jt-tag">'+esc(o.region)+'</span>':'')+'</div>'
         + '<select data-id="'+o.id+'" class="jt-status-select">'
         + STATUSES.map(function(s){ return '<option value="'+esc(s)+'"'+(s===o.status?' selected':'')+'>'+esc(s)+'</option>'; }).join("")
         + '</select>'
@@ -1113,6 +1134,7 @@ function renderBoard(){
       opp.sector = sector;
       opp.priority = document.getElementById("edit-priority").value;
       opp.renta = document.getElementById("edit-renta").value.trim() || opp.renta;
+      opp.region = document.getElementById("edit-region").value || "";
       opp.link = document.getElementById("edit-link").value.trim() || null;
       opp.fechaLimite = document.getElementById("edit-fechalimite").value || null;
       opp.incompleta = document.getElementById("edit-incompleta").checked;
@@ -1177,6 +1199,7 @@ function renderNetworking(){
       html += '<div class="jt-net-row">'
         + '<input type="text" id="edit-net-name" value="'+esc(n.name)+'" />'
         + '<input type="text" id="edit-net-empresa" value="'+esc(n.empresa)+'" />'
+        + '<select id="edit-net-region">'+regionOptionsHtml(n.region||"")+'</select>'
         + '<select id="edit-net-tier"><option value="1"'+(n.tier==="1"?' selected':'')+'>T1</option><option value="2"'+(n.tier==="2"?' selected':'')+'>T2</option><option value="3"'+(n.tier==="3"?' selected':'')+'>T3</option></select>'
         + '<div></div>'
         + '<div></div>'
@@ -1191,6 +1214,7 @@ function renderNetworking(){
     html += '<div class="jt-net-row">'
       + '<div class="name">'+esc(n.name)+'</div>'
       + '<div>'+esc(n.empresa)+'</div>'
+      + '<div>'+esc(n.region||"—")+'</div>'
       + '<div><span class="jt-tier-badge t'+tier+'">T'+tier+'</span></div>'
       + '<div class="jt-last-meeting">'+lmText+'</div>'
       + '<span><select data-id="'+n.id+'" class="jt-rel-select">'
@@ -1234,6 +1258,7 @@ function renderNetworking(){
       }
       c.name = name; c.empresa = empresa;
       c.tier = document.getElementById("edit-net-tier").value;
+      c.region = document.getElementById("edit-net-region").value || "";
       editingNetId = null;
       renderNetworking(); persist();
     });
@@ -1309,6 +1334,7 @@ function nextId(prefix, list){
 function wireForms(){
   var oppBtn = document.getElementById("jt-toggle-opp-form");
   var oppForm = document.getElementById("jt-opp-form");
+  document.getElementById("jt-opp-region").innerHTML = regionOptionsHtml("");
   oppBtn.addEventListener("click", function(){
     oppForm.style.display = oppForm.style.display==="none" ? "grid" : "none";
   });
@@ -1322,6 +1348,7 @@ function wireForms(){
     var sector = document.getElementById("jt-opp-sector").value.trim();
     var priority = document.getElementById("jt-opp-priority").value;
     var renta = document.getElementById("jt-opp-renta").value.trim() || "No especificada";
+    var region = document.getElementById("jt-opp-region").value || "";
     var link = document.getElementById("jt-opp-link").value.trim() || null;
     var errEl = document.getElementById("jt-opp-err");
     if(!empresa || !cargo || !sector){
@@ -1331,12 +1358,13 @@ function wireForms(){
     errEl.style.display = "none";
     state.opportunities.push({
       id: nextId("op", state.opportunities),
-      sector: sector, priority: priority, empresa: empresa, cargo: cargo, renta: renta, status: "Por postular", link: link
+      sector: sector, priority: priority, empresa: empresa, cargo: cargo, renta: renta, region: region, status: "Por postular", link: link
     });
     document.getElementById("jt-opp-empresa").value = "";
     document.getElementById("jt-opp-cargo").value = "";
     document.getElementById("jt-opp-sector").value = "";
     document.getElementById("jt-opp-renta").value = "";
+    document.getElementById("jt-opp-region").value = "";
     document.getElementById("jt-opp-link").value = "";
     oppForm.style.display = "none";
     populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); persist();
@@ -1344,6 +1372,7 @@ function wireForms(){
 
   var netBtn = document.getElementById("jt-toggle-net-form");
   var netForm = document.getElementById("jt-net-form");
+  document.getElementById("jt-net-region").innerHTML = regionOptionsHtml("");
   netBtn.addEventListener("click", function(){
     netForm.style.display = netForm.style.display==="none" ? "grid" : "none";
   });
@@ -1356,6 +1385,7 @@ function wireForms(){
     var empresa = document.getElementById("jt-net-empresa").value.trim();
     var relacion = document.getElementById("jt-net-relacion").value;
     var tier = document.getElementById("jt-net-tier").value;
+    var region = document.getElementById("jt-net-region").value || "";
     var errEl = document.getElementById("jt-net-err");
     if(!name || !empresa){
       errEl.style.display = "block";
@@ -1364,10 +1394,11 @@ function wireForms(){
     errEl.style.display = "none";
     state.networking.push({
       id: nextId("n", state.networking),
-      name: name, empresa: empresa, relacion: relacion, tier: tier
+      name: name, empresa: empresa, relacion: relacion, tier: tier, region: region
     });
     document.getElementById("jt-net-name").value = "";
     document.getElementById("jt-net-empresa").value = "";
+    document.getElementById("jt-net-region").value = "";
     netForm.style.display = "none";
     renderNetworking(); renderMeetings(); renderStats(); persist();
   });
@@ -1475,6 +1506,9 @@ document.getElementById("jt-dismiss-banner").addEventListener("click", function(
 document.getElementById("jt-filter-sector").addEventListener("change", function(e){
   filters.sector = e.target.value; renderBoard();
 });
+document.getElementById("jt-filter-region").addEventListener("change", function(e){
+  filters.region = e.target.value; renderBoard();
+});
 document.getElementById("jt-filter-priority").addEventListener("change", function(e){
   filters.priority = e.target.value; renderBoard();
 });
@@ -1495,7 +1529,7 @@ function exportToExcel(){
   var oppRows = state.opportunities.map(function(o){
     return {
       Sector: o.sector, Prioridad: o.priority, Empresa: o.empresa, Cargo: o.cargo,
-      Renta: o.renta, Status: o.status, Notas: o.notas || "", FechaContacto: o.fechaContacto || "",
+      Renta: o.renta, Region: o.region || "", Status: o.status, Notas: o.notas || "", FechaContacto: o.fechaContacto || "",
       Link: o.link || "", FechaLimite: o.fechaLimite || "", Incompleta: o.incompleta ? "Si" : "No",
       Carta: o.carta || "", ContactoVinculado: (function(){
         var c = state.networking.find(function(n){ return n.id === o.contactId; });
@@ -1505,7 +1539,7 @@ function exportToExcel(){
     };
   });
   var netRows = state.networking.map(function(n){
-    return { Nombre: n.name, Empresa: n.empresa, Relacion: n.relacion };
+    return { Nombre: n.name, Empresa: n.empresa, Region: n.region || "", Relacion: n.relacion };
   });
   var p = state.profile;
   var profileRows = [
@@ -1598,6 +1632,7 @@ function importFromExcel(file){
             empresa: r.Empresa || "Sin nombre",
             cargo: r.Cargo || "Sin cargo",
             renta: r.Renta || "No especificada",
+            region: CHILE_REGIONS.indexOf(r.Region) !== -1 ? r.Region : "",
             status: STATUSES.indexOf(r.Status) !== -1 ? r.Status : "Por postular",
             notas: r.Notas || "",
             fechaContacto: r.FechaContacto || null,
@@ -1615,6 +1650,7 @@ function importFromExcel(file){
             id: "n" + (i+1),
             name: r.Nombre || "Sin nombre",
             empresa: r.Empresa || "Sin empresa",
+            region: CHILE_REGIONS.indexOf(r.Region) !== -1 ? r.Region : "",
             relacion: REL_STATUSES.indexOf(r.Relacion) !== -1 ? r.Relacion : "Sin contacto"
           };
         });
@@ -1658,15 +1694,16 @@ function downloadNetworkingTemplate(){
     return;
   }
   var rows = [
-    { Nombre: "Ej: María Pérez (ejemplo — bórrala antes de importar)", Empresa: "Empresa donde trabaja", Relacion: "Conocido" }
+    { Nombre: "Ej: María Pérez (ejemplo — bórrala antes de importar)", Empresa: "Empresa donde trabaja", Region: "Metropolitana", Relacion: "Conocido" }
   ];
   var wb = XLSX.utils.book_new();
   var ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{wch:32},{wch:28},{wch:16}];
+  ws['!cols'] = [{wch:32},{wch:28},{wch:18},{wch:16}];
   XLSX.utils.book_append_sheet(wb, ws, "Networking");
   var noteWs = XLSX.utils.aoa_to_sheet([
     ["Instrucciones"],
     ["Completa una fila por contacto en la hoja 'Networking'."],
+    ["Columna Region es opcional — una de las 16 regiones de Chile (ej. Metropolitana, Valparaíso, Biobío)."],
     ["Columna Relacion debe ser una de: Sin contacto, Conocido, Cercano, En proceso, Activo"],
     ["Borra la fila de ejemplo antes de subir el archivo."],
     ["Al importar, esto reemplaza toda tu red de contactos actual — no toca tu pipeline de oportunidades."]
@@ -1697,6 +1734,7 @@ function importNetworkingOnly(file){
           id: "n" + (i+1),
           name: r.Nombre || "Sin nombre",
           empresa: r.Empresa || "Sin empresa",
+          region: CHILE_REGIONS.indexOf(r.Region) !== -1 ? r.Region : "",
           relacion: REL_STATUSES.indexOf(r.Relacion) !== -1 ? r.Relacion : "Sin contacto"
         };
       });
