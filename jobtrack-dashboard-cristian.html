@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobTrack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
+</head>
+<body>
+<style>
+  :root{
+    --paper:#F3F2F2;
+    --paper-dim:#EAE9E9;
+    --ink:#201E1D;
+    --ink-soft:#605D5D;
+    --ink-faint:#9B9797;
+    --line:#D7D3D3;
+    --brick:#EC3013;
+    --brick-dark:#AE1800;
+    --brick-100:#FFF2EF;
+    --brick-800:#7C1405;
+    --teal:#1A7D4F;
+    --teal-dark:#0F4A2E;
+    --brass:#EC3013;
+    --brass-dark:#AE1800;
+    --card-bg:#FFFFFF;
+    --radius-card:0px;
+    --radius-ctrl:0px;
+    --radius-pill:0px;
+    --font-display:'Archivo',system-ui,sans-serif;
+    --font-body:'Archivo',system-ui,sans-serif;
+    --font-mono:'Archivo',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#201E1D;
+      --paper-dim:#2D2B2B;
+      --ink:#F8F4F4;
+      --ink-soft:#D7D3D3;
+      --ink-faint:#9B9797;
+      --line:#444141;
+      --brick:#FF9783;
+      --brick-dark:#FFC4B8;
+      --brick-100:#4D170E;
+      --brick-800:#FFE0D9;
+      --teal:#5FC994;
+      --teal-dark:#A6E4C4;
+      --brass:#FF9783;
+      --brass-dark:#FFC4B8;
+      --card-bg:#2D2B2B;
+
+    }
+  }
+  *{box-sizing:border-box;}
+  .jt-root{font-family:var(--font-body);color:var(--ink);background:var(--paper);padding:0;}
+  .jt-app{display:flex;min-height:100vh;align-items:flex-start;}
+  .jt-sidebar{width:236px;flex-shrink:0;background:var(--card-bg);border-right:1px solid var(--line);padding:22px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+  .jt-sidebar-brand{display:flex;align-items:center;gap:10px;padding:4px 10px 20px;}
+  .jt-sidebar-logo{width:34px;height:34px;border-radius:0;background:var(--brick);color:#fff;font-family:var(--font-display);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .jt-sidebar-title{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink);}
+  .jt-sidebar-user{font-size:11px;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+  .jt-sidebar a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-ctrl);color:var(--ink-soft);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .12s,color .12s;}
+  .jt-sidebar a:hover{background:var(--paper-dim);color:var(--ink);}
+  .jt-sidebar a.active{background:var(--brick-100);color:var(--brick-800);}
+  .jt-sidebar-logout{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-ctrl);color:var(--ink-faint);background:none;border:none;text-align:left;font-family:var(--font-body);font-size:13.5px;font-weight:500;cursor:pointer;margin-top:auto;}
+  .jt-sidebar-logout:hover{background:var(--paper-dim);color:var(--brick);}
+  .jt-ic{font-style:normal;width:18px;text-align:center;opacity:.85;flex-shrink:0;}
+  .jt-main{flex:1;min-width:0;}
+  .jt-container{max-width:1120px;margin:0 auto;padding:32px 28px 64px;}
+  .jt-module{background:var(--card-bg);border:1px solid var(--line);border-radius:18px;padding:28px;margin-bottom:28px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-module .jt-section-title{margin-top:0;}
+  .jt-mast{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;}
+  .jt-mast h1{font-family:var(--font-display);font-size:36px;font-weight:700;margin:0;letter-spacing:.2px;color:var(--ink);}
+  .jt-mast .sub{font-size:13px;color:var(--ink-soft);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+  .jt-edition{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);text-align:right;text-transform:uppercase;letter-spacing:.5px;}
+  .jt-ticker{background:var(--ink);color:var(--paper);font-family:var(--font-mono);font-size:14px;padding:8px 0;margin-bottom:20px;overflow:hidden;white-space:nowrap;position:relative;}
+  .jt-ticker-inner{display:inline-block;padding-left:100%;animation:jt-scroll 32s linear infinite;}
+  .jt-ticker span{display:inline-block;padding-right:60px;}
+  @media (prefers-reduced-motion: reduce){ .jt-ticker-inner{animation:none;padding-left:12px;} }
+  @keyframes jt-scroll{ from{transform:translateX(0);} to{transform:translateX(-100%);} }
+  .jt-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px;}
+  .jt-stat{background:var(--card-bg);border:1px solid var(--line);padding:14px 16px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-stat .n{font-family:var(--font-display);font-size:25px;font-weight:600;line-height:1;}
+  .jt-stat .l{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-top:4px;}
+  .jt-section-title{font-family:var(--font-display);font-size:22px;font-weight:700;text-transform:none;letter-spacing:.2px;color:var(--ink);border-bottom:3px solid var(--brick);padding-bottom:6px;margin:32px 0 4px;}
+  .jt-section-sub{font-family:var(--font-body);font-size:12.5px;color:var(--ink-faint);margin-bottom:16px;}
+  .jt-lead{font-size:13px;color:var(--ink-faint);margin:0 0 12px;}
+  .jt-hint{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-faint);cursor:help;}
+  .jt-hint-ic{width:14px;height:14px;border-radius:50%;border:1px solid var(--ink-faint);font-size:9.5px;display:inline-flex;align-items:center;justify-content:center;}
+  .jt-dispatches{display:flex;flex-direction:column;gap:10px;}
+  .jt-dispatch{background:var(--card-bg);border-left:4px solid var(--brick);padding:14px 18px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;border-radius:0 var(--radius-card) var(--radius-card) 0;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-dispatch.verify{border-left-color:var(--brass);}
+  .jt-dispatch.signal{border-left-color:var(--teal);}
+  .jt-badge{font-family:var(--font-body);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:3px 10px;border:1px solid var(--brick);background:var(--brick);color:#fff;white-space:nowrap;border-radius:var(--radius-pill);}
+  .jt-badge.verify{background:transparent;border-color:var(--brick);color:var(--brick);}
+  .jt-badge.signal{background:var(--paper-dim);border-color:var(--line);color:var(--ink-soft);}
+  .jt-dispatch .dateline{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+  .jt-dispatch .headline{font-family:var(--font-display);font-size:17px;font-weight:600;margin:0 0 3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .jt-dispatch .meta{font-size:14px;color:var(--ink-soft);}
+  .jt-dispatch .li-help{font-size:13px;color:var(--ink-faint);margin-top:6px;padding:6px 8px;background:var(--paper-dim);border:1px dashed var(--line);}
+  .jt-dispatch .li-help b{color:var(--ink-soft);}
+  .jt-dispatch-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+  .jt-copybtn{font-family:var(--font-mono);font-size:12px;background:transparent;color:var(--ink-faint);border:1px solid var(--line);padding:5px 10px;cursor:pointer;white-space:nowrap;border-radius:var(--radius-pill);}
+  .jt-copybtn:hover{color:var(--ink);border-color:var(--ink-soft);}
+  .jt-copybtn.copied{color:var(--teal);border-color:var(--teal);}
+  .jt-return-note{font-size:11.5px;color:var(--ink-faint);text-align:right;max-width:150px;}
+  .jt-dispatch a.link{font-family:var(--font-mono);font-size:13px;color:var(--brick);text-decoration:none;border-bottom:1px solid var(--brick);white-space:nowrap;}
+  .jt-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+  select,input[type=text]{font-family:var(--font-mono);font-size:13px;background:var(--card-bg);color:var(--ink);border:1px solid var(--line);padding:7px 9px;border-radius:var(--radius-ctrl);}
+  .jt-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .jt-col{background:var(--paper-dim);border:1px solid var(--line);padding:14px;min-height:60px;border-radius:var(--radius-card);}
+  .jt-col h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0 0 8px;display:flex;justify-content:space-between;}
+  .jt-card{background:var(--card-bg);border:1px solid var(--line);padding:12px 14px;margin-bottom:10px;font-size:14px;border-radius:var(--radius-ctrl);box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-card .co{font-family:var(--font-display);font-weight:600;font-size:15.5px;}
+  .jt-card .role{color:var(--ink-soft);margin:2px 0 6px;}
+  .jt-card .tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+  .jt-tag{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border:1px solid var(--line);color:var(--ink-soft);text-transform:uppercase;border-radius:var(--radius-pill);}
+  .jt-tag.alta{border-color:var(--brick);color:var(--brick);}
+  .jt-card select{width:100%;}
+  .jt-net{display:flex;flex-direction:column;gap:0;}
+  .jt-net-row{display:grid;grid-template-columns:1.3fr 1.1fr 60px 90px 105px 130px;gap:8px;padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;align-items:center;}
+  .jt-net-row:nth-child(even){background:var(--paper-dim);}
+  .jt-net-row.head{font-weight:600;background:transparent !important;border-bottom:2px solid var(--ink);font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;color:var(--ink-faint);letter-spacing:.5px;}
+  .jt-tier-badge{font-family:var(--font-mono);font-size:11.5px;padding:2px 7px;border-radius:var(--radius-pill);text-align:center;display:inline-block;}
+  .jt-tier-badge.t1{background:var(--teal);color:#fff;}
+  .jt-tier-badge.t2{background:var(--brass);color:#fff;}
+  .jt-tier-badge.t3{background:var(--paper-dim);color:var(--ink-faint);border:1px solid var(--line);}
+  .jt-last-meeting{font-size:13px;color:var(--ink-faint);}
+  .jt-net-row select{font-size:12px;padding:3px 4px;width:100%;}
+  .jt-net-row .jt-btn-mini{padding:3px 6px;font-size:11px;}
+  .jt-net-row .name{font-weight:600;}
+  .jt-empty{font-family:var(--font-mono);font-size:13px;color:var(--ink-faint);padding:10px 0;}
+  .jt-save{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);text-align:right;margin-top:6px;min-height:14px;}
+  .jt-addbtn{font-family:var(--font-body);font-weight:600;font-size:13.5px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:9px 16px;cursor:pointer;border-radius:var(--radius-pill);box-shadow:0 1px 2px rgba(32,30,29,.14);transition:transform .1s,box-shadow .1s;}
+  .jt-addbtn:hover{transform:translateY(-1px);box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-addbtn.secondary{background:var(--card-bg);color:var(--ink-soft);border:1px solid var(--line);box-shadow:none;font-weight:500;}
+  .jt-addbtn.secondary:hover{transform:none;box-shadow:0 1px 2px rgba(32,30,29,.14);color:var(--ink);}
+  .jt-addbtn:hover{border-color:var(--brick);color:var(--brick);}
+  .jt-form{background:var(--card-bg);border:1px solid var(--line);padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;border-radius:var(--radius-card);}
+  .jt-form input,.jt-form select{width:100%;}
+  .jt-form .jt-form-actions{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;}
+  .jt-btn-primary{font-family:var(--font-body);font-weight:600;font-size:13.5px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:9px 16px;cursor:pointer;border-radius:var(--radius-pill);box-shadow:0 1px 2px rgba(32,30,29,.14);transition:transform .1s,box-shadow .1s;}
+  .jt-btn-primary:hover{transform:translateY(-1px);box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-btn-ghost{font-family:var(--font-mono);font-size:13px;background:transparent;color:var(--ink-soft);border:1px solid var(--line);padding:7px 14px;cursor:pointer;border-radius:var(--radius-pill);}
+  .jt-err{grid-column:1/-1;font-family:var(--font-mono);font-size:13px;color:var(--brick);display:none;}
+  .jt-del{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;margin-left:8px;}
+  .jt-del:hover{color:var(--brick);}
+  .jt-legend{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);margin-bottom:10px;display:flex;gap:16px;flex-wrap:wrap;}
+  .jt-legend b{color:var(--ink-soft);}
+  .jt-followup{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border:1px solid var(--line);color:var(--ink-faint);margin-left:6px;border-radius:var(--radius-pill);}
+  .jt-followup.due{border-color:var(--brick);color:var(--brick);}
+  .jt-search{flex:1;min-width:160px;}
+  select:focus-visible,input:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px solid var(--brick);outline-offset:1px;}
+  .jt-card textarea{width:100%;font-family:var(--font-body);font-size:13.5px;background:var(--paper);color:var(--ink);border:1px solid var(--line);padding:6px;resize:vertical;min-height:44px;}
+  .jt-card .notas-preview{font-size:13px;color:var(--ink-faint);margin:4px 0 6px;font-style:italic;}
+  .jt-card .card-actions{display:flex;gap:8px;margin-top:6px;}
+  .jt-edit-form{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .jt-edit-form input,.jt-edit-form select{font-size:13.5px;}
+  .jt-edit-form textarea{grid-column:1/-1;}
+  .jt-edit-actions{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end;margin-top:2px;}
+  .jt-btn-mini{font-family:var(--font-mono);font-size:11.5px;background:transparent;color:var(--ink-soft);border:1px solid var(--line);padding:4px 10px;cursor:pointer;border-radius:var(--radius-pill);}
+  .jt-btn-mini:hover{color:var(--ink);border-color:var(--ink-soft);}
+  .jt-btn-mini.primary{background:var(--teal-dark);color:#fff;border-color:var(--teal-dark);}
+  .jt-btn-mini.applied{color:var(--teal-dark);border-color:var(--teal);background:var(--paper-dim);cursor:default;opacity:.85;}
+  .jt-dispatch-priority{font-family:var(--font-mono);font-size:11.5px;padding:4px 6px;border-radius:var(--radius-ctrl);width:auto;}
+  .jt-io-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .jt-io-note{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);width:100%;}
+  .jt-profile{background:var(--card-bg);border:1px solid var(--line);padding:24px;margin-bottom:6px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-profile-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .jt-profile-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:24px;align-items:start;}
+  .jt-profile-side{background:var(--paper-dim);border-radius:var(--radius-card);padding:18px;}
+  .jt-profile-side .jt-pblock{margin-bottom:18px;}
+  .jt-profile-side .jt-pblock:last-child{margin-bottom:0;}
+  .jt-profile-head h2{font-family:var(--font-display);font-size:18px;font-weight:600;margin:0;}
+  .jt-pblock{margin-bottom:16px;}
+  .jt-pblock:last-child{margin-bottom:0;}
+  .jt-pblock-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .jt-pblock-head h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0;}
+  .jt-pblock p{font-size:14.5px;line-height:1.5;margin:0;color:var(--ink);}
+  .jt-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .jt-chip{font-family:var(--font-mono);font-size:12px;padding:4px 11px;border:1px solid var(--line);color:var(--ink-soft);border-radius:var(--radius-pill);background:var(--paper-dim);}
+  .jt-explist{display:flex;flex-direction:column;gap:8px;}
+  .jt-expitem{border-left:3px solid var(--teal);padding-left:12px;}
+  .jt-expitem .h{font-weight:600;font-size:14.5px;}
+  .jt-expitem .m{font-size:13px;color:var(--ink-faint);font-family:var(--font-mono);}
+  .jt-expitem .d{font-size:14px;color:var(--ink-soft);margin-top:2px;}
+  .jt-profile textarea.wide{width:100%;font-family:var(--font-body);font-size:14.5px;background:var(--paper);color:var(--ink);border:1px solid var(--line);padding:8px;resize:vertical;min-height:70px;}
+  .jt-profile textarea.mono{font-family:var(--font-mono);font-size:13.5px;min-height:100px;}
+  .jt-qa-list{display:flex;flex-direction:column;gap:8px;}
+  .jt-qa-item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 10px;background:var(--paper-dim);border-radius:var(--radius-ctrl);}
+  .jt-qa-item .q{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-faint);margin-bottom:2px;}
+  .jt-qa-item .a{font-size:14.5px;color:var(--ink);}
+  .jt-tailor-box{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);}
+  .jt-tailor-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .jt-tailor-output{white-space:pre-wrap;background:var(--paper-dim);border-radius:var(--radius-ctrl);padding:12px;font-size:14.5px;margin-top:10px;display:none;}
+  #jt-tailor-custom{width:100%;font-family:var(--font-body);font-size:14.5px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-ctrl);padding:9px;resize:vertical;min-height:100px;margin-bottom:6px;}
+  .jt-profile input.wide{width:100%;font-family:var(--font-body);font-size:14.5px;}
+
+  /* Match score */
+  .jt-match{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px;margin-bottom:6px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-match textarea{width:100%;font-family:var(--font-body);font-size:14.5px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-ctrl);padding:9px;resize:vertical;min-height:90px;}
+  .jt-match-result{margin-top:14px;display:none;}
+  .jt-match-score{display:flex;align-items:center;gap:16px;margin-bottom:12px;}
+  .jt-match-score .num{font-family:var(--font-display);font-size:44px;font-weight:600;}
+  .jt-match-score .lbl{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.6px;}
+  .jt-match-bar{flex:1;height:8px;background:var(--paper-dim);border-radius:var(--radius-pill);overflow:hidden;}
+  .jt-match-bar-fill{height:100%;border-radius:var(--radius-pill);background:var(--teal);}
+  .jt-match-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .jt-match-cols h4{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px;}
+  .jt-match-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .jt-match-chip{font-family:var(--font-mono);font-size:12px;padding:3px 9px;border-radius:var(--radius-pill);}
+  .jt-match-chip.hit{background:var(--teal);color:#fff;}
+  .jt-match-chip.miss{background:var(--paper-dim);border:1px solid var(--brick);color:var(--brick-dark);}
+
+  /* Tasks */
+  .jt-tasks{margin-top:6px;}
+  .jt-tasks-toggle{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
+  .jt-task-list{margin-top:6px;display:flex;flex-direction:column;gap:4px;}
+  .jt-task-row{display:flex;align-items:center;gap:6px;font-size:13.5px;}
+  .jt-task-row input[type=checkbox]{margin:0;accent-color:var(--teal-dark);}
+  .jt-task-row.done span{text-decoration:line-through;color:var(--ink-faint);}
+  .jt-task-add{display:flex;gap:6px;margin-top:6px;}
+  .jt-task-add input{flex:1;font-size:13px;}
+  .jt-task-del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-family:var(--font-mono);font-size:11.5px;margin-left:auto;}
+
+  /* Contact link */
+  .jt-linked-contact{font-family:var(--font-mono);font-size:12px;color:var(--teal-dark);margin-top:4px;}
+  .jt-card-expand{width:100%;text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);background:none;border:none;border-top:1px dashed var(--line);cursor:pointer;padding:6px 0 0;margin-top:8px;}
+  .jt-card-expand:hover{color:var(--ink);}
+  .jt-apply-link{font-family:var(--font-mono);font-size:13px;color:var(--brick);text-decoration:none;border-bottom:1px solid var(--brick);}
+
+  /* Metrics */
+  .jt-metrics{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+  .jt-metric-row{display:flex;align-items:center;gap:10px;}
+  .jt-metric-label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);width:150px;flex-shrink:0;}
+  .jt-metric-bar-track{flex:1;height:16px;background:var(--paper-dim);border-radius:var(--radius-pill);overflow:hidden;}
+  .jt-metric-bar-fill{height:100%;background:var(--teal);border-radius:var(--radius-pill);}
+  .jt-metric-count{font-family:var(--font-mono);font-size:13px;color:var(--ink);width:24px;text-align:right;}
+  .jt-metric-highlights{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px;}
+  .jt-portal-group{margin-bottom:20px;}
+  .jt-portal-group h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);border-bottom:1px solid var(--line);padding-bottom:6px;margin:0 0 10px;}
+  .jt-portal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+  .jt-portal-card{display:block;background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-ctrl);padding:12px 14px;text-decoration:none;transition:border-color .15s,box-shadow .15s;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-portal-card:hover{box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-portal-card:hover{border-color:var(--teal);}
+  .jt-portal-card .name{font-weight:600;color:var(--ink);font-size:15px;}
+  .jt-portal-card .note{font-size:13px;color:var(--ink-faint);margin-top:2px;}
+  .jt-stat-callout{background:var(--paper-dim);border-left:4px solid var(--teal);border-radius:0 var(--radius-card) var(--radius-card) 0;padding:14px 18px;margin-bottom:16px;}
+  .jt-stat-callout .num{font-family:var(--font-display);font-size:25px;font-weight:600;color:var(--teal-dark);}
+  .jt-stat-callout .row{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
+  .jt-stat-callout .row:last-child{margin-bottom:0;}
+  .jt-stat-callout .lbl{font-size:14px;color:var(--ink-soft);}
+  .jt-stat-source{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:8px;}
+  .jt-meeting-item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-ctrl);padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-meeting-item .who{font-weight:600;font-size:15px;}
+  .jt-meeting-item .meta{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);margin:2px 0 4px;}
+  .jt-meeting-item .notas{font-size:14px;color:var(--ink-soft);}
+  .jt-meeting-count{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--teal-dark);}
+
+  /* ---- Responsive: tablet & mobile ---- */
+  @media (max-width: 640px){
+    .jt-mast{flex-direction:column;align-items:flex-start;gap:4px;}
+    .jt-mast h1{font-size:24px;}
+    .jt-edition{text-align:left;}
+    .jt-app{flex-direction:column;}
+    .jt-sidebar{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 12px;border-right:none;border-bottom:1px solid var(--line);gap:4px;}
+    .jt-sidebar-brand{padding:2px 10px 2px 0;border-right:1px solid var(--line);margin-right:6px;}
+    .jt-sidebar a{white-space:nowrap;padding:8px 12px;}
+    .jt-sidebar::-webkit-scrollbar{display:none;}
+    .jt-nav::-webkit-scrollbar{display:none;}
+    .jt-profile{padding:14px;}
+    .jt-dispatch{flex-direction:column;align-items:stretch;}
+    .jt-dispatch-actions{flex-direction:row;align-items:center;justify-content:flex-start;}
+    .jt-board{grid-template-columns:1fr;}
+    .jt-net-row{grid-template-columns:1fr;gap:2px;padding:10px;}
+    .jt-net-row.head{display:none;}
+    .jt-net-row:not(.head){border:1px solid var(--line);border-radius:var(--radius-ctrl);margin-bottom:8px;}
+    .jt-net-row .name{font-size:15px;}
+    .jt-net-row span{margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;}
+    .jt-edit-form{grid-template-columns:1fr;}
+    .jt-form{grid-template-columns:1fr;}
+    .jt-controls{flex-direction:column;align-items:stretch;}
+    .jt-search{min-width:0;}
+    .jt-io-row{flex-direction:column;align-items:stretch;}
+    .jt-stats{grid-template-columns:repeat(2,1fr);}
+    .jt-profile-head{flex-direction:column;align-items:flex-start;gap:8px;}
+    .jt-profile-grid{grid-template-columns:1fr;}
+    .jt-profile-head span{display:flex;flex-wrap:wrap;gap:6px;}
+    .jt-match-cols{grid-template-columns:1fr;}
+    .jt-metric-label{width:110px;font-size:11px;}
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<div class="jt-root">
+<div class="jt-app">
+
+  <nav class="jt-sidebar jt-nav" id="jt-nav">
+    <div class="jt-sidebar-brand">
+      <div class="jt-sidebar-logo">JT</div>
+      <div>
+        <div class="jt-sidebar-title">JobTrack</div>
+        <div class="jt-sidebar-user" id="jt-mast-name-side">Tu nombre aquí</div>
+      </div>
+    </div>
+    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
+    <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
+    <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Pipeline</a>
+    <a href="#sec-red" data-target="sec-red"><i class="jt-ic">◍</i>Red de contactos</a>
+    <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">☕</i>Reuniones</a>
+    <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
+    <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic">▦</i>Métricas</a>
+    <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic">⊞</i>Portales</a>
+    <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
+  </nav>
+
+  <main class="jt-main">
+  <div class="jt-container">
+  <div class="jt-mast">
+    <div>
+      <h1 id="jt-mast-name">JobTrack</h1>
+      <div class="sub" id="jt-mast-sub">Completa "Mi perfil" para personalizar este encabezado con tu nombre</div>
+    </div>
+    <div class="jt-edition" id="jt-edition"></div>
+  </div>
+
+  <div class="jt-io-note" id="jt-welcome-banner" style="background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:12px 16px;margin-bottom:16px;">
+    👋 Bienvenido/a a JobTrack. Esto es una demo con datos de ejemplo (marcados como "[Ejemplo]") — lo que edites queda guardado solo en tu propio navegador, nadie más lo ve. Empieza por "Mi perfil" → "Editar perfil" para poner tus datos, y "+ Agregar oportunidad" en el pipeline para tus propias postulaciones. <button class="jt-btn-mini" id="jt-dismiss-banner" type="button" style="margin-left:6px;">Entendido, ocultar</button>
+  </div>
+
+  <div class="jt-module">
+<div class="jt-section-title" id="sec-perfil">Mi perfil</div>
+  <div class="jt-section-sub">Tus datos base, listos para reutilizar en cualquier postulación</div>
+  <div class="jt-profile" id="jt-profile-view"></div>
+
+  <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
+
+  </div>
+<div class="jt-module">
+<div class="jt-ticker" id="sec-hoy"><div class="jt-ticker-inner" id="jt-ticker-text"></div></div>
+
+  <div class="jt-stats" id="jt-stats"></div>
+
+  <div class="jt-section-title">Hoy</div>
+  <div class="jt-section-sub">Tus oportunidades más urgentes de hoy</div>
+  <div class="jt-legend"><b>🟤 oferta verificada:</b> aviso específico en portal de empleo, listo para postular · <b>🟡 verificar tú:</b> portal correcto pero sin link al aviso puntual · <b>🟢 señal:</b> noticia o movimiento ejecutivo — networking, no postular</div>
+  <div class="jt-dispatches" id="jt-dispatches"></div>
+
+  </div>
+
+<div class="jt-module">
+<div class="jt-section-title" id="sec-pipeline">Pipeline</div>
+  <div class="jt-section-sub">Todas tus postulaciones organizadas por etapa</div>
+  <div class="jt-io-row">
+    <button class="jt-addbtn secondary" id="jt-export-btn" type="button">⇩ Exportar a Excel</button>
+    <button class="jt-addbtn secondary" id="jt-import-btn" type="button">⇧ Importar Excel</button>
+    <input type="file" id="jt-import-file" accept=".xlsx,.xls" style="display:none;" />
+    <div class="jt-hint" title="Incluye 3 hojas: Perfil, Oportunidades y Networking. No reemplaza tu Excel de 7 pestañas.">Respaldo del pipeline <span class="jt-hint-ic">?</span></div>
+  </div>
+  <div class="jt-controls">
+    <input type="text" id="jt-search" class="jt-search" placeholder="Buscar por empresa o cargo..." />
+    <select id="jt-filter-sector"></select>
+    <select id="jt-filter-priority">
+      <option value="">Toda prioridad</option>
+      <option value="Alta">Alta</option>
+      <option value="Media">Media</option>
+      <option value="Baja">Baja</option>
+    </select>
+    <select id="jt-filter-period">
+      <option value="todo">Toda actividad</option>
+      <option value="hoy">Actividad de hoy</option>
+      <option value="semana">Últimos 7 días</option>
+      <option value="mes">Últimos 30 días</option>
+    </select>
+    <select id="jt-filter-deadline">
+      <option value="">Todo vencimiento</option>
+      <option value="vencidas">Vencidas</option>
+      <option value="porvencer">Por vencer (≤3 días)</option>
+      <option value="incompletas">Incompletas</option>
+    </select>
+    <button class="jt-addbtn" id="jt-toggle-opp-form" type="button">+ Agregar oportunidad</button>
+  </div>
+  <div class="jt-form" id="jt-opp-form" style="display:none;">
+    <input type="text" id="jt-opp-empresa" placeholder="Empresa" />
+    <input type="text" id="jt-opp-cargo" placeholder="Cargo" />
+    <input type="text" id="jt-opp-sector" placeholder="Sector" />
+    <select id="jt-opp-priority">
+      <option value="Alta">Alta</option>
+      <option value="Media">Media</option>
+      <option value="Baja">Baja</option>
+    </select>
+    <input type="text" id="jt-opp-renta" placeholder="Renta estimada (ej. $4M–$6M)" />
+    <input type="text" id="jt-opp-link" placeholder="Link para postular (opcional)" style="grid-column:1/-1;" />
+    <div class="jt-err" id="jt-opp-err">Completa empresa, cargo y sector.</div>
+    <div class="jt-form-actions">
+      <button class="jt-btn-ghost" id="jt-opp-cancel" type="button">Cancelar</button>
+      <button class="jt-btn-primary" id="jt-opp-save" type="button">Guardar oportunidad</button>
+    </div>
+  </div>
+  <div class="jt-board" id="jt-board"></div>
+
+  </div>
+<div class="jt-module">
+<div class="jt-section-title" id="sec-red">Contactos</div>
+  <div class="jt-section-sub">Tu red relevante para esta búsqueda</div>
+  <div class="jt-controls">
+    <button class="jt-addbtn" id="jt-toggle-net-form" type="button">+ Agregar contacto</button>
+    <button class="jt-addbtn secondary" id="jt-net-template-btn" type="button">⇩ Descargar plantilla Excel</button>
+    <button class="jt-addbtn secondary" id="jt-net-import-btn" type="button">⇧ Importar contactos</button>
+    <input type="file" id="jt-net-import-file" accept=".xlsx,.xls" style="display:none;" />
+  </div>
+  <div class="jt-hint" title="Descarga, completa en Excel o Drive, y súbela con Importar. No toca tu pipeline." style="margin-bottom:10px;">Cómo funciona <span class="jt-hint-ic">?</span></div>
+  <div class="jt-form" id="jt-net-form" style="display:none;">
+    <input type="text" id="jt-net-name" placeholder="Nombre" />
+    <input type="text" id="jt-net-empresa" placeholder="Empresa / Org." />
+    <select id="jt-net-relacion">
+      <option value="Sin contacto">Sin contacto</option>
+      <option value="Conocido">Conocido</option>
+      <option value="Cercano">Cercano</option>
+      <option value="En proceso">En proceso</option>
+      <option value="Activo">Activo</option>
+    </select>
+    <select id="jt-net-tier">
+      <option value="1">Tier 1 — contacto directo</option>
+      <option value="2">Tier 2 — a desarrollar</option>
+      <option value="3">Tier 3 — headhunter</option>
+    </select>
+    <div class="jt-err" id="jt-net-err">Completa nombre y empresa.</div>
+    <div class="jt-form-actions">
+      <button class="jt-btn-ghost" id="jt-net-cancel" type="button">Cancelar</button>
+      <button class="jt-btn-primary" id="jt-net-save" type="button">Guardar contacto</button>
+    </div>
+  </div>
+  <div class="jt-net">
+    <div class="jt-net-row head"><div>Nombre</div><div>Empresa</div><div>Tier</div><div>Últ. reunión</div><div>Relación</div><div>Acciones</div></div>
+    <div id="jt-net-body"></div>
+  </div>
+
+  </div>
+<div class="jt-module">
+<div class="jt-section-title" id="sec-reuniones">Reuniones</div>
+  <div class="jt-section-sub">Cafés y conversaciones 1:1 — la vía más efectiva para encontrar trabajo</div>
+  <div class="jt-stat-callout">
+    <div class="row"><span class="num">85%</span><span class="lbl">de las vacantes se consiguen aprovechando la red de contactos</span></div>
+    <div class="row"><span class="num">81%</span><span class="lbl">encuentra empleo a través de su red de contactos</span></div>
+    <div class="row"><span class="num">60–70%</span><span class="lbl">de los puestos se cubren con candidatos referenciados, no por postulación abierta</span></div>
+    <div class="jt-stat-source">Fuentes: Meetwork 2024, RRHH Digital, Zumo de Empleo, Infobae — no existe una cifra única verificada de "cuántas reuniones necesitas", pero el patrón es consistente: más conversaciones 1:1 correlacionan con más oportunidades.</div>
+  </div>
+  <div class="jt-controls">
+    <button class="jt-addbtn" id="jt-toggle-meeting-form" type="button">+ Registrar reunión/café</button>
+  </div>
+  <div class="jt-form" id="jt-meeting-form" style="display:none;">
+    <select id="jt-meeting-contact"></select>
+    <input type="date" id="jt-meeting-fecha" />
+    <select id="jt-meeting-tipo">
+      <option value="Café">Café</option>
+      <option value="Llamada">Llamada</option>
+      <option value="Reunión formal">Reunión formal</option>
+      <option value="Evento">Evento</option>
+    </select>
+    <textarea id="jt-meeting-notas" placeholder="Notas: de qué hablaron, próximo paso..." style="grid-column:1/-1;"></textarea>
+    <div class="jt-err" id="jt-meeting-err">Elige un contacto y una fecha.</div>
+    <div class="jt-form-actions">
+      <button class="jt-btn-ghost" id="jt-meeting-cancel" type="button">Cancelar</button>
+      <button class="jt-btn-primary" id="jt-meeting-save" type="button">Guardar reunión</button>
+    </div>
+  </div>
+  <div class="jt-metric-highlights" style="margin-bottom:14px;">
+    <div class="jt-stat"><div class="jt-meeting-count" id="jt-meeting-count-month">0</div><div class="l">Reuniones este mes</div></div>
+    <div class="jt-stat"><div class="jt-meeting-count" id="jt-meeting-count-total">0</div><div class="l">Reuniones totales</div></div>
+  </div>
+  <div id="jt-meetings-list"></div>
+
+  </div>
+<div class="jt-module">
+<div class="jt-section-title" id="sec-match">Match CV</div>
+  <div class="jt-section-sub">Compara tu perfil contra una vacante específica</div>
+  <div class="jt-match">
+    <p class="jt-lead">Pega una vacante y compara contra tu perfil.</p>
+    <textarea id="jt-match-input" placeholder="Pega aquí la descripción completa de la vacante..."></textarea>
+    <div style="margin-top:10px;"><button class="jt-btn-primary" id="jt-match-btn" type="button">Analizar match</button></div>
+    <div class="jt-match-result" id="jt-match-result"></div>
+  </div>
+
+  </div>
+<div class="jt-module">
+<div class="jt-section-title" id="sec-metricas">Métricas</div>
+  <div class="jt-section-sub">Cómo va tu proceso completo</div>
+  <div class="jt-match">
+    <div class="jt-metrics" id="jt-metrics-bars"></div>
+    <div class="jt-metric-highlights" id="jt-metrics-highlights"></div>
+  </div>
+
+  </div>
+<div class="jt-module">
+<div class="jt-section-title" id="sec-portales">Portales</div>
+  <p class="jt-lead">Links directos para revisar tú mismo.</p>
+
+  <div class="jt-portal-group">
+    <h3>Generalistas</h3>
+    <div class="jt-portal-grid">
+      <a class="jt-portal-card" href="https://www.linkedin.com/jobs/" target="_blank" rel="noopener"><div class="name">LinkedIn Jobs</div><div class="note">Mejor con alertas por correo — bloquea búsqueda directa</div></a>
+      <a class="jt-portal-card" href="https://cl.indeed.com/" target="_blank" rel="noopener"><div class="name">Indeed Chile</div><div class="note">Links directos a avisos, buen volumen</div></a>
+      <a class="jt-portal-card" href="https://www.laborum.cl/" target="_blank" rel="noopener"><div class="name">Laborum</div><div class="note">Fuerte en administrativos y técnicos</div></a>
+      <a class="jt-portal-card" href="https://www.computrabajo.cl/" target="_blank" rel="noopener"><div class="name">Computrabajo</div><div class="note">Alto volumen, todos los niveles</div></a>
+      <a class="jt-portal-card" href="https://www.trabajando.com/" target="_blank" rel="noopener"><div class="name">Trabajando.com</div><div class="note">Alianzas con +200 instituciones</div></a>
+      <a class="jt-portal-card" href="https://www.chiletrabajos.cl/" target="_blank" rel="noopener"><div class="name">ChileTrabajos</div><div class="note">Portal local</div></a>
+      <a class="jt-portal-card" href="https://www.jobatus.cl/" target="_blank" rel="noopener"><div class="name">Jobatus</div><div class="note">Metabuscador</div></a>
+    </div>
+  </div>
+
+  <div class="jt-portal-group">
+    <h3>Estado</h3>
+    <div class="jt-portal-grid">
+      <a class="jt-portal-card" href="https://www.bne.cl/" target="_blank" rel="noopener"><div class="name">Bolsa Nacional de Empleo (BNE)</div><div class="note">Oficial, mayormente roles operativos</div></a>
+      <a class="jt-portal-card" href="https://www.empleospublicos.cl/" target="_blank" rel="noopener"><div class="name">Empleos Públicos</div><div class="note">Concursos en ministerios y servicios, nivel profesional</div></a>
+      <a class="jt-portal-card" href="https://adp.serviciocivil.cl/" target="_blank" rel="noopener"><div class="name">Alta Dirección Pública (ADP)</div><div class="note">★ El canal correcto para tu nivel en el Estado</div></a>
+    </div>
+  </div>
+
+  <div class="jt-portal-group">
+    <h3>Ejecutivos / headhunters</h3>
+    <div class="jt-portal-grid">
+      <a class="jt-portal-card" href="https://www.michaelpage.cl/" target="_blank" rel="noopener"><div class="name">Michael Page</div><div class="note">Media/alta gerencia</div></a>
+      <a class="jt-portal-card" href="https://www.roberthalf.com/cl/es" target="_blank" rel="noopener"><div class="name">Robert Half</div><div class="note">Finanzas, tecnología, gerencial</div></a>
+      <a class="jt-portal-card" href="https://www.spencerstuart.com/" target="_blank" rel="noopener"><div class="name">Spencer Stuart</div><div class="note">Posiciones $6M+</div></a>
+      <a class="jt-portal-card" href="https://reqlut.com/" target="_blank" rel="noopener"><div class="name">Reqlut</div><div class="note">Ofertas con renta visible, nivel profesional</div></a>
+    </div>
+  </div>
+
+  <div class="jt-portal-group">
+    <h3>Sectoriales</h3>
+    <div class="jt-portal-grid">
+      <a class="jt-portal-card" href="https://www.getonbrd.com/" target="_blank" rel="noopener"><div class="name">GetOnBrd</div><div class="note">Tecnología y startups</div></a>
+      <a class="jt-portal-card" href="https://www.trabajosenobra.cl/" target="_blank" rel="noopener"><div class="name">Trabajos en Obra</div><div class="note">Construcción</div></a>
+    </div>
+  </div>
+
+  </div>
+<div class="jt-save" id="jt-save-status"></div>
+</div>
+</main>
+</div>
+</div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase-config.js";
+
+var supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var currentUserId = null;
+
+(function(){
+
+var STATUSES = ["Por postular","Contactado","En proceso","Entrevista agendada","Entrevista realizada","Propuesta recibida","Oferta","Descartado","En pausa"];
+var REL_STATUSES = ["Sin contacto","Conocido","Cercano","En proceso","Activo"];
+
+var seedOpportunities = [
+  {id:"op1",sector:"Minería",priority:"Alta",empresa:"Colbún",cargo:"Gerente Comunicaciones Corporativas",renta:"$5M–$8M",status:"Por postular"},
+  {id:"op2",sector:"Minería",priority:"Alta",empresa:"SQM",cargo:"Director Asuntos Corporativos",renta:"$5M–$8M",status:"Por postular"},
+  {id:"op3",sector:"Minería",priority:"Alta",empresa:"Anglo American Chile",cargo:"Gerente Comunicaciones Corporativas",renta:"$6M–$9M",status:"Por postular"},
+  {id:"op4",sector:"Minería",priority:"Alta",empresa:"Lundin Mining",cargo:"Director Comunicaciones",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op5",sector:"Energía",priority:"Alta",empresa:"AES Andes",cargo:"Gerente Comunicaciones Corporativas",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op6",sector:"Energía",priority:"Alta",empresa:"Engie Chile",cargo:"Director Comunicaciones y Marca",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op7",sector:"Retail",priority:"Alta",empresa:"Falabella",cargo:"Gerente de Marketing",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op8",sector:"Retail",priority:"Alta",empresa:"Cencosud",cargo:"Gerente Comunicaciones Corporativas",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op9",sector:"Retail",priority:"Alta",empresa:"SMU (Unimarc)",cargo:"Gerente de Marketing y Comunicación",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op10",sector:"Gremio",priority:"Alta",empresa:"Sofofa",cargo:"Director de Comunicaciones",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op11",sector:"Gremio",priority:"Alta",empresa:"Cámara de Comercio Stgo",cargo:"Gerente Comunicaciones",renta:"$4M–$5M",status:"Por postular"},
+  {id:"op12",sector:"Gremio",priority:"Alta",empresa:"ICARE",cargo:"Director Comunicaciones y Marketing",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op13",sector:"Gremio",priority:"Alta",empresa:"Acción Empresas",cargo:"Director Comunicaciones",renta:"$4M–$5M",status:"Por postular"},
+  {id:"op14",sector:"Gremio",priority:"Alta",empresa:"ABIF",cargo:"Gerente de Comunicaciones",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op15",sector:"Educación",priority:"Alta",empresa:"Universidad Adolfo Ibáñez",cargo:"Director Comunicaciones / Marketing",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op16",sector:"Educación",priority:"Alta",empresa:"Universidad Diego Portales",cargo:"Director de Marketing",renta:"$4M–$5M",status:"Por postular"},
+  {id:"op17",sector:"Educación",priority:"Alta",empresa:"UNAB",cargo:"Director Comunicaciones Corporativas",renta:"$4M–$5M",status:"Por postular"},
+  {id:"op18",sector:"Educación",priority:"Alta",empresa:"Duoc UC",cargo:"Director de Marketing",renta:"$4M–$5M",status:"Por postular"},
+  {id:"op19",sector:"Tecnología",priority:"Media",empresa:"Buk",cargo:"Head of Communications",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op20",sector:"Tecnología",priority:"Media",empresa:"Transbank",cargo:"Gerente Comunicaciones Corporativas",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op21",sector:"Tecnología",priority:"Media",empresa:"Entel Empresas",cargo:"Director Comunicaciones B2B",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op22",sector:"Tecnología",priority:"Media",empresa:"Mercado Libre Chile",cargo:"Gerente de Comunicaciones",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op23",sector:"Salud",priority:"Media",empresa:"Clínica Las Condes",cargo:"Gerente Comunicaciones Corporativas",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op24",sector:"Salud",priority:"Media",empresa:"Bupa Chile",cargo:"Director de Comunicaciones",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op25",sector:"Salud",priority:"Media",empresa:"Sura Chile",cargo:"Gerente Comunicaciones y Marketing",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op26",sector:"Construcción",priority:"Media",empresa:"Socovesa",cargo:"Subgerente/Dir. Comunicaciones",renta:"$4M–$5M",status:"Por postular"},
+  {id:"op27",sector:"Construcción",priority:"Media",empresa:"Echeverría Izquierdo",cargo:"Gerente Comunicaciones Corporativas",renta:"$4M–$5M",status:"Por postular"},
+  {id:"op28",sector:"Sostenibilidad",priority:"Media",empresa:"Empresas con área ESG",cargo:"Gerente Sostenibilidad & Comms",renta:"$4M–$6M",status:"Por postular"},
+  {id:"op29",sector:"Financiero",priority:"Baja",empresa:"BancoEstado",cargo:"Jefe Comunicaciones Corporativas",renta:"$4M–$5M",status:"Por postular"},
+  {id:"op30",sector:"Financiero",priority:"Baja",empresa:"Santander Chile",cargo:"Gerente de Comunicaciones",renta:"$5M–$7M",status:"Por postular"},
+  {id:"op31",sector:"Sector Público",priority:"Baja",empresa:"Corfo",cargo:"Jefe de Comunicaciones",renta:"$3M–$5M",status:"Por postular"},
+  {id:"op32",sector:"Sector Público",priority:"Baja",empresa:"ProChile",cargo:"Director de Comunicaciones",renta:"$3M–$5M",status:"Por postular"},
+  {id:"op33",sector:"Financiero",priority:"Alta",empresa:"AFP Modelo",cargo:"Subgerente de comunicaciones y asuntos corporativos",renta:"No especificada",status:"Enviada",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). 38 contactos de tu red estudiaron en la misma institución.",link:"https://www.linkedin.com/comm/jobs/view/4447065901"},
+  {id:"op34",sector:"Retail",priority:"Alta",empresa:"Cencosud",cargo:"Jefe de Reputación Corporativo",renta:"No especificada",status:"Enviada",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). Empresa prioritaria de tu lista target. 4 contactos en tu red.",link:"https://www.linkedin.com/comm/jobs/view/4409143302"},
+  {id:"op35",sector:"Automotriz",priority:"Media",empresa:"Inchcape Américas",cargo:"Communications Lead - Americas",renta:"No especificada",status:"Enviada",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). 1 contacto en tu red.",link:"https://www.linkedin.com/comm/jobs/view/4437477664"},
+  {id:"op36",sector:"Automotriz",priority:"Media",empresa:"HRGROWIN",cargo:"Subgerente de Marketing Estratégico y Digital",renta:"No especificada",status:"Enviada",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). Multinacional automotriz. 2 personas de tu misma casa de estudios.",link:"https://www.linkedin.com/comm/jobs/view/4440186729"}
+];
+
+var seedDispatches = [
+  {id:"d1",type:"verified",dateline:"EJEMPLO — ASÍ SE VE UNA OFERTA VERIFICADA",headline:"Gerente de Comunicaciones (ejemplo)",empresa:"[Ejemplo] Empresa Demo",sector:"Ejemplo",meta:"Este es un ejemplo de cómo se ve un aviso verificado con link directo — edítalo o bórralo desde el pipeline una vez que agregues los tuyos.",link:"https://www.linkedin.com/jobs/"},
+  {id:"d2",type:"verify",dateline:"EJEMPLO — ASÍ SE VE 'VERIFICAR TÚ'",headline:"Jefe de Marketing (ejemplo)",empresa:"[Ejemplo] Otra Empresa",sector:"Ejemplo",meta:"Este es un ejemplo de una oferta que requiere verificación manual antes de postular.",link:"https://www.linkedin.com/jobs/"}
+];
+
+var seedNetworking = [
+  {id:"n1",name:"Contacto Codelco",empresa:"Codelco",relacion:"Conocido",tier:"1"},
+  {id:"n2",name:"Contacto Collahuasi",empresa:"Collahuasi",relacion:"Conocido",tier:"1"},
+  {id:"n3",name:"Contacto Antofagasta Min.",empresa:"Antofagasta Minerals",relacion:"Conocido",tier:"1"},
+  {id:"n4",name:"Contacto Walmart Chile",empresa:"Walmart Chile",relacion:"Conocido",tier:"1"},
+  {id:"n5",name:"Contacto Sodimac",empresa:"Sodimac",relacion:"Conocido",tier:"1"},
+  {id:"n6",name:"Contacto ENAP",empresa:"ENAP",relacion:"Conocido",tier:"1"},
+  {id:"n7",name:"Contacto In Store Media",empresa:"In Store Media",relacion:"Cercano",tier:"1"},
+  {id:"n8",name:"Contacto CChC Santiago",empresa:"CChC",relacion:"Cercano",tier:"1"},
+  {id:"n9",name:"Contacto CChC Regional",empresa:"CChC",relacion:"Conocido",tier:"1"},
+  {id:"n10",name:"Contacto UAI Alumni",empresa:"Universidad Adolfo Ibáñez",relacion:"Conocido",tier:"1"},
+  {id:"n11",name:"Contacto Duoc UC",empresa:"Duoc UC",relacion:"Cercano",tier:"1"},
+  {id:"n12",name:"Headhunter Michael Page",empresa:"Michael Page",relacion:"Sin contacto",tier:"3"},
+  {id:"n13",name:"Headhunter Robert Half",empresa:"Robert Half",relacion:"Sin contacto",tier:"3"},
+  {id:"n14",name:"Headhunter Spencer Stuart",empresa:"Spencer Stuart Chile",relacion:"Sin contacto",tier:"3"},
+  {id:"n15",name:"A identificar — Sofofa",empresa:"Sofofa",relacion:"Sin contacto",tier:"1"}
+];
+
+var seedMeetings = [];
+
+var seedProfile = {
+  nombre:"Cristián Adasme P.",
+  tituloProfesional:"Director de Comunicaciones Corporativas · Marketing · Desarrollo Comercial",
+  resumen:"Periodista de formación con más de 20 años de trayectoria en comunicaciones estratégicas. Trabajé en medios económicos, el sector público, gremios y agencias de comunicaciones — incluyendo proyectos propios como founder y socio. Eso me permitió desarrollar una visión amplia y adaptable, trabajando en sectores como minería, retail, energía, tecnología y educación. Haber emprendido me dio algo que el recorrido corporativo raramente forma: tomar decisiones bajo incertidumbre, construir equipos desde cero, cerrar contratos y rendir cuentas por resultados reales. Hoy busco llevar esa mirada a una organización que entienda la comunicación corporativa como herramienta de negocio, reputación y liderazgo institucional.",
+  habilidades:["Comunicación Corporativa", "Marketing Estratégico", "Desarrollo Comercial", "Gestión de Crisis", "RSE & Sostenibilidad", "IA Aplicada a Comunicaciones", "Comunicación Interna", "Liderazgo comercial", "Gestión de stakeholders", "Asuntos públicos", "Vocería y media training"],
+  experiencia:["Socio Fundador · Director Ejecutivo | VClab (ex Ideatopia Comunicaciones) | Agosto 2016–Presente, Santiago | Agencia de comunicación corporativa, marketing digital e IA. Equipos de +12 personas. Clientes: Codelco, Collahuasi, Antofagasta Minerals, Walmart, Sodimac, ENAP, Celeo, Nissan Marubeni, Hino Chile, Nescafé. Liderazgo comercial integral (prospección, cierre, cuentas de largo plazo), gestión de crisis, plataforma propia de monitoreo de stakeholders, integración de IA en procesos creativos y análisis predictivo.", "Profesor | Duoc UC | Marzo 2024–Julio 2025, Santiago | Cátedras de Storytelling, Comunicación Estratégica y Branding en Ingeniería en Marketing e Ingeniería en Publicidad.", "Subgerente de Comunicaciones | Cámara Chilena de la Construcción (CChC) | Febrero 2015–Mayo 2016, Santiago | Comunicación institucional nacional, coordinación de 18 sedes regionales. Diseñó el Sistema Nacional de Comunicaciones, política de manejo de crisis, estrategia ligada a certificación Great Place to Work.", "Gerente de Clientes | VOXKOM Comunicaciones Estratégicas | Marzo 2010–Enero 2015, Santiago | Posicionamiento y crecimiento de la agencia, portafolio de cuentas multi-rubro. Comunicación corporativa externa/interna, de marca y marketing; asuntos públicos y manejo de crisis.", "Jefe de Comunicaciones | Unidad de Análisis Financiero (UAF) | 2009–2010 | Rol anterior en sector público.", "Jefe de Prensa y Contenido | Sence | 2009 | Rol anterior en sector público.", "Periodista Ejecutivo | Extend Comunicaciones | 2006–2009 | Rol anterior en agencia.", "Periodista | Diario Financiero | 2003–2006 | Rol anterior en medios económicos.", "Periodista | Diario Estrategia | 2001–2003 | Primer rol profesional, medios económicos."],
+  formacion:["Magíster en Comunicaciones Estratégicas | Universidad Adolfo Ibáñez, Facultad de Negocios | 2016–2018", "Programa Ejecutivo en Comunicaciones Estratégicas | Universidad de Georgetown, Washington DC, EE.UU. | 2017", "Diplomado en Gestión de Negocios | Universidad Técnica Federico Santa María | 2007–2008", "Periodista · Licenciado en Comunicación Social (Esp. en Política) | Universidad de Playa Ancha | 1996–2001"],
+  cartaBase:"Postulo al cargo de [CARGO] en [EMPRESA] porque mi trayectoria conecta directamente con lo que buscan: más de 20 años en comunicaciones estratégicas, con una visión que integra comunicación, marketing, negocio y tecnología en una sola estrategia.\\n\\nComo Socio Fundador y Director Ejecutivo de VClab, lideré equipos de más de 12 personas y dirigí comunicaciones para clientes como Codelco, Walmart y Nescafé, combinando gestión de crisis de alta exposición pública con liderazgo comercial integral — desde la prospección hasta el cierre y administración de cuentas estratégicas. Antes, coordiné la comunicación institucional de la CChC a nivel nacional en 18 sedes regionales.\\n\\nHaber emprendido me dio algo que el recorrido corporativo raramente forma: tomar decisiones bajo incertidumbre y rendir cuentas por resultados reales — una mirada que puedo aportar a [EMPRESA] desde el primer día.\\n\\nMe encantaría conversar sobre cómo mi experiencia puede sumar a su equipo.\\n\\n— Cristián Adasme P.\\ncapadasme@gmail.com · +56 9 9257 1086 · linkedin.com/in/cristianadasme",
+  quickAnswers:["Expectativa de renta | $4.000.000 – $6.000.000 líquidos mensuales, según responsabilidad y beneficios.", "Disponibilidad para iniciar | Inmediata.", "Modalidad de trabajo | Presencial o híbrido en Santiago; abierto a viajar si el cargo lo requiere.", "¿Por qué te interesa este cargo? | Busco un rol donde comunicaciones sea palanca de negocio, no solo de imagen — con impacto real en resultados y reputación.", "Resumen en una línea | Director de Comunicaciones con 20+ años de trayectoria, founder de agencia propia y experiencia liderando comunicación institucional a escala nacional.", "¿Por qué dejar tu actual actividad? | Busco integrarme a una organización con estructura y escala mayor tras 9 años liderando mi propia agencia."],
+  linkedinUrl:"https://www.linkedin.com/in/cristianadasme",
+  linkedinHeadline:"Director de Comunicaciones y Marketing | Estrategia · Crisis · Negocio | Founder | Consultor · 20 años de trayectoria",
+  linkedinAbout:"Periodista de formación con más de 20 años de trayectoria en comunicaciones estratégicas. Trabajé en medios económicos, el sector público, gremios y agencias de comunicaciones — incluyendo proyectos propios como founder y socio. Eso me permitió desarrollar una visión amplia y adaptable, trabajando en sectores como minería, retail, energía, tecnología y educación.\n\nHaber emprendido me dio algo que el recorrido corporativo raramente forma: tomar decisiones bajo incertidumbre, construir equipos desde cero, cerrar contratos y rendir cuentas por resultados reales. Hoy busco llevar esa mirada a una organización que entienda la comunicación corporativa como herramienta de negocio, reputación y liderazgo institucional.",
+  linkedinLastSync: null
+};
+
+var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", dismissedDispatchIds: [], welcomeBannerDismissed: true, meetings: seedMeetings };
+var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"" };
+var saveTimer = null;
+var editingOppId = null;
+var editingNetId = null;
+var expandedTasksId = null;
+var expandedCardIds = [];
+
+function daysSince(dateStr){
+  if(!dateStr) return null;
+  var then = new Date(dateStr);
+  var now = new Date();
+  return Math.floor((now - then) / 86400000);
+}
+
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  var target = new Date(dateStr + "T23:59:59");
+  var now = new Date();
+  return Math.ceil((target - now) / 86400000);
+}
+
+function isSameDay(dateStr, ref){
+  var d = new Date(dateStr);
+  return d.getFullYear()===ref.getFullYear() && d.getMonth()===ref.getMonth() && d.getDate()===ref.getDate();
+}
+
+function inPeriod(dateStr, period){
+  if(period === "todo" || !dateStr) return period === "todo" ? true : false;
+  var d = new Date(dateStr);
+  var now = new Date();
+  var diffDays = Math.floor((now - d) / 86400000);
+  if(period === "hoy") return isSameDay(dateStr, now);
+  if(period === "semana") return diffDays >= 0 && diffDays <= 7;
+  if(period === "mes") return diffDays >= 0 && diffDays <= 30;
+  return true;
+}
+
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+function markSaved(){
+  var el = document.getElementById("jt-save-status");
+  el.textContent = "Guardado " + new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){ el.textContent=""; }, 2500);
+}
+
+async function persist(){
+  try{
+    if(!currentUserId) return;
+    var { error } = await supabase.from("jobtrack_state").upsert({
+      user_id: currentUserId,
+      data: state,
+      updated_at: new Date().toISOString()
+    });
+    if(error) throw error;
+    markSaved();
+  }catch(e){
+    var el = document.getElementById("jt-save-status");
+    el.textContent = "No se pudo guardar";
+  }
+}
+
+async function loadState(){
+  try{
+    var sessionRes = await supabase.auth.getSession();
+    var session = sessionRes.data.session;
+    if(!session){
+      location.href = "login.html";
+      return;
+    }
+    currentUserId = session.user.id;
+
+    var { data: row, error } = await supabase
+      .from("jobtrack_state")
+      .select("data")
+      .eq("user_id", currentUserId)
+      .maybeSingle();
+    if(error) throw error;
+
+    if(row && row.data){
+      var parsed = row.data;
+      if(parsed.opportunities) state.opportunities = parsed.opportunities;
+      if(parsed.networking) state.networking = parsed.networking;
+      // CV actualizado el 17/08: se fuerza el perfil nuevo una vez, aunque haya uno viejo guardado.
+      if(parsed.profileCvVersion === "2026-08-17-v3"){
+        if(parsed.profile) state.profile = parsed.profile;
+        if(parsed.dismissedDispatchIds) state.dismissedDispatchIds = parsed.dismissedDispatchIds;
+        if(parsed.welcomeBannerDismissed) state.welcomeBannerDismissed = parsed.welcomeBannerDismissed;
+        if(parsed.meetings) state.meetings = parsed.meetings;
+      }
+      state.profileCvVersion = "2026-08-17-v3";
+    }
+  }catch(e){}
+}
+
+async function logout(){
+  await supabase.auth.signOut();
+  location.href = "index.html";
+}
+
+function renderEdition(){
+  var d = new Date();
+  var str = d.toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  document.getElementById("jt-edition").textContent = "Edición · " + str;
+}
+
+function renderMasthead(){
+  var p = state.profile;
+  document.getElementById("jt-mast-name").textContent = "JobTrack — " + (p.nombre || "Tu nombre aquí");
+  document.getElementById("jt-mast-sub").textContent = p.tituloProfesional || 'Completa "Mi perfil" para personalizar este encabezado';
+  var sideName = document.getElementById("jt-mast-name-side");
+  if(sideName) sideName.textContent = p.nombre || "Tu nombre aquí";
+}
+
+function renderTicker(){
+  var enviadas = state.opportunities.filter(function(o){return o.status!=="Por postular";}).length;
+  var verificadas = seedDispatches.filter(function(d){return d.type==="verified";}).length;
+  var txt = "PIPELINE ACTIVO — " + state.opportunities.length + " oportunidades mapeadas · " + enviadas + " en movimiento · " + verificadas + " avisos verificados listos para postular hoy — mantén el impulso";
+  document.getElementById("jt-ticker-text").innerHTML = '<span>'+esc(txt)+'</span><span>'+esc(txt)+'</span>';
+}
+
+function renderStats(){
+  var total = state.opportunities.length;
+  var byStatus = {};
+  state.opportunities.forEach(function(o){ byStatus[o.status] = (byStatus[o.status]||0)+1; });
+  var contactos = state.networking.filter(function(n){ return n.relacion!=="Sin contacto"; }).length;
+  var stats = [
+    {n: total, l:"Oportunidades"},
+    {n: byStatus["Por postular"]||0, l:"Por postular"},
+    {n: total - (byStatus["Por postular"]||0), l:"En movimiento"},
+    {n: byStatus["Entrevista agendada"]||0, l:"Entrevistas"},
+    {n: contactos, l:"Contactos activos"}
+  ];
+  var html = "";
+  stats.forEach(function(s){
+    html += '<div class="jt-stat"><div class="n">'+s.n+'</div><div class="l">'+esc(s.l)+'</div></div>';
+  });
+  document.getElementById("jt-stats").innerHTML = html;
+}
+
+function findTrackedOpp(d){
+  return state.opportunities.find(function(o){ return o.link && d.link && o.link === d.link; });
+}
+
+function renderDispatches(){
+  var html = "";
+  var badgeLabel = {verified:"Oferta verificada", verify:"Verificar tú", signal:"Señal · no postular"};
+  seedDispatches.filter(function(d){ return state.dismissedDispatchIds.indexOf(d.id) === -1; }).forEach(function(d, idx){
+    var cls = d.type==="verified" ? "" : d.type;
+    var isLinkedIn = d.link.indexOf("linkedin.com") !== -1;
+    var liHelp = "";
+    if(isLinkedIn && d.liQuery){
+      liHelp = '<div class="li-help">En LinkedIn, busca <b>"'+esc(d.liQuery)+'"</b> y filtra ubicación <b>'+esc(d.liLocation)+'</b>. Se abre en pestaña nueva — esta app queda tal como la dejaste, solo cambia de pestaña para volver.</div>';
+    } else if(isLinkedIn){
+      liHelp = '<div class="li-help">Se abre en pestaña nueva — esta app queda tal como la dejaste, solo cambia de pestaña para volver.</div>';
+    }
+    var tracked = findTrackedOpp(d);
+    var actionsHtml = "";
+    if(d.type !== "signal"){
+      var defaultPriority = d.type === "verified" ? "Alta" : "Media";
+      if(tracked && tracked.status !== "Por postular"){
+        actionsHtml = '<button class="jt-btn-mini applied" type="button" disabled>✓ Ya postulaste</button>';
+      } else {
+        var priSelect = '<select class="jt-dispatch-priority" data-priority-for="'+d.id+'">'
+          + ["Alta","Media","Baja"].map(function(p){ return '<option value="'+p+'"'+(p===defaultPriority?' selected':'')+'>'+p+'</option>'; }).join("")
+          + '</select>';
+        var saveBtn = tracked
+          ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en pipeline</span>'
+          : '<button class="jt-btn-mini" data-save-dispatch="'+d.id+'" type="button">Guardar</button>';
+        var applyBtn = '<button class="jt-btn-mini" data-mark-applied="'+d.id+'" type="button">Ya postulé</button>';
+        actionsHtml = priSelect + saveBtn + applyBtn;
+      }
+    } else {
+      actionsHtml = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Archivar señal</button>';
+    }
+    html += '<div class="jt-dispatch '+cls+'">'
+      + '<div>'
+      + '<div class="dateline">'+esc(d.dateline)+'</div>'
+      + '<div class="headline">'+esc(d.headline)+' <span class="jt-badge '+cls+'">'+esc(badgeLabel[d.type])+'</span></div>'
+      + '<div class="meta">'+esc(d.meta)+'</div>'
+      + liHelp
+      + '</div>'
+      + '<div class="jt-dispatch-actions">'
+      + '<a class="link" href="'+d.link+'" target="_blank" rel="noopener">'+(d.type==="verified"?"Postular":"Abrir")+' ↗</a>'
+      + (isLinkedIn ? '<button class="jt-copybtn" data-copy="'+esc(d.link)+'" data-idx="'+idx+'" type="button">Copiar link</button>' : '')
+      + actionsHtml
+      + '</div>'
+      + '</div>';
+  });
+  document.getElementById("jt-dispatches").innerHTML = html;
+
+  function getPriorityFor(dispatchId, fallback){
+    var sel = document.querySelector('[data-priority-for="'+dispatchId+'"]');
+    return sel ? sel.value : fallback;
+  }
+
+  document.querySelectorAll('[data-mark-applied]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var d = seedDispatches.find(function(x){ return x.id === btn.getAttribute("data-mark-applied"); });
+      if(!d) return;
+      var priority = getPriorityFor(d.id, d.type === "verified" ? "Alta" : "Media");
+      var tracked = findTrackedOpp(d);
+      if(tracked){
+        tracked.status = "Enviada";
+        tracked.priority = priority;
+        tracked.fechaContacto = new Date().toISOString();
+      } else {
+        state.opportunities.push({
+          id: nextId("op", state.opportunities),
+          sector: d.sector || "Sin sector",
+          priority: priority,
+          empresa: d.empresa || d.headline,
+          cargo: d.headline,
+          renta: "No especificada",
+          status: "Enviada",
+          fechaContacto: new Date().toISOString(),
+          link: d.link,
+          notas: "Marcado como postulado desde Despachos del día."
+        });
+      }
+      renderDispatches(); populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); persist();
+    });
+  });
+
+  document.querySelectorAll('[data-save-dispatch]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var d = seedDispatches.find(function(x){ return x.id === btn.getAttribute("data-save-dispatch"); });
+      if(!d) return;
+      var priority = getPriorityFor(d.id, d.type === "verified" ? "Alta" : "Media");
+      state.opportunities.push({
+        id: nextId("op", state.opportunities),
+        sector: d.sector || "Sin sector",
+        priority: priority,
+        empresa: d.empresa || d.headline,
+        cargo: d.headline,
+        renta: "No especificada",
+        status: "Por postular",
+        link: d.link,
+        notas: "Guardado desde Despachos del día."
+      });
+      renderDispatches(); populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); persist();
+    });
+  });
+
+  document.querySelectorAll('[data-archive-dispatch]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-archive-dispatch");
+      if(state.dismissedDispatchIds.indexOf(id) === -1){
+        state.dismissedDispatchIds.push(id);
+      }
+      renderDispatches(); renderTicker(); persist();
+    });
+  });
+
+  document.querySelectorAll(".jt-copybtn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var text = btn.getAttribute("data-copy");
+      var done = function(){
+        btn.textContent = "Copiado ✓";
+        btn.classList.add("copied");
+        setTimeout(function(){ btn.textContent = "Copiar link"; btn.classList.remove("copied"); }, 2000);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(function(){
+          btn.textContent = "No se pudo copiar";
+        });
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try{ document.execCommand("copy"); done(); }catch(e){ btn.textContent = "No se pudo copiar"; }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+}
+
+function populateFilterSector(){
+  var sectors = Array.from(new Set(state.opportunities.map(function(o){return o.sector;}))).sort();
+  var sel = document.getElementById("jt-filter-sector");
+  var html = '<option value="">Todo sector</option>';
+  sectors.forEach(function(s){ html += '<option value="'+esc(s)+'">'+esc(s)+'</option>'; });
+  sel.innerHTML = html;
+}
+
+function renderBoard(){
+  var cols = STATUSES;
+  var filtered = state.opportunities.filter(function(o){
+    if(filters.sector && o.sector !== filters.sector) return false;
+    if(filters.priority && o.priority !== filters.priority) return false;
+    if(filters.text){
+      var t = filters.text.toLowerCase();
+      if(o.empresa.toLowerCase().indexOf(t)===-1 && o.cargo.toLowerCase().indexOf(t)===-1) return false;
+    }
+    if(filters.period && filters.period !== "todo"){
+      if(!inPeriod(o.fechaContacto, filters.period)) return false;
+    }
+    if(filters.deadline === "vencidas"){
+      var du1 = daysUntil(o.fechaLimite);
+      if(du1 === null || du1 >= 0) return false;
+    }
+    if(filters.deadline === "porvencer"){
+      var du2 = daysUntil(o.fechaLimite);
+      if(du2 === null || du2 < 0 || du2 > 3) return false;
+    }
+    if(filters.deadline === "incompletas"){
+      if(!o.incompleta) return false;
+    }
+    return true;
+  });
+  var html = "";
+  cols.forEach(function(col){
+    var items = filtered.filter(function(o){ return o.status===col; });
+    html += '<div class="jt-col"><h3>'+esc(col)+'<span>'+items.length+'</span></h3>';
+    if(items.length===0){ html += '<div class="jt-empty">Sin oportunidades</div>'; }
+    items.forEach(function(o){
+      if(editingOppId === o.id){
+        var contactOptions = '<option value="">Sin contacto vinculado</option>' + state.networking.map(function(n){
+          return '<option value="'+n.id+'"'+(o.contactId===n.id?' selected':'')+'>'+esc(n.name)+' ('+esc(n.empresa)+')</option>';
+        }).join("");
+        html += '<div class="jt-card"><div class="jt-edit-form">'
+          + '<input type="text" id="edit-empresa" value="'+esc(o.empresa)+'" placeholder="Empresa" />'
+          + '<input type="text" id="edit-cargo" value="'+esc(o.cargo)+'" placeholder="Cargo" />'
+          + '<input type="text" id="edit-sector" value="'+esc(o.sector)+'" placeholder="Sector" />'
+          + '<select id="edit-priority">'
+          + ["Alta","Media","Baja"].map(function(p){ return '<option value="'+p+'"'+(p===o.priority?' selected':'')+'>'+p+'</option>'; }).join("")
+          + '</select>'
+          + '<input type="text" id="edit-renta" value="'+esc(o.renta)+'" placeholder="Renta" />'
+          + '<input type="text" id="edit-link" value="'+esc(o.link||"")+'" placeholder="Link para postular" style="grid-column:1/-1;" />'
+          + '<select id="edit-contact">'+contactOptions+'</select>'
+          + '<div><label style="font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:2px;">Fecha límite de postulación</label><input type="date" id="edit-fechalimite" value="'+esc(o.fechaLimite||"")+'" /></div>'
+          + '<label style="font-size:11.5px;display:flex;align-items:center;gap:6px;grid-column:1/-1;"><input type="checkbox" id="edit-incompleta" '+(o.incompleta?'checked':'')+' /> Postulación incompleta — falta información de mi parte</label>'
+          + '<textarea id="edit-notas" placeholder="Notas: contacto interno, feedback, próximos pasos...">'+esc(o.notas||"")+'</textarea>'
+          + '<textarea id="edit-carta" placeholder="Carta usada en esta postulación (opcional) — pega aquí la versión final que enviaste...">'+esc(o.carta||"")+'</textarea>'
+          + '<div class="jt-edit-actions">'
+          + '<button class="jt-btn-mini" data-cancel-edit-opp="1" type="button">Cancelar</button>'
+          + '<button class="jt-btn-mini primary" data-save-edit-opp="'+o.id+'" type="button">Guardar</button>'
+          + '</div></div></div>';
+        return;
+      }
+      var tagCls = o.priority==="Alta" ? " alta" : "";
+      var followup = "";
+      if(o.status !== "Por postular" && o.status !== "Descartado" && o.status !== "Oferta" && o.fechaContacto){
+        var d = daysSince(o.fechaContacto);
+        if(d !== null){
+          var due = d >= 7;
+          followup = '<span class="jt-followup'+(due?' due':'')+'">'+d+' día'+(d===1?'':'s')+(due?' · seguimiento':'')+'</span>';
+        }
+      }
+      var deadlineBadge = "";
+      if(o.fechaLimite && o.status !== "Descartado" && o.status !== "Oferta"){
+        var du = daysUntil(o.fechaLimite);
+        if(du !== null){
+          if(du < 0) deadlineBadge = '<span class="jt-followup due">Vencida hace '+Math.abs(du)+'d</span>';
+          else if(du <= 3) deadlineBadge = '<span class="jt-followup due">Vence en '+du+'d</span>';
+          else deadlineBadge = '<span class="jt-followup">Vence en '+du+'d</span>';
+        }
+      }
+      var incompleteBadge = o.incompleta ? '<span class="jt-followup due">⚠ Incompleta</span>' : "";
+      var isExpanded = expandedCardIds.indexOf(o.id) !== -1;
+      var notasPreview = o.notas ? '<div class="notas-preview">'+esc(o.notas.length>80?o.notas.slice(0,80)+'…':o.notas)+'</div>' : '';
+      var linkedContact = "";
+      if(o.contactId){
+        var c = state.networking.find(function(n){ return n.id===o.contactId; });
+        if(c){ linkedContact = '<div class="jt-linked-contact">🔗 '+esc(c.name)+'</div>'; }
+      }
+      var applyLink = o.link ? '<a class="link jt-apply-link" href="'+esc(o.link)+'" target="_blank" rel="noopener">Postular / ver aviso ↗</a>' : '';
+      var cartaBadge = o.carta ? '<div class="jt-io-note" style="margin:6px 0 0;">✎ Carta guardada para esta postulación — <button class="jt-copybtn" data-copy-opp-carta="'+o.id+'" type="button" style="padding:2px 8px;">Copiar</button></div>' : "";
+      var tasks = o.tasks || [];
+      var doneCount = tasks.filter(function(t){ return t.done; }).length;
+      var tasksExpanded = expandedTasksId === o.id;
+      var taskListHtml = tasksExpanded ? (
+        '<div class="jt-task-list">'
+        + tasks.map(function(t){
+            return '<div class="jt-task-row'+(t.done?' done':'')+'"><input type="checkbox" data-opp="'+o.id+'" data-task="'+t.id+'" class="jt-task-check" '+(t.done?'checked':'')+' /><span>'+esc(t.text)+'</span><button class="jt-task-del" data-opp="'+o.id+'" data-task="'+t.id+'" type="button">✕</button></div>';
+          }).join("")
+        + '<div class="jt-task-add"><input type="text" class="jt-task-input" data-opp="'+o.id+'" placeholder="Nueva tarea..." /><button class="jt-btn-mini" data-addtask="'+o.id+'" type="button">+</button></div>'
+        + '</div>'
+      ) : "";
+      var expandedContent = "";
+      if(isExpanded){
+        expandedContent =
+          '<div class="tags">'
+          + '<span class="jt-tag">'+esc(o.sector)+'</span>'
+          + '<span class="jt-tag">'+esc(o.renta)+'</span>'
+          + '</div>'
+          + notasPreview
+          + linkedContact
+          + (applyLink ? '<div style="margin-top:6px;">'+applyLink+'</div>' : '')
+          + cartaBadge
+          + '<div class="jt-tasks"><button class="jt-tasks-toggle" data-toggle-tasks="'+o.id+'" type="button">'+(tasksExpanded?'Ocultar tareas':'Tareas ('+doneCount+'/'+tasks.length+')')+'</button>'+taskListHtml+'</div>'
+          + '<div class="card-actions">'
+          + '<button class="jt-btn-mini" data-edit-id="'+o.id+'" type="button">Editar</button>'
+          + '<button class="jt-btn-mini" data-id="'+o.id+'" data-kind="opp" data-empresa="'+esc(o.empresa)+'">Eliminar</button>'
+          + '</div>';
+      }
+      html += '<div class="jt-card">'
+        + '<div class="co">'+esc(o.empresa)+followup+deadlineBadge+incompleteBadge+'</div>'
+        + '<div class="role">'+esc(o.cargo)+'</div>'
+        + '<div class="tags"><span class="jt-tag'+tagCls+'">'+esc(o.priority)+'</span></div>'
+        + '<select data-id="'+o.id+'" class="jt-status-select">'
+        + STATUSES.map(function(s){ return '<option value="'+esc(s)+'"'+(s===o.status?' selected':'')+'>'+esc(s)+'</option>'; }).join("")
+        + '</select>'
+        + expandedContent
+        + '<button class="jt-card-expand" data-toggle-card="'+o.id+'" type="button">'+(isExpanded?'Ver menos ▴':'Ver más ▾')+'</button>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById("jt-board").innerHTML = html;
+
+  document.querySelectorAll('[data-toggle-card]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-toggle-card");
+      var idx = expandedCardIds.indexOf(id);
+      if(idx === -1) expandedCardIds.push(id); else expandedCardIds.splice(idx, 1);
+      renderBoard();
+    });
+  });
+  document.querySelectorAll('[data-copy-opp-carta]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var opp = state.opportunities.find(function(o){ return o.id === btn.getAttribute("data-copy-opp-carta"); });
+      if(opp && opp.carta) copyText(opp.carta, btn);
+    });
+  });
+  document.querySelectorAll(".jt-status-select").forEach(function(sel){
+    sel.addEventListener("change", function(){
+      var id = sel.getAttribute("data-id");
+      var opp = state.opportunities.find(function(o){ return o.id===id; });
+      if(opp){
+        opp.status = sel.value;
+        if(sel.value !== "Por postular" && !opp.fechaContacto){
+          opp.fechaContacto = new Date().toISOString();
+        }
+        if(sel.value === "Por postular"){
+          opp.fechaContacto = null;
+        }
+        renderStats(); renderTicker(); renderMetrics(); persist();
+        renderBoard();
+      }
+    });
+  });
+  document.querySelectorAll('.jt-del[data-kind="opp"], .jt-btn-mini[data-kind="opp"]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-id");
+      var empresa = btn.getAttribute("data-empresa") || "esta oportunidad";
+      if(!window.confirm('¿Eliminar "'+empresa+'" del pipeline? Esta acción no se puede deshacer.')) return;
+      state.opportunities = state.opportunities.filter(function(o){ return o.id!==id; });
+      renderStats(); renderTicker(); populateFilterSector(); renderBoard(); renderMetrics(); persist();
+    });
+  });
+  document.querySelectorAll('[data-edit-id]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      editingOppId = btn.getAttribute("data-edit-id");
+      renderBoard();
+    });
+  });
+  document.querySelectorAll('[data-cancel-edit-opp]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      editingOppId = null;
+      renderBoard();
+    });
+  });
+  document.querySelectorAll('[data-save-edit-opp]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-save-edit-opp");
+      var opp = state.opportunities.find(function(o){ return o.id===id; });
+      if(!opp) return;
+      var empresa = document.getElementById("edit-empresa").value.trim();
+      var cargo = document.getElementById("edit-cargo").value.trim();
+      var sector = document.getElementById("edit-sector").value.trim();
+      if(!empresa || !cargo || !sector){
+        window.alert("Empresa, cargo y sector no pueden quedar vacíos.");
+        return;
+      }
+      opp.empresa = empresa;
+      opp.cargo = cargo;
+      opp.sector = sector;
+      opp.priority = document.getElementById("edit-priority").value;
+      opp.renta = document.getElementById("edit-renta").value.trim() || opp.renta;
+      opp.link = document.getElementById("edit-link").value.trim() || null;
+      opp.fechaLimite = document.getElementById("edit-fechalimite").value || null;
+      opp.incompleta = document.getElementById("edit-incompleta").checked;
+      opp.contactId = document.getElementById("edit-contact").value || null;
+      opp.notas = document.getElementById("edit-notas").value.trim();
+      opp.carta = document.getElementById("edit-carta").value.trim();
+      editingOppId = null;
+      populateFilterSector(); renderBoard(); renderStats(); renderMetrics(); persist();
+    });
+  });
+
+  document.querySelectorAll('[data-toggle-tasks]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-toggle-tasks");
+      expandedTasksId = expandedTasksId === id ? null : id;
+      renderBoard();
+    });
+  });
+  document.querySelectorAll('.jt-task-check').forEach(function(cb){
+    cb.addEventListener("change", function(){
+      var opp = state.opportunities.find(function(o){ return o.id===cb.getAttribute("data-opp"); });
+      if(!opp || !opp.tasks) return;
+      var task = opp.tasks.find(function(t){ return t.id===cb.getAttribute("data-task"); });
+      if(task){ task.done = cb.checked; renderBoard(); persist(); }
+    });
+  });
+  document.querySelectorAll('.jt-task-del').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var opp = state.opportunities.find(function(o){ return o.id===btn.getAttribute("data-opp"); });
+      if(!opp || !opp.tasks) return;
+      opp.tasks = opp.tasks.filter(function(t){ return t.id !== btn.getAttribute("data-task"); });
+      renderBoard(); persist();
+    });
+  });
+  document.querySelectorAll('[data-addtask]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var oppId = btn.getAttribute("data-addtask");
+      var input = document.querySelector('.jt-task-input[data-opp="'+oppId+'"]');
+      var text = input.value.trim();
+      if(!text) return;
+      var opp = state.opportunities.find(function(o){ return o.id===oppId; });
+      if(!opp) return;
+      if(!opp.tasks) opp.tasks = [];
+      opp.tasks.push({id:"t"+Date.now(), text:text, done:false});
+      renderBoard(); persist();
+    });
+  });
+}
+
+function lastMeetingFor(contactId){
+  var meetings = state.meetings.filter(function(m){ return m.contactId === contactId; });
+  if(meetings.length === 0) return null;
+  meetings.sort(function(a,b){ return new Date(b.fecha) - new Date(a.fecha); });
+  return meetings[0];
+}
+
+function renderNetworking(){
+  var html = "";
+  if(state.networking.length===0){ html = '<div class="jt-empty">Sin contactos</div>'; }
+  state.networking.forEach(function(n){
+    if(editingNetId === n.id){
+      html += '<div class="jt-net-row">'
+        + '<input type="text" id="edit-net-name" value="'+esc(n.name)+'" />'
+        + '<input type="text" id="edit-net-empresa" value="'+esc(n.empresa)+'" />'
+        + '<select id="edit-net-tier"><option value="1"'+(n.tier==="1"?' selected':'')+'>T1</option><option value="2"'+(n.tier==="2"?' selected':'')+'>T2</option><option value="3"'+(n.tier==="3"?' selected':'')+'>T3</option></select>'
+        + '<div></div>'
+        + '<div></div>'
+        + '<span><button class="jt-btn-mini" data-cancel-edit-net="1" type="button">Cancelar</button>'
+        + '<button class="jt-btn-mini primary" data-save-edit-net="'+n.id+'" type="button">Guardar</button></span>'
+        + '</div>';
+      return;
+    }
+    var tier = n.tier || "2";
+    var lm = lastMeetingFor(n.id);
+    var lmText = lm ? new Date(lm.fecha).toLocaleDateString("es-CL",{day:"2-digit",month:"2-digit",year:"2-digit"}) : "—";
+    html += '<div class="jt-net-row">'
+      + '<div class="name">'+esc(n.name)+'</div>'
+      + '<div>'+esc(n.empresa)+'</div>'
+      + '<div><span class="jt-tier-badge t'+tier+'">T'+tier+'</span></div>'
+      + '<div class="jt-last-meeting">'+lmText+'</div>'
+      + '<span><select data-id="'+n.id+'" class="jt-rel-select">'
+      + REL_STATUSES.map(function(s){ return '<option value="'+esc(s)+'"'+(s===n.relacion?' selected':'')+'>'+esc(s)+'</option>'; }).join("")
+      + '</select></span>'
+      + '<span><button class="jt-btn-mini" data-edit-net-id="'+n.id+'" type="button">Editar</button>'
+      + '<button class="jt-btn-mini" data-id="'+n.id+'" data-kind="net" data-name="'+esc(n.name)+'">Eliminar</button></span>'
+      + '</div>';
+  });
+  document.getElementById("jt-net-body").innerHTML = html;
+
+  document.querySelectorAll(".jt-rel-select").forEach(function(sel){
+    sel.addEventListener("change", function(){
+      var id = sel.getAttribute("data-id");
+      var c = state.networking.find(function(n){ return n.id===id; });
+      if(c){ c.relacion = sel.value; renderStats(); persist(); }
+    });
+  });
+  document.querySelectorAll('[data-edit-net-id]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      editingNetId = btn.getAttribute("data-edit-net-id");
+      renderNetworking();
+    });
+  });
+  document.querySelectorAll('[data-cancel-edit-net]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      editingNetId = null;
+      renderNetworking();
+    });
+  });
+  document.querySelectorAll('[data-save-edit-net]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-save-edit-net");
+      var c = state.networking.find(function(n){ return n.id===id; });
+      if(!c) return;
+      var name = document.getElementById("edit-net-name").value.trim();
+      var empresa = document.getElementById("edit-net-empresa").value.trim();
+      if(!name || !empresa){
+        window.alert("Nombre y empresa no pueden quedar vacíos.");
+        return;
+      }
+      c.name = name; c.empresa = empresa;
+      c.tier = document.getElementById("edit-net-tier").value;
+      editingNetId = null;
+      renderNetworking(); persist();
+    });
+  });
+  document.querySelectorAll('.jt-btn-mini[data-kind="net"]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-id");
+      var name = btn.getAttribute("data-name") || "este contacto";
+      if(!window.confirm('¿Eliminar a "'+name+'" de tu red de contactos? Sus reuniones registradas quedarán sin contacto vinculado.')) return;
+      state.networking = state.networking.filter(function(n){ return n.id!==id; });
+      renderStats(); renderNetworking(); renderMeetings(); persist();
+    });
+  });
+}
+
+function renderMeetings(){
+  var contactSelect = document.getElementById("jt-meeting-contact");
+  if(contactSelect){
+    contactSelect.innerHTML = state.networking.map(function(n){
+      return '<option value="'+n.id+'">'+esc(n.name)+' ('+esc(n.empresa)+')</option>';
+    }).join("") || '<option value="">Sin contactos — agrega uno primero</option>';
+  }
+
+  var sorted = state.meetings.slice().sort(function(a,b){ return new Date(b.fecha) - new Date(a.fecha); });
+  var now = new Date();
+  var thisMonth = sorted.filter(function(m){
+    var d = new Date(m.fecha);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  document.getElementById("jt-meeting-count-month").textContent = thisMonth.length;
+  document.getElementById("jt-meeting-count-total").textContent = state.meetings.length;
+
+  var html = sorted.map(function(m){
+    var contact = state.networking.find(function(n){ return n.id === m.contactId; });
+    var contactName = contact ? contact.name + " (" + contact.empresa + ")" : "Contacto eliminado";
+    var fecha = new Date(m.fecha).toLocaleDateString("es-CL",{day:"2-digit",month:"short",year:"numeric"});
+    return '<div class="jt-meeting-item"><div><div class="who">'+esc(contactName)+'</div><div class="meta">'+esc(m.tipo)+' · '+fecha+'</div>'+(m.notas?'<div class="notas">'+esc(m.notas)+'</div>':'')+'</div><button class="jt-btn-mini" data-del-meeting="'+m.id+'" type="button">Eliminar</button></div>';
+  }).join("") || '<div class="jt-empty">Sin reuniones registradas todavía</div>';
+  document.getElementById("jt-meetings-list").innerHTML = html;
+
+  document.querySelectorAll('[data-del-meeting]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-del-meeting");
+      if(!window.confirm("¿Eliminar este registro de reunión?")) return;
+      state.meetings = state.meetings.filter(function(m){ return m.id !== id; });
+      renderMeetings(); renderNetworking(); persist();
+    });
+  });
+}
+
+function nextId(prefix, list){
+  var max = 0;
+  list.forEach(function(item){
+    var m = /(\d+)$/.exec(item.id);
+    if(m){ var n = parseInt(m[1],10); if(n>max) max = n; }
+  });
+  return prefix + (max+1);
+}
+
+function wireForms(){
+  var oppBtn = document.getElementById("jt-toggle-opp-form");
+  var oppForm = document.getElementById("jt-opp-form");
+  oppBtn.addEventListener("click", function(){
+    oppForm.style.display = oppForm.style.display==="none" ? "grid" : "none";
+  });
+  document.getElementById("jt-opp-cancel").addEventListener("click", function(){
+    oppForm.style.display = "none";
+    document.getElementById("jt-opp-err").style.display = "none";
+  });
+  document.getElementById("jt-opp-save").addEventListener("click", function(){
+    var empresa = document.getElementById("jt-opp-empresa").value.trim();
+    var cargo = document.getElementById("jt-opp-cargo").value.trim();
+    var sector = document.getElementById("jt-opp-sector").value.trim();
+    var priority = document.getElementById("jt-opp-priority").value;
+    var renta = document.getElementById("jt-opp-renta").value.trim() || "No especificada";
+    var link = document.getElementById("jt-opp-link").value.trim() || null;
+    var errEl = document.getElementById("jt-opp-err");
+    if(!empresa || !cargo || !sector){
+      errEl.style.display = "block";
+      return;
+    }
+    errEl.style.display = "none";
+    state.opportunities.push({
+      id: nextId("op", state.opportunities),
+      sector: sector, priority: priority, empresa: empresa, cargo: cargo, renta: renta, status: "Por postular", link: link
+    });
+    document.getElementById("jt-opp-empresa").value = "";
+    document.getElementById("jt-opp-cargo").value = "";
+    document.getElementById("jt-opp-sector").value = "";
+    document.getElementById("jt-opp-renta").value = "";
+    document.getElementById("jt-opp-link").value = "";
+    oppForm.style.display = "none";
+    populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); persist();
+  });
+
+  var netBtn = document.getElementById("jt-toggle-net-form");
+  var netForm = document.getElementById("jt-net-form");
+  netBtn.addEventListener("click", function(){
+    netForm.style.display = netForm.style.display==="none" ? "grid" : "none";
+  });
+  document.getElementById("jt-net-cancel").addEventListener("click", function(){
+    netForm.style.display = "none";
+    document.getElementById("jt-net-err").style.display = "none";
+  });
+  document.getElementById("jt-net-save").addEventListener("click", function(){
+    var name = document.getElementById("jt-net-name").value.trim();
+    var empresa = document.getElementById("jt-net-empresa").value.trim();
+    var relacion = document.getElementById("jt-net-relacion").value;
+    var tier = document.getElementById("jt-net-tier").value;
+    var errEl = document.getElementById("jt-net-err");
+    if(!name || !empresa){
+      errEl.style.display = "block";
+      return;
+    }
+    errEl.style.display = "none";
+    state.networking.push({
+      id: nextId("n", state.networking),
+      name: name, empresa: empresa, relacion: relacion, tier: tier
+    });
+    document.getElementById("jt-net-name").value = "";
+    document.getElementById("jt-net-empresa").value = "";
+    netForm.style.display = "none";
+    renderNetworking(); renderMeetings(); renderStats(); persist();
+  });
+
+  var meetingBtn = document.getElementById("jt-toggle-meeting-form");
+  var meetingForm = document.getElementById("jt-meeting-form");
+  meetingBtn.addEventListener("click", function(){
+    meetingForm.style.display = meetingForm.style.display==="none" ? "grid" : "none";
+  });
+  document.getElementById("jt-meeting-cancel").addEventListener("click", function(){
+    meetingForm.style.display = "none";
+    document.getElementById("jt-meeting-err").style.display = "none";
+  });
+  document.getElementById("jt-meeting-save").addEventListener("click", function(){
+    var contactId = document.getElementById("jt-meeting-contact").value;
+    var fecha = document.getElementById("jt-meeting-fecha").value;
+    var tipo = document.getElementById("jt-meeting-tipo").value;
+    var notas = document.getElementById("jt-meeting-notas").value.trim();
+    var errEl = document.getElementById("jt-meeting-err");
+    if(!contactId || !fecha){
+      errEl.style.display = "block";
+      return;
+    }
+    errEl.style.display = "none";
+    state.meetings.push({
+      id: "m" + Date.now(),
+      contactId: contactId, fecha: fecha, tipo: tipo, notas: notas
+    });
+    document.getElementById("jt-meeting-fecha").value = "";
+    document.getElementById("jt-meeting-notas").value = "";
+    meetingForm.style.display = "none";
+    renderMeetings(); renderNetworking(); persist();
+  });
+}
+
+function renderMetrics(){
+  var cols = STATUSES;
+  var counts = {};
+  cols.forEach(function(s){ counts[s] = 0; });
+  state.opportunities.forEach(function(o){ if(counts[o.status] !== undefined) counts[o.status]++; });
+  var max = Math.max.apply(null, cols.map(function(s){ return counts[s]; }).concat([1]));
+
+  var barsHtml = cols.map(function(s){
+    var n = counts[s];
+    var pct = Math.round((n / max) * 100);
+    return '<div class="jt-metric-row"><div class="jt-metric-label">'+esc(s)+'</div><div class="jt-metric-bar-track"><div class="jt-metric-bar-fill" style="width:'+pct+'%;"></div></div><div class="jt-metric-count">'+n+'</div></div>';
+  }).join("");
+  document.getElementById("jt-metrics-bars").innerHTML = barsHtml;
+
+  var total = state.opportunities.length;
+  var enviadas = state.opportunities.filter(function(o){ return o.status !== "Por postular"; }).length;
+  var entrevistas = counts["Entrevista agendada"] + counts["Entrevista realizada"];
+  var ofertas = counts["Oferta"];
+  var descartadas = counts["Descartado"];
+  var tasaEntrevista = enviadas ? Math.round((entrevistas / enviadas) * 100) : 0;
+  var tasaOferta = enviadas ? Math.round((ofertas / enviadas) * 100) : 0;
+  var vencidas = state.opportunities.filter(function(o){
+    var du = daysUntil(o.fechaLimite);
+    return du !== null && du < 0 && o.status !== "Descartado" && o.status !== "Oferta";
+  }).length;
+  var porVencer = state.opportunities.filter(function(o){
+    var du = daysUntil(o.fechaLimite);
+    return du !== null && du >= 0 && du <= 3 && o.status !== "Descartado" && o.status !== "Oferta";
+  }).length;
+  var incompletas = state.opportunities.filter(function(o){ return o.incompleta; }).length;
+
+  var highlights = [
+    {n: total, l: "Total oportunidades"},
+    {n: enviadas, l: "En movimiento"},
+    {n: tasaEntrevista + "%", l: "Postulación → entrevista"},
+    {n: tasaOferta + "%", l: "Postulación → oferta"},
+    {n: descartadas, l: "Descartadas"},
+    {n: vencidas, l: "Vencidas"},
+    {n: porVencer, l: "Por vencer (≤3d)"},
+    {n: incompletas, l: "Incompletas"}
+  ];
+  document.getElementById("jt-metrics-highlights").innerHTML = highlights.map(function(h){
+    return '<div class="jt-stat"><div class="n">'+h.n+'</div><div class="l">'+esc(h.l)+'</div></div>';
+  }).join("");
+}
+
+function renderAll(){
+  renderEdition();
+  renderMasthead();
+  renderTicker();
+  renderStats();
+  renderDispatches();
+  populateFilterSector();
+  renderBoard();
+  renderNetworking();
+  renderMeetings();
+  renderProfile();
+  renderMetrics();
+  if(state.welcomeBannerDismissed){
+    document.getElementById("jt-welcome-banner").style.display = "none";
+  }
+}
+
+document.getElementById("jt-dismiss-banner").addEventListener("click", function(){
+  state.welcomeBannerDismissed = true;
+  document.getElementById("jt-welcome-banner").style.display = "none";
+  persist();
+});
+
+document.getElementById("jt-filter-sector").addEventListener("change", function(e){
+  filters.sector = e.target.value; renderBoard();
+});
+document.getElementById("jt-filter-priority").addEventListener("change", function(e){
+  filters.priority = e.target.value; renderBoard();
+});
+document.getElementById("jt-filter-period").addEventListener("change", function(e){
+  filters.period = e.target.value; renderBoard();
+});
+document.getElementById("jt-filter-deadline").addEventListener("change", function(e){
+  filters.deadline = e.target.value; renderBoard();
+});
+document.getElementById("jt-search").addEventListener("input", function(e){
+  filters.text = e.target.value; renderBoard();
+});
+function exportToExcel(){
+  if(typeof XLSX === "undefined"){
+    window.alert("No se pudo cargar la librería de Excel (revisa tu conexión) e inténtalo de nuevo.");
+    return;
+  }
+  var oppRows = state.opportunities.map(function(o){
+    return {
+      Sector: o.sector, Prioridad: o.priority, Empresa: o.empresa, Cargo: o.cargo,
+      Renta: o.renta, Status: o.status, Notas: o.notas || "", FechaContacto: o.fechaContacto || "",
+      Link: o.link || "", FechaLimite: o.fechaLimite || "", Incompleta: o.incompleta ? "Si" : "No",
+      Carta: o.carta || "", ContactoVinculado: (function(){
+        var c = state.networking.find(function(n){ return n.id === o.contactId; });
+        return c ? c.name : "";
+      })(),
+      Tareas: (o.tasks||[]).map(function(t){ return (t.done?"[x] ":"[ ] ")+t.text; }).join(" | ")
+    };
+  });
+  var netRows = state.networking.map(function(n){
+    return { Nombre: n.name, Empresa: n.empresa, Relacion: n.relacion };
+  });
+  var p = state.profile;
+  var profileRows = [
+    ["Campo", "Contenido"],
+    ["Resumen profesional", p.resumen],
+    ["Habilidades", p.habilidades.join(", ")],
+    ["Experiencia", ""]
+  ];
+  p.experiencia.forEach(function(line){
+    var e = parseExpLine(line, ["cargo","empresa","periodo","desc"]);
+    profileRows.push(["", e.cargo + " — " + e.empresa + " (" + e.periodo + "): " + e.desc]);
+  });
+  profileRows.push(["Formación académica", ""]);
+  p.formacion.forEach(function(line){
+    var f = parseExpLine(line, ["titulo","institucion","periodo"]);
+    profileRows.push(["", f.titulo + " — " + f.institucion + " (" + f.periodo + ")"]);
+  });
+  profileRows.push(["Carta de presentación base", p.cartaBase]);
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(profileRows), "Perfil");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(oppRows), "Oportunidades");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(netRows), "Networking");
+  var stamp = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, "JobTrack_Dashboard_" + stamp + ".xlsx");
+}
+
+function downloadWordDoc(filename, title, bodyHtml){
+  var preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>"+title+"</title>"
+    + "<style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#222;line-height:1.5;} h1{font-size:18pt;margin-bottom:2pt;} h2{font-size:13pt;color:#3F6B4C;margin-top:16pt;margin-bottom:4pt;border-bottom:1px solid #ccc;padding-bottom:2pt;} p{margin:0 0 8pt;} ul{margin:0 0 8pt;padding-left:18pt;} li{margin-bottom:3pt;} .meta{color:#666;font-size:9.5pt;margin-bottom:14pt;} .exp-item{margin-bottom:10pt;} .exp-h{font-weight:bold;} .exp-m{color:#666;font-size:9.5pt;font-style:italic;}</style></head><body>";
+  var postHtml = "</body></html>";
+  var html = preHtml + bodyHtml + postHtml;
+  var blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+}
+
+function exportProfileToWord(){
+  var p = state.profile;
+  var expHtml = p.experiencia.map(function(line){
+    var e = parseExpLine(line, ["cargo","empresa","periodo","desc"]);
+    return '<div class="exp-item"><div class="exp-h">'+e.cargo+' — '+e.empresa+'</div><div class="exp-m">'+e.periodo+'</div><p>'+e.desc+'</p></div>';
+  }).join("");
+  var formHtml = '<ul>' + p.formacion.map(function(line){
+    var f = parseExpLine(line, ["titulo","institucion","periodo"]);
+    return '<li>'+f.titulo+' — '+f.institucion+' ('+f.periodo+')</li>';
+  }).join("") + '</ul>';
+  var body = '<h1>Cristián Adasme P.</h1>'
+    + '<div class="meta">capadasme@gmail.com · +56 9 9257 1086 · linkedin.com/in/cristianadasme · Santiago, Chile</div>'
+    + '<h2>Resumen profesional</h2><p>'+p.resumen+'</p>'
+    + '<h2>Habilidades</h2><p>'+p.habilidades.join(' · ')+'</p>'
+    + '<h2>Experiencia</h2>'+expHtml
+    + '<h2>Formación académica</h2>'+formHtml
+    + '<h2>Carta de presentación base</h2><p>'+p.cartaBase.replace(/\n/g,'<br>')+'</p>';
+  downloadWordDoc("Cristian_Adasme_Perfil.doc", "Perfil - Cristián Adasme", body);
+}
+
+function exportCartaToWord(){
+  var p = state.profile;
+  var body = '<h1>Carta de presentación</h1><p>'+p.cartaBase.replace(/\n/g,'<br>')+'</p>';
+  downloadWordDoc("Cristian_Adasme_Carta_Presentacion.doc", "Carta de presentación", body);
+}
+
+function importFromExcel(file){
+  if(typeof XLSX === "undefined"){
+    window.alert("No se pudo cargar la librería de Excel (revisa tu conexión) e inténtalo de nuevo.");
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
+      var oppSheet = wb.Sheets["Oportunidades"];
+      var netSheet = wb.Sheets["Networking"];
+      if(!oppSheet && !netSheet){
+        window.alert('No encontré hojas "Oportunidades" ni "Networking" en ese archivo. Este importador espera el formato exportado por este mismo dashboard.');
+        return;
+      }
+      if(!window.confirm("Esto reemplazará todas las oportunidades y contactos actuales del dashboard por los del archivo. ¿Continuar?")) return;
+      if(oppSheet){
+        var oppRows = XLSX.utils.sheet_to_json(oppSheet);
+        state.opportunities = oppRows.map(function(r, i){
+          return {
+            id: "op" + (i+1),
+            sector: r.Sector || "Sin sector",
+            priority: r.Prioridad || "Media",
+            empresa: r.Empresa || "Sin nombre",
+            cargo: r.Cargo || "Sin cargo",
+            renta: r.Renta || "No especificada",
+            status: STATUSES.indexOf(r.Status) !== -1 ? r.Status : "Por postular",
+            notas: r.Notas || "",
+            fechaContacto: r.FechaContacto || null,
+            link: r.Link || null,
+            fechaLimite: r.FechaLimite || null,
+            incompleta: r.Incompleta === "Si",
+            carta: r.Carta || ""
+          };
+        });
+      }
+      if(netSheet){
+        var netRows = XLSX.utils.sheet_to_json(netSheet);
+        state.networking = netRows.map(function(r, i){
+          return {
+            id: "n" + (i+1),
+            name: r.Nombre || "Sin nombre",
+            empresa: r.Empresa || "Sin empresa",
+            relacion: REL_STATUSES.indexOf(r.Relacion) !== -1 ? r.Relacion : "Sin contacto"
+          };
+        });
+      }
+      populateFilterSector(); renderBoard(); renderNetworking(); renderStats(); renderTicker(); renderMetrics(); persist();
+      window.alert("Importación completa.");
+    }catch(err){
+      window.alert("No se pudo leer el archivo. Verifica que sea un .xlsx válido.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function wireIO(){
+  document.getElementById("jt-export-btn").addEventListener("click", exportToExcel);
+  var importBtn = document.getElementById("jt-import-btn");
+  var importFile = document.getElementById("jt-import-file");
+  importBtn.addEventListener("click", function(){ importFile.click(); });
+  importFile.addEventListener("change", function(){
+    if(importFile.files && importFile.files[0]){
+      importFromExcel(importFile.files[0]);
+      importFile.value = "";
+    }
+  });
+
+  document.getElementById("jt-net-template-btn").addEventListener("click", downloadNetworkingTemplate);
+  var netImportBtn = document.getElementById("jt-net-import-btn");
+  var netImportFile = document.getElementById("jt-net-import-file");
+  netImportBtn.addEventListener("click", function(){ netImportFile.click(); });
+  netImportFile.addEventListener("change", function(){
+    if(netImportFile.files && netImportFile.files[0]){
+      importNetworkingOnly(netImportFile.files[0]);
+      netImportFile.value = "";
+    }
+  });
+}
+
+function downloadNetworkingTemplate(){
+  if(typeof XLSX === "undefined"){
+    window.alert("No se pudo cargar la librería de Excel (revisa tu conexión) e inténtalo de nuevo.");
+    return;
+  }
+  var rows = [
+    { Nombre: "Ej: María Pérez (ejemplo — bórrala antes de importar)", Empresa: "Empresa donde trabaja", Relacion: "Conocido" }
+  ];
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:32},{wch:28},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, ws, "Networking");
+  var noteWs = XLSX.utils.aoa_to_sheet([
+    ["Instrucciones"],
+    ["Completa una fila por contacto en la hoja 'Networking'."],
+    ["Columna Relacion debe ser una de: Sin contacto, Conocido, Cercano, En proceso, Activo"],
+    ["Borra la fila de ejemplo antes de subir el archivo."],
+    ["Al importar, esto reemplaza toda tu red de contactos actual — no toca tu pipeline de oportunidades."]
+  ]);
+  noteWs['!cols'] = [{wch:80}];
+  XLSX.utils.book_append_sheet(wb, noteWs, "Instrucciones");
+  XLSX.writeFile(wb, "JobTrack_Plantilla_Contactos.xlsx");
+}
+
+function importNetworkingOnly(file){
+  if(typeof XLSX === "undefined"){
+    window.alert("No se pudo cargar la librería de Excel (revisa tu conexión) e inténtalo de nuevo.");
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
+      var netSheet = wb.Sheets["Networking"];
+      if(!netSheet){
+        window.alert('No encontré una hoja llamada "Networking" en ese archivo. Usa la plantilla descargable para asegurar el formato correcto.');
+        return;
+      }
+      if(!window.confirm("Esto reemplaza tu red de contactos actual por la del archivo. Tu pipeline de oportunidades no se toca. ¿Continuar?")) return;
+      var netRows = XLSX.utils.sheet_to_json(netSheet);
+      state.networking = netRows.filter(function(r){ return r.Nombre; }).map(function(r, i){
+        return {
+          id: "n" + (i+1),
+          name: r.Nombre || "Sin nombre",
+          empresa: r.Empresa || "Sin empresa",
+          relacion: REL_STATUSES.indexOf(r.Relacion) !== -1 ? r.Relacion : "Sin contacto"
+        };
+      });
+      renderNetworking(); renderStats(); persist();
+      window.alert("Contactos importados: " + state.networking.length);
+    }catch(err){
+      window.alert("No se pudo leer el archivo. Verifica que sea un .xlsx válido.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function copyText(text, btn){
+  var done = function(){
+    var orig = btn.textContent;
+    btn.textContent = "Copiado ✓";
+    btn.classList.add("copied");
+    setTimeout(function(){ btn.textContent = orig; btn.classList.remove("copied"); }, 2000);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(function(){ btn.textContent = "No se pudo copiar"; });
+  } else {
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); done(); }catch(e){ btn.textContent = "No se pudo copiar"; }
+    document.body.removeChild(ta);
+  }
+}
+
+function parseExpLine(line, fields){
+  var parts = line.split("|").map(function(s){ return s.trim(); });
+  var obj = {};
+  fields.forEach(function(f, i){ obj[f] = parts[i] || ""; });
+  return obj;
+}
+
+var SKILL_TAXONOMY = [
+  "comunicación estratégica","comunicación corporativa","comunicación interna","comunicación externa",
+  "relaciones públicas","gestión de crisis","manejo de crisis","gestión de reputación","reputación corporativa",
+  "vocería","media training","storytelling","branding","marca empleadora","employer branding",
+  "asuntos corporativos","asuntos públicos","relaciones institucionales","relacionamiento con stakeholders",
+  "gestión de stakeholders","stakeholders","sostenibilidad","responsabilidad social","rse","esg",
+  "comunicación digital","redes sociales","gestión de contenidos","monitoreo de medios","relación con medios",
+  "comunicación de marca","comunicación de cambio","gestión del cambio",
+  "marketing estratégico","marketing digital","posicionamiento de marca","publicidad","campañas",
+  "plan de marketing","investigación de mercado","segmentación","marketing de contenidos",
+  "performance marketing","growth","desarrollo de marca",
+  "liderazgo de equipos","gestión de equipos","liderazgo","gestión de proyectos","planificación estratégica",
+  "toma de decisiones","negociación","gestión comercial","desarrollo de negocios","desarrollo comercial",
+  "cierre de negocios","gestión de cuentas","relación con clientes","prospección","ventas",
+  "inteligencia artificial","transformación digital","automatización","análisis de datos","data driven",
+  "gestión de presupuesto","indicadores de gestión","kpis","resultados medibles","trabajo bajo presión",
+  "comunicación efectiva","pensamiento estratégico","visión de negocio","gobierno corporativo","compliance",
+  "docencia","formación de equipos","mentoring","gestión de talento","cultura organizacional",
+  "comunicación de gobierno","lobby","asuntos regulatorios","comunicación financiera","relación con inversionistas"
+];
+
+function normalizeText(text){
+  return (text||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+}
+
+function runMatchAnalysis(){
+  var jdText = document.getElementById("jt-match-input").value.trim();
+  var resultEl = document.getElementById("jt-match-result");
+  if(!jdText){
+    window.alert("Pega el texto de la vacante primero.");
+    return;
+  }
+  var p = state.profile;
+  var profileText = [p.resumen, p.habilidades.join(" "), p.experiencia.join(" "), p.formacion.join(" ")].join(" ");
+  var normJD = normalizeText(jdText);
+  var normProfile = normalizeText(profileText);
+
+  var candidates = SKILL_TAXONOMY.filter(function(term){ return normJD.indexOf(normalizeText(term)) !== -1; });
+
+  if(candidates.length === 0){
+    resultEl.innerHTML = '<div class="jt-io-note">No detecté competencias de tu rubro en ese texto — prueba pegando la descripción completa del aviso (funciones y requisitos), no solo el título del cargo.</div>';
+    resultEl.style.display = "block";
+    return;
+  }
+
+  var hits = candidates.filter(function(term){ return normProfile.indexOf(normalizeText(term)) !== -1; });
+  var misses = candidates.filter(function(term){ return normProfile.indexOf(normalizeText(term)) === -1; });
+  var score = Math.round((hits.length / candidates.length) * 100);
+
+  var barColor = score >= 70 ? "var(--teal)" : score >= 40 ? "var(--brass)" : "var(--brick)";
+  var html = '<div class="jt-match-score"><div><div class="num">'+score+'%</div><div class="lbl">Cobertura</div></div><div class="jt-match-bar"><div class="jt-match-bar-fill" style="width:'+score+'%;background:'+barColor+';"></div></div></div>'
+    + '<div class="jt-match-cols">'
+    + '<div><h4>Ya cubres ('+hits.length+')</h4><div class="jt-match-chips">'+(hits.map(function(w){ return '<span class="jt-match-chip hit">'+esc(w)+'</span>'; }).join("") || '<span class="jt-io-note">Sin coincidencias</span>')+'</div></div>'
+    + '<div><h4>Te faltan ('+misses.length+')</h4><div class="jt-match-chips">'+(misses.map(function(w){ return '<span class="jt-match-chip miss">'+esc(w)+'</span>'; }).join("") || '<span class="jt-io-note">Ninguna — buena cobertura</span>')+'</div></div>'
+    + '</div>'
+    + '<div class="jt-tailor-box">'
+    + '<p class="jt-lead">Borrador ajustado a esta vacante — revísalo antes de enviar.</p>'
+    + '<div class="jt-tailor-inputs"><input type="text" id="jt-tailor-cargo" placeholder="Cargo (ej. Gerente de Comunicaciones)" /><input type="text" id="jt-tailor-empresa" placeholder="Empresa" /></div>'
+    + '<div style="font-size:11.5px;margin-bottom:6px;"><label style="margin-right:14px;"><input type="radio" name="jt-tailor-source" value="base" checked /> Usar mi carta base</label><label><input type="radio" name="jt-tailor-source" value="custom" /> Cargar mi propia carta para esto</label></div>'
+    + '<textarea id="jt-tailor-custom" placeholder="Pega aquí tu propia carta para esta vacante..." style="display:none;"></textarea>'
+    + '<div style="margin-top:8px;"><button class="jt-btn-mini primary" id="jt-tailor-btn" type="button">Generar carta para esta vacante</button></div>'
+    + '<div class="jt-tailor-output" id="jt-tailor-output"></div>'
+    + '</div>';
+  resultEl.innerHTML = html;
+  resultEl.style.display = "block";
+  window.__lastMatchHits = hits;
+
+  document.querySelectorAll('input[name="jt-tailor-source"]').forEach(function(radio){
+    radio.addEventListener("change", function(){
+      document.getElementById("jt-tailor-custom").style.display = (radio.value === "custom" && radio.checked) ? "block" : "none";
+    });
+  });
+
+  document.getElementById("jt-tailor-btn").addEventListener("click", function(){
+    var cargo = document.getElementById("jt-tailor-cargo").value.trim() || "[CARGO]";
+    var empresa = document.getElementById("jt-tailor-empresa").value.trim() || "[EMPRESA]";
+    var useCustom = document.querySelector('input[name="jt-tailor-source"]:checked').value === "custom";
+    var customText = document.getElementById("jt-tailor-custom").value.trim();
+    if(useCustom && !customText){
+      window.alert("Pega tu propia carta en el cuadro de texto, o vuelve a 'Usar mi carta base'.");
+      return;
+    }
+    var p2 = state.profile;
+    var source = useCustom ? customText : p2.cartaBase;
+    var letter = source.split("[CARGO]").join(cargo).split("[EMPRESA]").join(empresa);
+    if(!useCustom){
+      var topHits = (window.__lastMatchHits || []).slice(0, 5);
+      if(topHits.length){
+        var insertLine = "\n\nEn particular, veo que el cargo pone énfasis en " + topHits.join(", ") + " — áreas donde tengo experiencia directa y puedo aportar desde el primer día.";
+        var parts = letter.split("\n\n");
+        parts.splice(2, 0, insertLine.trim());
+        letter = parts.join("\n\n");
+      }
+    }
+    var outEl = document.getElementById("jt-tailor-output");
+    outEl.innerHTML = '<div style="white-space:pre-wrap;">'+esc(letter)+'</div><div style="margin-top:10px;"><button class="jt-copybtn" id="jt-tailor-copy" type="button">Copiar carta</button></div>';
+    outEl.style.display = "block";
+    document.getElementById("jt-tailor-copy").addEventListener("click", function(){ copyText(letter, this); });
+  });
+}
+
+function renderProfile(){
+  var p = state.profile;
+  var view = document.getElementById("jt-profile-view");
+  var edit = document.getElementById("jt-profile-edit");
+
+  var expItems = p.experiencia.map(function(line){
+    var e = parseExpLine(line, ["cargo","empresa","periodo","desc"]);
+    return '<div class="jt-expitem"><div class="h">'+esc(e.cargo)+' — '+esc(e.empresa)+'</div><div class="m">'+esc(e.periodo)+'</div><div class="d">'+esc(e.desc)+'</div></div>';
+  }).join("");
+  var formItems = p.formacion.map(function(line){
+    var f = parseExpLine(line, ["titulo","institucion","periodo"]);
+    return '<div class="jt-expitem"><div class="h">'+esc(f.titulo)+'</div><div class="m">'+esc(f.institucion)+' · '+esc(f.periodo)+'</div></div>';
+  }).join("");
+  var chips = p.habilidades.map(function(h){ return '<span class="jt-chip">'+esc(h)+'</span>'; }).join("");
+
+  var qaItems = p.quickAnswers.map(function(line){
+    var parts = line.split("|").map(function(s){ return s.trim(); });
+    var q = parts[0] || "", a = parts[1] || "";
+    return '<div class="jt-qa-item"><div><div class="q">'+esc(q)+'</div><div class="a">'+esc(a)+'</div></div><button class="jt-copybtn" data-qa-copy="'+esc(a)+'" type="button">Copiar</button></div>';
+  }).join("");
+
+  view.innerHTML =
+    '<div class="jt-profile-head"><h2>'+esc(p.nombre||"Tu nombre aquí")+'</h2><span><a class="jt-btn-mini" href="'+esc(p.linkedinUrl)+'" target="_blank" rel="noopener" style="text-decoration:none;">🔗 LinkedIn</a> <button class="jt-btn-mini" id="jt-copy-all-btn" type="button">📋 Copiar todo</button> <button class="jt-btn-mini" id="jt-profile-word-btn" type="button">⇩ Word</button> <button class="jt-btn-mini" id="jt-profile-reset-btn" type="button">Restablecer</button> <button class="jt-btn-mini" id="jt-profile-edit-btn" type="button">Editar</button></span></div>'
+    + '<div class="jt-profile-grid">'
+    + '<div class="jt-profile-main">'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Resumen profesional</h3><button class="jt-copybtn" id="copy-resumen" type="button">Copiar</button></div><p>'+esc(p.resumen)+'</p></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Experiencia</h3><button class="jt-copybtn" id="copy-experiencia" type="button">Copiar</button></div><div class="jt-explist">'+expItems+'</div></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Formación académica</h3><button class="jt-copybtn" id="copy-formacion" type="button">Copiar</button></div><div class="jt-explist">'+formItems+'</div></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Carta de presentación base</h3><span><button class="jt-copybtn" id="copy-carta" type="button">Copiar</button> <button class="jt-copybtn" id="word-carta" type="button">⇩ Word</button></span></div><p style="white-space:pre-wrap;">'+esc(p.cartaBase)+'</p></div>'
+    + '</div>'
+    + '<div class="jt-profile-side">'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Habilidades</h3><button class="jt-copybtn" id="copy-habilidades" type="button">Copiar</button></div><div class="jt-chips">'+chips+'</div></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Respuestas rápidas</h3></div><div class="jt-qa-list">'+qaItems+'</div></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>LinkedIn</h3><button class="jt-copybtn" id="copy-li-headline" type="button">Copiar titular</button></div><p style="font-size:12.5px;">'+esc(p.linkedinHeadline)+'</p>'
+    + '<div class="jt-pblock-head" style="margin-top:10px;"><span></span><button class="jt-copybtn" id="copy-li-about" type="button">Copiar extracto</button></div><p style="white-space:pre-wrap;font-size:12.5px;">'+esc(p.linkedinAbout)+'</p>'
+    + (p.linkedinLastSync ? '<div class="jt-hint" title="Última sincronización manual" style="margin-top:6px;">Sincronizado el '+esc(new Date(p.linkedinLastSync).toLocaleDateString("es-CL"))+'</div>' : '<div class="jt-hint" title="Usa Editar perfil cuando actualices tu LinkedIn real" style="margin-top:6px;">Sin sincronizar <span class="jt-hint-ic">?</span></div>')
+    + '</div>'
+    + '</div>'
+    + '</div>';
+
+  document.getElementById("copy-li-headline").addEventListener("click", function(){ copyText(p.linkedinHeadline, this); });
+  document.getElementById("copy-li-about").addEventListener("click", function(){ copyText(p.linkedinAbout, this); });
+  document.getElementById("jt-copy-all-btn").addEventListener("click", function(){
+    var expText = p.experiencia.map(function(line){
+      var e = parseExpLine(line, ["cargo","empresa","periodo","desc"]);
+      return e.cargo + " — " + e.empresa + " (" + e.periodo + "): " + e.desc;
+    }).join("\n");
+    var formText = p.formacion.map(function(line){
+      var f = parseExpLine(line, ["titulo","institucion","periodo"]);
+      return f.titulo + " — " + f.institucion + " (" + f.periodo + ")";
+    }).join("\n");
+    var full = "RESUMEN PROFESIONAL\n" + p.resumen
+      + "\n\nHABILIDADES\n" + p.habilidades.join(", ")
+      + "\n\nEXPERIENCIA\n" + expText
+      + "\n\nFORMACIÓN ACADÉMICA\n" + formText;
+    copyText(full, this);
+  });
+  document.querySelectorAll('[data-qa-copy]').forEach(function(btn){
+    btn.addEventListener("click", function(){ copyText(btn.getAttribute("data-qa-copy"), btn); });
+  });
+
+  document.getElementById("jt-profile-edit-btn").addEventListener("click", function(){
+    view.style.display = "none";
+    edit.style.display = "block";
+    renderProfileEdit();
+  });
+  document.getElementById("jt-profile-reset-btn").addEventListener("click", function(){
+    if(!window.confirm("Esto reemplaza tu perfil actual (nombre, resumen, habilidades, experiencia, formación, carta base) por los datos de ejemplo del dashboard. ¿Continuar?")) return;
+    state.profile = JSON.parse(JSON.stringify(seedProfile));
+    renderProfile();
+    renderMasthead();
+    persist();
+  });
+  document.getElementById("copy-resumen").addEventListener("click", function(){ copyText(p.resumen, this); });
+  document.getElementById("copy-habilidades").addEventListener("click", function(){ copyText(p.habilidades.join(", "), this); });
+  document.getElementById("copy-experiencia").addEventListener("click", function(){
+    var text = p.experiencia.map(function(line){
+      var e = parseExpLine(line, ["cargo","empresa","periodo","desc"]);
+      return e.cargo + " — " + e.empresa + " (" + e.periodo + ")\\n" + e.desc;
+    }).join("\\n\\n");
+    copyText(text, this);
+  });
+  document.getElementById("copy-formacion").addEventListener("click", function(){
+    var text = p.formacion.map(function(line){
+      var f = parseExpLine(line, ["titulo","institucion","periodo"]);
+      return f.titulo + " — " + f.institucion + " (" + f.periodo + ")";
+    }).join("\\n");
+    copyText(text, this);
+  });
+  document.getElementById("copy-carta").addEventListener("click", function(){ copyText(p.cartaBase, this); });
+  document.getElementById("word-carta").addEventListener("click", exportCartaToWord);
+  document.getElementById("jt-profile-word-btn").addEventListener("click", exportProfileToWord);
+}
+
+function renderProfileEdit(){
+  var p = state.profile;
+  var edit = document.getElementById("jt-profile-edit");
+  edit.innerHTML =
+    '<div class="jt-profile-head"><h2>Editando perfil</h2></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Tu nombre</h3><input class="wide" type="text" id="pe-nombre" value="'+esc(p.nombre||"")+'" /></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Título profesional (aparece en el encabezado)</h3><input class="wide" type="text" id="pe-titulo" value="'+esc(p.tituloProfesional||"")+'" /></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Resumen profesional</h3><textarea class="wide" id="pe-resumen">'+esc(p.resumen)+'</textarea></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Habilidades (separadas por coma)</h3><input class="wide" type="text" id="pe-habilidades" value="'+esc(p.habilidades.join(", "))+'" /></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Experiencia (una por línea: Cargo | Empresa | Período | Descripción)</h3><textarea class="wide mono" id="pe-experiencia">'+esc(p.experiencia.join("\\n"))+'</textarea></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Formación (una por línea: Título | Institución | Período)</h3><textarea class="wide mono" id="pe-formacion">'+esc(p.formacion.join("\n"))+'</textarea></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Respuestas rápidas (una por línea: Pregunta | Respuesta)</h3><textarea class="wide mono" id="pe-quickanswers">'+esc(p.quickAnswers.join("\n"))+'</textarea></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — URL</h3><input class="wide" type="text" id="pe-li-url" value="'+esc(p.linkedinUrl)+'" /></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — Titular</h3><input class="wide" type="text" id="pe-li-headline" value="'+esc(p.linkedinHeadline)+'" /></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — Extracto / Acerca de</h3><textarea class="wide" id="pe-li-about" style="min-height:120px;">'+esc(p.linkedinAbout)+'</textarea>'
+    + '<label style="font-size:11px;display:flex;align-items:center;gap:6px;margin-top:6px;"><input type="checkbox" id="pe-li-sync" /> Marcar como recién sincronizado con LinkedIn (hoy)</label></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Carta de presentación base</h3><textarea class="wide" id="pe-carta" style="min-height:160px;">'+esc(p.cartaBase)+'</textarea></div>'
+    + '<div class="jt-edit-actions"><button class="jt-btn-mini" id="pe-cancel" type="button">Cancelar</button><button class="jt-btn-mini primary" id="pe-save" type="button">Guardar perfil</button></div>';
+
+  document.getElementById("pe-cancel").addEventListener("click", function(){
+    document.getElementById("jt-profile-edit").style.display = "none";
+    document.getElementById("jt-profile-view").style.display = "block";
+  });
+  document.getElementById("pe-save").addEventListener("click", function(){
+    p.nombre = document.getElementById("pe-nombre").value.trim() || "Tu nombre aquí";
+    p.tituloProfesional = document.getElementById("pe-titulo").value.trim();
+    p.resumen = document.getElementById("pe-resumen").value.trim();
+    p.habilidades = document.getElementById("pe-habilidades").value.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+    p.experiencia = document.getElementById("pe-experiencia").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+    p.formacion = document.getElementById("pe-formacion").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+    p.quickAnswers = document.getElementById("pe-quickanswers").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+    p.linkedinUrl = document.getElementById("pe-li-url").value.trim() || p.linkedinUrl;
+    p.linkedinHeadline = document.getElementById("pe-li-headline").value.trim();
+    p.linkedinAbout = document.getElementById("pe-li-about").value.trim();
+    if(document.getElementById("pe-li-sync").checked){
+      p.linkedinLastSync = new Date().toISOString();
+    }
+    p.cartaBase = document.getElementById("pe-carta").value.trim();
+    document.getElementById("jt-profile-edit").style.display = "none";
+    document.getElementById("jt-profile-view").style.display = "block";
+    renderProfile();
+    renderMasthead();
+    persist();
+  });
+}
+
+function wireNav(){
+  document.getElementById("jt-logout-btn").addEventListener("click", logout);
+  var links = document.querySelectorAll('.jt-nav a');
+  links.forEach(function(link){
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      var el = document.getElementById(link.getAttribute('data-target'));
+      if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+    });
+  });
+  var sections = Array.prototype.map.call(links, function(l){ return document.getElementById(l.getAttribute('data-target')); }).filter(Boolean);
+  function onScroll(){
+    var pos = window.scrollY + 90;
+    var current = sections[0];
+    sections.forEach(function(s){ if(s.offsetTop <= pos) current = s; });
+    links.forEach(function(l){
+      l.classList.toggle('active', current && l.getAttribute('data-target') === current.id);
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+}
+
+document.getElementById("jt-match-btn").addEventListener("click", runMatchAnalysis);
+
+wireForms();
+wireNav();
+wireIO();
+
+loadState().then(renderAll);
+
+})();
+</script>
+
+</body>
+</html>

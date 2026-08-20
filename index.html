@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobTrack</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
+</head>
+<body>
+<style>
+  :root{
+    --paper:#F3F2F2;
+    --paper-dim:#EAE9E9;
+    --ink:#201E1D;
+    --ink-soft:#605D5D;
+    --ink-faint:#9B9797;
+    --line:#D7D3D3;
+    --brick:#EC3013;
+    --brick-dark:#AE1800;
+    --brick-100:#FFF2EF;
+    --brick-800:#7C1405;
+    --teal:#1A7D4F;
+    --teal-dark:#0F4A2E;
+    --card-bg:#FFFFFF;
+    --radius-card:0px;
+    --radius-ctrl:0px;
+    --radius-pill:0px;
+    --font-display:'Archivo',system-ui,sans-serif;
+    --font-body:'Archivo',system-ui,sans-serif;
+    --font-mono:'Archivo',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#201E1D;
+      --paper-dim:#2D2B2B;
+      --ink:#F8F4F4;
+      --ink-soft:#D7D3D3;
+      --ink-faint:#9B9797;
+      --line:#444141;
+      --brick:#FF9783;
+      --brick-dark:#FFC4B8;
+      --brick-100:#4D170E;
+      --brick-800:#FFE0D9;
+      --teal:#5FC994;
+      --teal-dark:#A6E4C4;
+      --card-bg:#2D2B2B;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--paper);}
+  .jt-home-header{border-bottom:1px solid var(--line);background:var(--card-bg);}
+  .jt-home-header-inner{max-width:1120px;margin:0 auto;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;}
+  .jt-home-logo{display:flex;align-items:center;gap:10px;}
+  .jt-home-logo .mark{width:34px;height:34px;background:var(--brick);color:#fff;font-family:var(--font-display);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .jt-home-logo .name{font-family:var(--font-display);font-weight:700;font-size:17px;}
+  .jt-home-actions{display:flex;gap:10px;}
+  .jt-btn-ghost{font-family:var(--font-mono);font-size:13px;background:transparent;color:var(--ink-soft);border:1px solid var(--line);padding:9px 16px;cursor:pointer;text-decoration:none;display:inline-block;}
+  .jt-btn-ghost:hover{color:var(--ink);border-color:var(--ink-soft);}
+  .jt-btn-primary{font-family:var(--font-body);font-weight:600;font-size:13.5px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:9px 16px;cursor:pointer;text-decoration:none;display:inline-block;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-btn-primary:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
+
+  .jt-hero{max-width:1120px;margin:0 auto;padding:88px 28px 64px;text-align:center;}
+  .jt-hero h1{font-family:var(--font-display);font-weight:800;font-size:44px;line-height:1.15;margin:0 0 18px;}
+  .jt-hero p{font-size:17px;color:var(--ink-soft);max-width:560px;margin:0 auto 32px;line-height:1.5;}
+  .jt-hero-cta{font-family:var(--font-body);font-weight:600;font-size:16px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:14px 30px;cursor:pointer;text-decoration:none;display:inline-block;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-hero-cta:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
+
+  .jt-features{max-width:1120px;margin:0 auto;padding:0 28px 96px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+  .jt-feature{background:var(--card-bg);border:1px solid var(--line);padding:24px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-feature .ic{font-size:24px;margin-bottom:12px;}
+  .jt-feature h3{font-family:var(--font-display);font-size:16px;font-weight:700;margin:0 0 6px;}
+  .jt-feature p{font-size:13.5px;color:var(--ink-soft);margin:0;line-height:1.5;}
+
+  .jt-home-footer{border-top:1px solid var(--line);padding:24px 28px;text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);}
+
+  @media (max-width:640px){
+    .jt-hero h1{font-size:30px;}
+    .jt-home-header-inner{flex-direction:column;gap:12px;align-items:flex-start;}
+  }
+</style>
+
+<header class="jt-home-header">
+  <div class="jt-home-header-inner">
+    <div class="jt-home-logo">
+      <div class="mark">JT</div>
+      <div class="name">JobTrack</div>
+    </div>
+    <div class="jt-home-actions">
+      <a class="jt-btn-ghost" href="login.html?mode=login">Iniciar sesión</a>
+      <a class="jt-btn-primary" href="login.html?mode=signup">Crear cuenta</a>
+    </div>
+  </div>
+</header>
+
+<section class="jt-hero">
+  <h1>Organiza tu búsqueda de empleo en un solo lugar</h1>
+  <p>Pipeline de postulaciones, red de contactos, match de CV contra vacantes y seguimiento de entrevistas — todo en un solo tablero, pensado para una búsqueda ejecutiva.</p>
+  <a class="jt-hero-cta" href="login.html?mode=signup">Crear cuenta gratis</a>
+</section>
+
+<section class="jt-features">
+  <div class="jt-feature">
+    <div class="ic">▤</div>
+    <h3>Pipeline de postulaciones</h3>
+    <p>Tus procesos organizados por etapa, con prioridad, plazos y próximos pasos siempre visibles.</p>
+  </div>
+  <div class="jt-feature">
+    <div class="ic">◍</div>
+    <h3>Red de contactos</h3>
+    <p>Quién puede ayudarte a entrar a cada empresa, y cuándo fue la última vez que hablaron.</p>
+  </div>
+  <div class="jt-feature">
+    <div class="ic">✓</div>
+    <h3>Match de CV</h3>
+    <p>Compara tu perfil contra una vacante y ve al instante qué calza y qué falta.</p>
+  </div>
+  <div class="jt-feature">
+    <div class="ic">☕</div>
+    <h3>Seguimiento de entrevistas</h3>
+    <p>Reuniones y cafés registrados, con notas y próximos pasos que no se te van a olvidar.</p>
+  </div>
+</section>
+
+<footer class="jt-home-footer">JobTrack</footer>
+
+</body>
+</html>

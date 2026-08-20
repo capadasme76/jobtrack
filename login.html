@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobTrack — Iniciar sesión</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
+</head>
+<body>
+<style>
+  :root{
+    --paper:#F3F2F2;
+    --paper-dim:#EAE9E9;
+    --ink:#201E1D;
+    --ink-soft:#605D5D;
+    --ink-faint:#9B9797;
+    --line:#D7D3D3;
+    --brick:#EC3013;
+    --brick-dark:#AE1800;
+    --card-bg:#FFFFFF;
+    --font-display:'Archivo',system-ui,sans-serif;
+    --font-body:'Archivo',system-ui,sans-serif;
+    --font-mono:'Archivo',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#201E1D;
+      --paper-dim:#2D2B2B;
+      --ink:#F8F4F4;
+      --ink-soft:#D7D3D3;
+      --ink-faint:#9B9797;
+      --line:#444141;
+      --brick:#FF9783;
+      --brick-dark:#FFC4B8;
+      --card-bg:#2D2B2B;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--paper);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .jt-login-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:24px;}
+  .jt-login-logo .mark{width:34px;height:34px;background:var(--brick);color:#fff;font-family:var(--font-display);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;}
+  .jt-login-logo .name{font-family:var(--font-display);font-weight:700;font-size:17px;}
+  .jt-login-box{width:100%;max-width:360px;}
+  .jt-login-card{background:var(--card-bg);border:1px solid var(--line);padding:28px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-login-card h1{font-family:var(--font-display);font-size:20px;font-weight:700;margin:0 0 18px;text-align:center;}
+  .jt-login-card label{display:block;font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-faint);margin-bottom:4px;}
+  .jt-login-field{margin-bottom:14px;}
+  .jt-login-field input{width:100%;font-family:var(--font-body);font-size:14.5px;background:var(--paper);color:var(--ink);border:1px solid var(--line);padding:10px 11px;}
+  .jt-login-field input:focus-visible{outline:2px solid var(--brick);outline-offset:1px;}
+  .jt-login-submit{width:100%;font-family:var(--font-body);font-weight:600;font-size:14.5px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:11px 16px;cursor:pointer;margin-top:4px;}
+  .jt-login-submit:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
+  .jt-login-submit:disabled{opacity:.6;cursor:default;}
+  .jt-login-switch{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-top:16px;}
+  .jt-login-switch button{font-family:var(--font-body);font-size:13.5px;color:var(--brick);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
+  .jt-login-err{font-family:var(--font-mono);font-size:13px;color:var(--brick);margin-bottom:12px;display:none;}
+  .jt-login-info{font-family:var(--font-mono);font-size:13px;color:var(--teal-dark,#0F4A2E);margin-bottom:12px;display:none;}
+  .jt-login-back{display:block;text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);text-decoration:none;margin-top:18px;}
+  .jt-login-back:hover{color:var(--ink-soft);}
+</style>
+
+<div class="jt-login-box">
+  <div class="jt-login-logo">
+    <div class="mark">JT</div>
+    <div class="name">JobTrack</div>
+  </div>
+  <div class="jt-login-card">
+    <h1 id="jt-login-title">Iniciar sesión</h1>
+    <div class="jt-login-err" id="jt-login-err"></div>
+    <div class="jt-login-info" id="jt-login-info"></div>
+    <form id="jt-login-form">
+      <div class="jt-login-field">
+        <label for="jt-login-email">Email</label>
+        <input type="email" id="jt-login-email" autocomplete="email" required />
+      </div>
+      <div class="jt-login-field">
+        <label for="jt-login-password">Contraseña</label>
+        <input type="password" id="jt-login-password" autocomplete="current-password" required minlength="6" />
+      </div>
+      <button type="submit" class="jt-login-submit" id="jt-login-submit">Iniciar sesión</button>
+    </form>
+    <div class="jt-login-switch">
+      <span id="jt-login-switch-text">¿No tienes cuenta?</span>
+      <button type="button" id="jt-login-switch-btn">Créala aquí</button>
+    </div>
+  </div>
+  <a class="jt-login-back" href="index.html">← Volver al inicio</a>
+</div>
+
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+  import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase-config.js";
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const params = new URLSearchParams(location.search);
+  let mode = params.get("mode") === "signup" ? "signup" : "login";
+
+  const title = document.getElementById("jt-login-title");
+  const submitBtn = document.getElementById("jt-login-submit");
+  const switchText = document.getElementById("jt-login-switch-text");
+  const switchBtn = document.getElementById("jt-login-switch-btn");
+  const errBox = document.getElementById("jt-login-err");
+  const infoBox = document.getElementById("jt-login-info");
+  const form = document.getElementById("jt-login-form");
+  const emailInput = document.getElementById("jt-login-email");
+  const passwordInput = document.getElementById("jt-login-password");
+
+  function applyMode(){
+    if(mode === "signup"){
+      title.textContent = "Crear cuenta";
+      submitBtn.textContent = "Crear cuenta";
+      switchText.textContent = "¿Ya tienes cuenta?";
+      switchBtn.textContent = "Inicia sesión";
+    } else {
+      title.textContent = "Iniciar sesión";
+      submitBtn.textContent = "Iniciar sesión";
+      switchText.textContent = "¿No tienes cuenta?";
+      switchBtn.textContent = "Créala aquí";
+    }
+    errBox.style.display = "none";
+    infoBox.style.display = "none";
+  }
+  applyMode();
+
+  switchBtn.addEventListener("click", function(){
+    mode = mode === "signup" ? "login" : "signup";
+    applyMode();
+  });
+
+  // Si ya hay sesión activa, saltar directo al dashboard.
+  supabase.auth.getSession().then(function(res){
+    if(res.data.session){
+      location.href = "jobtrack-dashboard-cristian.html";
+    }
+  });
+
+  form.addEventListener("submit", async function(e){
+    e.preventDefault();
+    errBox.style.display = "none";
+    infoBox.style.display = "none";
+    submitBtn.disabled = true;
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    try{
+      if(mode === "signup"){
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if(error) throw error;
+        if(data.session){
+          location.href = "jobtrack-dashboard-cristian.html";
+        } else {
+          infoBox.textContent = "Cuenta creada. Revisa tu correo para confirmar antes de iniciar sesión.";
+          infoBox.style.display = "block";
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if(error) throw error;
+        location.href = "jobtrack-dashboard-cristian.html";
+      }
+    } catch(err){
+      errBox.textContent = err.message || "Ocurrió un error, intenta de nuevo.";
+      errBox.style.display = "block";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
