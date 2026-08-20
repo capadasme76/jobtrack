@@ -48,34 +48,62 @@
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--paper);}
-  .jt-home-header{border-bottom:1px solid var(--line);background:var(--card-bg);}
-  .jt-home-header-inner{max-width:1120px;margin:0 auto;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;}
+  .wrap{max-width:1100px;margin:0 auto;padding-left:24px;padding-right:24px;}
+  .hr{border:none;border-top:2px solid var(--line);max-width:1100px;margin:0 auto;}
+
+  .jt-home-header{background:var(--paper);}
+  .jt-home-header-inner{max-width:1100px;margin:0 auto;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;}
   .jt-home-logo{display:flex;align-items:center;gap:10px;}
-  .jt-home-logo .mark{width:34px;height:34px;background:var(--brick);color:#fff;font-family:var(--font-display);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .jt-home-logo .name{font-family:var(--font-display);font-weight:700;font-size:17px;}
-  .jt-home-actions{display:flex;gap:10px;}
-  .jt-btn-ghost{font-family:var(--font-mono);font-size:13px;background:transparent;color:var(--ink-soft);border:1px solid var(--line);padding:9px 16px;cursor:pointer;text-decoration:none;display:inline-block;}
-  .jt-btn-ghost:hover{color:var(--ink);border-color:var(--ink-soft);}
-  .jt-btn-primary{font-family:var(--font-body);font-weight:600;font-size:13.5px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:9px 16px;cursor:pointer;text-decoration:none;display:inline-block;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-home-logo .mark{width:32px;height:32px;background:var(--brick);color:#fff;font-family:var(--font-display);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .jt-home-logo .name{font-family:var(--font-display);font-weight:800;font-size:19px;}
+  .jt-home-actions{display:flex;gap:10px;align-items:center;}
+  .jt-btn-ghost{font-family:var(--font-body);font-weight:600;font-size:14px;background:transparent;color:var(--brick);border:none;padding:9px 4px;cursor:pointer;text-decoration:none;display:inline-block;}
+  .jt-btn-ghost:hover{color:var(--brick-dark);}
+  .jt-btn-primary{font-family:var(--font-body);font-weight:700;font-size:14px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:10px 18px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
   .jt-btn-primary:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
+  .jt-btn-secondary{font-family:var(--font-body);font-weight:700;font-size:14px;background:var(--card-bg);color:var(--ink);border:1px solid var(--line);padding:10px 18px;cursor:pointer;text-decoration:none;display:inline-block;}
+  .jt-btn-secondary:hover{border-color:var(--ink-soft);}
 
-  .jt-hero{max-width:1120px;margin:0 auto;padding:88px 28px 64px;text-align:center;}
-  .jt-hero h1{font-family:var(--font-display);font-weight:800;font-size:44px;line-height:1.15;margin:0 0 18px;}
-  .jt-hero p{font-size:17px;color:var(--ink-soft);max-width:560px;margin:0 auto 32px;line-height:1.5;}
-  .jt-hero-cta{font-family:var(--font-body);font-weight:600;font-size:16px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:14px 30px;cursor:pointer;text-decoration:none;display:inline-block;box-shadow:0 1px 2px rgba(32,30,29,.14);}
-  .jt-hero-cta:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
+  .jt-hero{max-width:1100px;margin:0 auto;padding:72px 24px 56px;}
+  .jt-hero-inner{max-width:640px;}
+  .jt-hero h1{font-family:var(--font-display);font-weight:800;font-size:52px;line-height:1.08;margin:0 0 20px;}
+  .jt-hero p{font-size:17px;color:var(--ink);opacity:.75;max-width:520px;margin:0 0 28px;line-height:1.5;}
+  .jt-hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
+  .jt-hero .jt-btn-primary{font-size:16px;padding:14px 28px;}
+  .jt-hero .jt-btn-secondary{font-size:16px;padding:14px 28px;}
 
-  .jt-features{max-width:1120px;margin:0 auto;padding:0 28px 96px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
-  .jt-feature{background:var(--card-bg);border:1px solid var(--line);padding:24px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
-  .jt-feature .ic{font-size:24px;margin-bottom:12px;}
-  .jt-feature h3{font-family:var(--font-display);font-size:16px;font-weight:700;margin:0 0 6px;}
-  .jt-feature p{font-size:13.5px;color:var(--ink-soft);margin:0;line-height:1.5;}
+  .jt-grid4{max-width:1100px;margin:0 auto;padding:56px 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+  .jt-card{background:var(--paper-dim);padding:24px;}
+  .jt-card .ic{color:var(--brick);margin-bottom:14px;display:block;}
+  .jt-card h3{font-family:var(--font-display);font-size:16px;font-weight:800;margin:0 0 8px;}
+  .jt-card p{font-size:14px;color:var(--ink);opacity:.75;margin:0;line-height:1.5;}
 
-  .jt-home-footer{border-top:1px solid var(--line);padding:24px 28px;text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);}
+  .jt-about{max-width:1100px;margin:0 auto;padding:64px 24px;display:grid;grid-template-columns:1fr 1.3fr;gap:56px;}
+  .jt-about h2{font-family:var(--font-display);font-size:32px;font-weight:800;margin:0;}
+  .jt-about-text{font-size:16px;line-height:1.65;color:var(--ink);opacity:.85;}
+  .jt-about-text p{margin:0 0 16px;}
+  .jt-about-text p:last-child{margin-bottom:0;}
 
-  @media (max-width:640px){
-    .jt-hero h1{font-size:30px;}
-    .jt-home-header-inner{flex-direction:column;gap:12px;align-items:flex-start;}
+  .jt-how{max-width:1100px;margin:0 auto;padding:64px 24px;}
+  .jt-how h2{font-family:var(--font-display);font-size:32px;font-weight:800;margin:0 0 32px;}
+  .jt-how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;}
+  .jt-how-grid .num{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--brick-dark);margin-bottom:8px;}
+  .jt-how-grid h3{font-family:var(--font-display);font-size:16px;font-weight:800;margin:0 0 6px;}
+  .jt-how-grid p{font-size:14px;color:var(--ink);opacity:.75;margin:0;line-height:1.5;}
+
+  .jt-cta{max-width:1100px;margin:0 auto;padding:56px 24px;}
+
+  .jt-home-footer{max-width:1100px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;font-family:var(--font-body);font-size:13px;color:var(--ink);opacity:.6;}
+
+  @media (max-width:800px){
+    .jt-grid4{grid-template-columns:repeat(2,1fr);}
+    .jt-about{grid-template-columns:1fr;gap:20px;}
+    .jt-how-grid{grid-template-columns:1fr;gap:24px;}
+  }
+  @media (max-width:560px){
+    .jt-hero h1{font-size:34px;}
+    .jt-grid4{grid-template-columns:1fr;}
+    .jt-home-header-inner{flex-wrap:wrap;gap:10px;}
   }
 </style>
 
@@ -91,37 +119,112 @@
     </div>
   </div>
 </header>
+<hr class="hr">
 
 <section class="jt-hero">
-  <h1>Organiza tu búsqueda de empleo en un solo lugar</h1>
-  <p>Pipeline de postulaciones, red de contactos, match de CV contra vacantes y seguimiento de entrevistas — todo en un solo tablero, pensado para una búsqueda ejecutiva.</p>
-  <a class="jt-hero-cta" href="login.html?mode=signup">Crear cuenta gratis</a>
+  <div class="jt-hero-inner">
+    <h1>Organiza tu búsqueda de empleo en un solo lugar</h1>
+    <p>Postulaciones, contactos y seguimiento — todo en un solo dashboard, sin depender de una hoja de cálculo que se desordena sola.</p>
+    <div class="jt-hero-actions">
+      <a class="jt-btn-primary" href="login.html?mode=signup">Crear cuenta gratis
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+      </a>
+      <a class="jt-btn-secondary" href="login.html?mode=login">Iniciar sesión</a>
+    </div>
+  </div>
 </section>
 
-<section class="jt-features">
-  <div class="jt-feature">
-    <div class="ic">▤</div>
+<hr class="hr">
+<section class="jt-grid4">
+  <div class="jt-card">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16"></rect><line x1="9" y1="4" x2="9" y2="20"></line><line x1="15" y1="4" x2="15" y2="20"></line></svg>
     <h3>Pipeline de postulaciones</h3>
-    <p>Tus procesos organizados por etapa, con prioridad, plazos y próximos pasos siempre visibles.</p>
+    <p>Sigue cada postulación por etapa, de aplicado a oferta, con recordatorios de vencimiento.</p>
   </div>
-  <div class="jt-feature">
-    <div class="ic">◍</div>
+  <div class="jt-card">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16 14c2.5 0 5 1.5 6 4"></path></svg>
     <h3>Red de contactos</h3>
-    <p>Quién puede ayudarte a entrar a cada empresa, y cuándo fue la última vez que hablaron.</p>
+    <p>Centraliza reclutadores, referidos y contactos clave, con seguimiento de la última conversación.</p>
   </div>
-  <div class="jt-feature">
-    <div class="ic">✓</div>
+  <div class="jt-card">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></svg>
     <h3>Match de CV</h3>
-    <p>Compara tu perfil contra una vacante y ve al instante qué calza y qué falta.</p>
+    <p>Compara tu CV contra cada vacante y ve qué competencias te faltan.</p>
   </div>
-  <div class="jt-feature">
-    <div class="ic">☕</div>
-    <h3>Seguimiento de entrevistas</h3>
-    <p>Reuniones y cafés registrados, con notas y próximos pasos que no se te van a olvidar.</p>
+  <div class="jt-card">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+    <h3>Seguimiento y alertas</h3>
+    <p>Sigue el hilo de cada entrevista y recibe alertas de plazos y postulaciones por vencer.</p>
   </div>
 </section>
 
-<footer class="jt-home-footer">JobTrack</footer>
+<hr class="hr">
+<section class="jt-grid4">
+  <div class="jt-card">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16"></rect><line x1="9" y1="4" x2="9" y2="20"></line><line x1="15" y1="4" x2="15" y2="20"></line></svg>
+    <h3>Todo centralizado</h3>
+    <p>Pipeline, red de contactos, match de CV y cartas de presentación en un solo lugar, no en cinco pestañas distintas.</p>
+  </div>
+  <div class="jt-card">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+    <h3>Tus datos, solo tuyos</h3>
+    <p>Nada se comparte, nada se vende, nada sale de tu cuenta.</p>
+  </div>
+  <div class="jt-card">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16"></rect><path d="M9 9h6v6H9z"></path></svg>
+    <h3>Menos trabajo repetitivo</h3>
+    <p>Respuestas listas para copiar, cartas generadas por vacante, comparación automática contra cada aviso.</p>
+  </div>
+  <div class="jt-card">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16 14c2.5 0 5 1.5 6 4"></path></svg>
+    <h3>Pensado para tu red</h3>
+    <p>Entre 60% y 85% de las oportunidades reales llegan por contactos, no por postular a ciegas — por eso el networking tiene su propio espacio, no es un extra.</p>
+  </div>
+</section>
+
+<hr class="hr">
+<section class="jt-about">
+  <h2>Quiénes somos</h2>
+  <div class="jt-about-text">
+    <p>Si estás leyendo esto, probablemente ya tienes quince pestañas abiertas: el Excel de postulaciones, dos o tres portales de empleo, y esa nota en el celular que dice "llamar a Fulano de tal empresa". Lo sabemos porque a nosotros nos pasó exactamente lo mismo.</p>
+    <p>JobTrack nació de una búsqueda de empleo real, no de una sala de reuniones. Lo construimos porque cansa reordenar todo cada semana, y porque casi todas las herramientas que existen están pensadas para quien contrata, no para quien está buscando. Esta es distinta: es tuya, es privada, y está hecha para que dejes de perseguir tu propio proceso y empieces a controlarlo.</p>
+  </div>
+</section>
+
+<hr class="hr">
+<section class="jt-how">
+  <h2>Cómo funciona</h2>
+  <div class="jt-how-grid">
+    <div>
+      <div class="num">01</div>
+      <h3>Crea tu cuenta</h3>
+      <p>Gratis, menos de un minuto.</p>
+    </div>
+    <div>
+      <div class="num">02</div>
+      <h3>Completa tu perfil una vez</h3>
+      <p>Se reutiliza en cada postulación que hagas.</p>
+    </div>
+    <div>
+      <div class="num">03</div>
+      <h3>Empieza a organizar</h3>
+      <p>Agrega oportunidades y contactos, y deja que el match de CV haga el resto.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="hr">
+<section class="jt-cta">
+  <a class="jt-btn-primary" href="login.html?mode=signup">Crear cuenta gratis
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+  </a>
+</section>
+
+<hr class="hr">
+<footer class="jt-home-footer">
+  <span>JobTrack</span>
+  <span>© 2026</span>
+</footer>
 
 </body>
 </html>
