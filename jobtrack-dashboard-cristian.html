@@ -235,7 +235,8 @@
   .jt-metric-label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);width:150px;flex-shrink:0;}
   .jt-metric-bar-track{flex:1;height:16px;background:var(--paper-dim);border-radius:var(--radius-pill);overflow:hidden;}
   .jt-metric-bar-fill{height:100%;background:var(--teal);border-radius:var(--radius-pill);}
-  .jt-metric-count{font-family:var(--font-mono);font-size:13px;color:var(--ink);width:24px;text-align:right;}
+  .jt-metric-count{font-family:var(--font-mono);font-size:13px;color:var(--ink);width:56px;text-align:right;}
+  .jt-metric-pct{color:var(--ink-faint);font-size:11px;}
   .jt-metric-highlights{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px;}
   .jt-portal-group{margin-bottom:20px;}
   .jt-portal-group h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);border-bottom:1px solid var(--line);padding-bottom:6px;margin:0 0 10px;}
@@ -493,6 +494,7 @@
 <div class="jt-section-title" id="sec-metricas">Métricas</div>
   <div class="jt-section-sub">Cómo va tu proceso completo</div>
   <div class="jt-match">
+    <div class="jt-hint" id="jt-metrics-caption" style="margin-bottom:10px;"></div>
     <div class="jt-metrics" id="jt-metrics-bars"></div>
     <div class="jt-metric-highlights" id="jt-metrics-highlights"></div>
   </div>
@@ -655,6 +657,7 @@ var editingOppId = null;
 var editingNetId = null;
 var expandedTasksId = null;
 var expandedCardIds = [];
+var profileExpanded = { experiencia: false, formacion: false, carta: false };
 
 function daysSince(dateStr){
   if(!dateStr) return null;
@@ -1441,12 +1444,18 @@ function renderMetrics(){
   state.opportunities.forEach(function(o){ if(counts[o.status] !== undefined) counts[o.status]++; });
   var max = Math.max.apply(null, cols.map(function(s){ return counts[s]; }).concat([1]));
 
+  var totalForPct = state.opportunities.length || 1;
   var barsHtml = cols.map(function(s){
     var n = counts[s];
     var pct = Math.round((n / max) * 100);
-    return '<div class="jt-metric-row"><div class="jt-metric-label">'+esc(s)+'</div><div class="jt-metric-bar-track"><div class="jt-metric-bar-fill" style="width:'+pct+'%;"></div></div><div class="jt-metric-count">'+n+'</div></div>';
+    var pctTotal = Math.round((n / totalForPct) * 100);
+    var fillColor = s === "Descartado" ? "var(--brick)" : (s === "Oferta" ? "var(--teal)" : "var(--ink-faint)");
+    return '<div class="jt-metric-row"><div class="jt-metric-label">'+esc(s)+'</div><div class="jt-metric-bar-track"><div class="jt-metric-bar-fill" style="width:'+pct+'%;background:'+fillColor+';"></div></div><div class="jt-metric-count">'+n+' <span class="jt-metric-pct">('+pctTotal+'%)</span></div></div>';
   }).join("");
   document.getElementById("jt-metrics-bars").innerHTML = barsHtml;
+  document.getElementById("jt-metrics-caption").textContent = state.opportunities.length
+    ? "Oportunidades por etapa, de " + state.opportunities.length + " en total. El color rojo marca descartadas, el verde marca ofertas."
+    : "Aún no tienes oportunidades cargadas.";
 
   var total = state.opportunities.length;
   var enviadas = state.opportunities.filter(function(o){ return o.status !== "Por postular"; }).length;
@@ -1466,17 +1475,17 @@ function renderMetrics(){
   var incompletas = state.opportunities.filter(function(o){ return o.incompleta; }).length;
 
   var highlights = [
-    {n: total, l: "Total oportunidades"},
-    {n: enviadas, l: "En movimiento"},
-    {n: tasaEntrevista + "%", l: "Postulación → entrevista"},
-    {n: tasaOferta + "%", l: "Postulación → oferta"},
-    {n: descartadas, l: "Descartadas"},
-    {n: vencidas, l: "Vencidas"},
-    {n: porVencer, l: "Por vencer (≤3d)"},
-    {n: incompletas, l: "Incompletas"}
+    {n: total, l: "Total oportunidades", t: "Todas las oportunidades que has cargado, en cualquier etapa."},
+    {n: enviadas, l: "En movimiento", t: "Oportunidades que ya dejaste de \"Por postular\" — algo hiciste con ellas."},
+    {n: tasaEntrevista + "%", l: "Postulación → entrevista", t: "De lo que enviaste, qué porcentaje llegó a alguna entrevista."},
+    {n: tasaOferta + "%", l: "Postulación → oferta", t: "De lo que enviaste, qué porcentaje terminó en una oferta."},
+    {n: descartadas, l: "Descartadas", t: "Oportunidades que quedaron fuera del proceso."},
+    {n: vencidas, l: "Vencidas", t: "Con fecha límite ya pasada y que siguen activas — revísalas."},
+    {n: porVencer, l: "Por vencer (≤3d)", t: "Vencen en 3 días o menos — prioridad esta semana."},
+    {n: incompletas, l: "Incompletas", t: "Les falta información clave para avanzar bien."}
   ];
   document.getElementById("jt-metrics-highlights").innerHTML = highlights.map(function(h){
-    return '<div class="jt-stat"><div class="n">'+h.n+'</div><div class="l">'+esc(h.l)+'</div></div>';
+    return '<div class="jt-stat" title="'+esc(h.t)+'"><div class="n">'+h.n+'</div><div class="l">'+esc(h.l)+'</div></div>';
   }).join("");
 }
 
@@ -1877,14 +1886,27 @@ function renderProfile(){
   var view = document.getElementById("jt-profile-view");
   var edit = document.getElementById("jt-profile-edit");
 
-  var expItems = p.experiencia.map(function(line){
+  var expItemsArr = p.experiencia.map(function(line){
     var e = parseExpLine(line, ["cargo","empresa","periodo","desc"]);
     return '<div class="jt-expitem"><div class="h">'+esc(e.cargo)+' — '+esc(e.empresa)+'</div><div class="m">'+esc(e.periodo)+'</div><div class="d">'+esc(e.desc)+'</div></div>';
-  }).join("");
-  var formItems = p.formacion.map(function(line){
+  });
+  var formItemsArr = p.formacion.map(function(line){
     var f = parseExpLine(line, ["titulo","institucion","periodo"]);
     return '<div class="jt-expitem"><div class="h">'+esc(f.titulo)+'</div><div class="m">'+esc(f.institucion)+' · '+esc(f.periodo)+'</div></div>';
-  }).join("");
+  });
+  var EXP_PREVIEW = 2, FORM_PREVIEW = 2;
+  var expItems = (profileExpanded.experiencia ? expItemsArr : expItemsArr.slice(0, EXP_PREVIEW)).join("")
+    + (expItemsArr.length > EXP_PREVIEW ? '<button class="jt-card-expand" data-toggle-profile="experiencia" type="button">'+(profileExpanded.experiencia?'Ver menos ▴':'Ver las '+expItemsArr.length+' experiencias ▾')+'</button>' : '');
+  var formItems = (profileExpanded.formacion ? formItemsArr : formItemsArr.slice(0, FORM_PREVIEW)).join("")
+    + (formItemsArr.length > FORM_PREVIEW ? '<button class="jt-card-expand" data-toggle-profile="formacion" type="button">'+(profileExpanded.formacion?'Ver menos ▴':'Ver las '+formItemsArr.length+' formaciones ▾')+'</button>' : '');
+  var CARTA_PREVIEW = 220;
+  var cartaFull = p.cartaBase || "";
+  var cartaHtml = (!profileExpanded.carta && cartaFull.length > CARTA_PREVIEW)
+    ? esc(cartaFull.slice(0, CARTA_PREVIEW)) + '…'
+    : esc(cartaFull);
+  var cartaToggle = cartaFull.length > CARTA_PREVIEW
+    ? '<button class="jt-card-expand" data-toggle-profile="carta" type="button">'+(profileExpanded.carta?'Ver menos ▴':'Ver carta completa ▾')+'</button>'
+    : '';
   var chips = p.habilidades.map(function(h){ return '<span class="jt-chip">'+esc(h)+'</span>'; }).join("");
 
   var qaItems = p.quickAnswers.map(function(line){
@@ -1900,7 +1922,7 @@ function renderProfile(){
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Resumen profesional</h3><button class="jt-copybtn" id="copy-resumen" type="button">Copiar</button></div><p>'+esc(p.resumen)+'</p></div>'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Experiencia</h3><button class="jt-copybtn" id="copy-experiencia" type="button">Copiar</button></div><div class="jt-explist">'+expItems+'</div></div>'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Formación académica</h3><button class="jt-copybtn" id="copy-formacion" type="button">Copiar</button></div><div class="jt-explist">'+formItems+'</div></div>'
-    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Carta de presentación base</h3><span><button class="jt-copybtn" id="copy-carta" type="button">Copiar</button> <button class="jt-copybtn" id="word-carta" type="button">⇩ Word</button></span></div><p style="white-space:pre-wrap;">'+esc(p.cartaBase)+'</p></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Carta de presentación base</h3><span><button class="jt-copybtn" id="copy-carta" type="button">Copiar</button> <button class="jt-copybtn" id="word-carta" type="button">⇩ Word</button></span></div><p style="white-space:pre-wrap;">'+cartaHtml+'</p>'+cartaToggle+'</div>'
     + '</div>'
     + '<div class="jt-profile-side">'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Habilidades</h3><button class="jt-copybtn" id="copy-habilidades" type="button">Copiar</button></div><div class="jt-chips">'+chips+'</div></div>'
@@ -1964,6 +1986,14 @@ function renderProfile(){
   document.getElementById("copy-carta").addEventListener("click", function(){ copyText(p.cartaBase, this); });
   document.getElementById("word-carta").addEventListener("click", exportCartaToWord);
   document.getElementById("jt-profile-word-btn").addEventListener("click", exportProfileToWord);
+
+  document.querySelectorAll('[data-toggle-profile]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-toggle-profile");
+      profileExpanded[key] = !profileExpanded[key];
+      renderProfile();
+    });
+  });
 }
 
 function renderProfileEdit(){
