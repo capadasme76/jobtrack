@@ -1249,6 +1249,19 @@ function renderNetworking(){
   });
 }
 
+function googleCalendarLink(m, contactName){
+  var d = new Date(m.fecha);
+  var start = d.toISOString().slice(0,10).replace(/-/g,"");
+  var endDate = new Date(d); endDate.setUTCDate(endDate.getUTCDate()+1);
+  var end = endDate.toISOString().slice(0,10).replace(/-/g,"");
+  var title = m.tipo + " con " + contactName;
+  var details = (m.notas ? m.notas + "\n\n" : "") + "Registrado en JobTrack";
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE"
+    + "&text=" + encodeURIComponent(title)
+    + "&dates=" + start + "/" + end
+    + "&details=" + encodeURIComponent(details);
+}
+
 function renderMeetings(){
   var contactSelect = document.getElementById("jt-meeting-contact");
   if(contactSelect){
@@ -1270,7 +1283,7 @@ function renderMeetings(){
     var contact = state.networking.find(function(n){ return n.id === m.contactId; });
     var contactName = contact ? contact.name + " (" + contact.empresa + ")" : "Contacto eliminado";
     var fecha = new Date(m.fecha).toLocaleDateString("es-CL",{day:"2-digit",month:"short",year:"numeric"});
-    return '<div class="jt-meeting-item"><div><div class="who">'+esc(contactName)+'</div><div class="meta">'+esc(m.tipo)+' · '+fecha+'</div>'+(m.notas?'<div class="notas">'+esc(m.notas)+'</div>':'')+'</div><button class="jt-btn-mini" data-del-meeting="'+m.id+'" type="button">Eliminar</button></div>';
+    return '<div class="jt-meeting-item"><div><div class="who">'+esc(contactName)+'</div><div class="meta">'+esc(m.tipo)+' · '+fecha+'</div>'+(m.notas?'<div class="notas">'+esc(m.notas)+'</div>':'')+'</div><div style="display:flex;gap:6px;flex-shrink:0;"><a class="jt-btn-mini" href="'+googleCalendarLink(m, contactName)+'" target="_blank" rel="noopener">+ Calendar</a><button class="jt-btn-mini" data-del-meeting="'+m.id+'" type="button">Eliminar</button></div></div>';
   }).join("") || '<div class="jt-empty">Sin reuniones registradas todavía</div>';
   document.getElementById("jt-meetings-list").innerHTML = html;
 
