@@ -387,9 +387,10 @@
     <button class="jt-addbtn" id="jt-toggle-opp-form" type="button">+ Agregar oportunidad</button>
   </div>
   <div class="jt-form" id="jt-opp-form" style="display:none;">
-    <input type="text" id="jt-opp-empresa" placeholder="Empresa" />
-    <input type="text" id="jt-opp-cargo" placeholder="Cargo" />
-    <input type="text" id="jt-opp-sector" placeholder="Sector" />
+    <input type="text" id="jt-opp-link" placeholder="Link del aviso (obligatorio) — para postular" style="grid-column:1/-1;" />
+    <input type="text" id="jt-opp-empresa" placeholder="Empresa (déjalo vacío si el aviso no la dice)" />
+    <input type="text" id="jt-opp-cargo" placeholder="Cargo (déjalo vacío si el aviso no lo dice)" />
+    <input type="text" id="jt-opp-sector" placeholder="Sector (opcional)" />
     <select id="jt-opp-priority">
       <option value="Alta">Alta</option>
       <option value="Media">Media</option>
@@ -397,9 +398,8 @@
     </select>
     <input type="text" id="jt-opp-renta" placeholder="Renta estimada (ej. $4M–$6M)" />
     <select id="jt-opp-region"></select>
-    <input type="text" id="jt-opp-link" placeholder="Link para postular (opcional)" style="grid-column:1/-1;" />
-    <input type="text" id="jt-opp-career-url" placeholder="URL página de empleos de la empresa (opcional — te avisamos si cambia)" style="grid-column:1/-1;" />
-    <div class="jt-err" id="jt-opp-err">Completa empresa, cargo y sector.</div>
+    <input type="text" id="jt-opp-career-url" placeholder="Página general de empleos de la empresa (opcional, distinta al link de arriba — la vigilamos por cambios)" style="grid-column:1/-1;" />
+    <div class="jt-err" id="jt-opp-err">Agrega al menos el link del aviso.</div>
     <div class="jt-form-actions">
       <button class="jt-btn-ghost" id="jt-opp-cancel" type="button">Cancelar</button>
       <button class="jt-btn-primary" id="jt-opp-save" type="button">Guardar oportunidad</button>
@@ -989,8 +989,8 @@ function renderBoard(){
           + '</select>'
           + '<input type="text" id="edit-renta" value="'+esc(o.renta)+'" placeholder="Renta" />'
           + '<select id="edit-region">'+regionOptionsHtml(o.region||"")+'</select>'
-          + '<input type="text" id="edit-link" value="'+esc(o.link||"")+'" placeholder="Link para postular" style="grid-column:1/-1;" />'
-          + '<input type="text" id="edit-career-url" value="'+esc(o.careerUrl||"")+'" placeholder="URL página de empleos de la empresa (opcional — te avisamos si cambia)" style="grid-column:1/-1;" />'
+          + '<input type="text" id="edit-link" value="'+esc(o.link||"")+'" placeholder="Link del aviso — para postular" style="grid-column:1/-1;" />'
+          + '<input type="text" id="edit-career-url" value="'+esc(o.careerUrl||"")+'" placeholder="Página general de empleos de la empresa (opcional, distinta al link de arriba — la vigilamos por cambios)" style="grid-column:1/-1;" />'
           + '<select id="edit-contact">'+contactOptions+'</select>'
           + '<div><label style="font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:2px;">Fecha límite de postulación</label><input type="date" id="edit-fechalimite" value="'+esc(o.fechaLimite||"")+'" /></div>'
           + '<label style="font-size:11.5px;display:flex;align-items:center;gap:6px;grid-column:1/-1;"><input type="checkbox" id="edit-incompleta" '+(o.incompleta?'checked':'')+' /> Postulación incompleta — falta información de mi parte</label>'
@@ -1134,13 +1134,9 @@ function renderBoard(){
       var empresa = document.getElementById("edit-empresa").value.trim();
       var cargo = document.getElementById("edit-cargo").value.trim();
       var sector = document.getElementById("edit-sector").value.trim();
-      if(!empresa || !cargo || !sector){
-        window.alert("Empresa, cargo y sector no pueden quedar vacíos.");
-        return;
-      }
-      opp.empresa = empresa;
-      opp.cargo = cargo;
-      opp.sector = sector;
+      opp.empresa = empresa || "Empresa por confirmar";
+      opp.cargo = cargo || "Cargo por confirmar";
+      opp.sector = sector || "Sin especificar";
       opp.priority = document.getElementById("edit-priority").value;
       opp.renta = document.getElementById("edit-renta").value.trim() || opp.renta;
       opp.region = document.getElementById("edit-region").value || "";
@@ -1389,14 +1385,15 @@ function wireForms(){
     var link = document.getElementById("jt-opp-link").value.trim() || null;
     var careerUrl = document.getElementById("jt-opp-career-url").value.trim() || null;
     var errEl = document.getElementById("jt-opp-err");
-    if(!empresa || !cargo || !sector){
+    if(!link){
       errEl.style.display = "block";
       return;
     }
     errEl.style.display = "none";
+    var incompleta = !empresa || !cargo;
     var newOpp = {
       id: nextId("op", state.opportunities),
-      sector: sector, priority: priority, empresa: empresa, cargo: cargo, renta: renta, region: region, status: "Por postular", link: link, careerUrl: careerUrl
+      sector: sector || "Sin especificar", priority: priority, empresa: empresa || "Empresa por confirmar", cargo: cargo || "Cargo por confirmar", renta: renta, region: region, status: "Por postular", link: link, careerUrl: careerUrl, incompleta: incompleta
     };
     state.opportunities.push(newOpp);
     syncWatchedPage(newOpp);
