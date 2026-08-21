@@ -52,6 +52,8 @@
   .jt-login-submit:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
   .jt-login-submit:disabled{opacity:.6;cursor:default;}
   .jt-login-switch{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-top:16px;}
+  .jt-login-legal{font-size:12px;line-height:1.5;color:var(--ink-faint);margin:0 0 10px;}
+  .jt-login-legal a{color:var(--brick);}
   .jt-login-switch button{font-family:var(--font-body);font-size:13.5px;color:var(--brick);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
   .jt-login-err{font-family:var(--font-mono);font-size:13px;color:var(--brick);margin-bottom:12px;display:none;}
   .jt-login-info{font-family:var(--font-mono);font-size:13px;color:var(--teal-dark,#0F4A2E);margin-bottom:12px;display:none;}
@@ -85,6 +87,7 @@
         <label for="jt-login-password">Contraseña</label>
         <input type="password" id="jt-login-password" autocomplete="current-password" required minlength="6" />
       </div>
+      <p class="jt-login-legal" id="jt-login-legal" style="display:none;">Al crear tu cuenta aceptas los <a href="terminos.html" target="_blank">Términos y Condiciones</a> y la <a href="privacidad.html" target="_blank">Política de Privacidad</a>.</p>
       <button type="submit" class="jt-login-submit" id="jt-login-submit">Iniciar sesión</button>
     </form>
     <div class="jt-login-switch">
@@ -123,11 +126,13 @@
       submitBtn.textContent = "Crear cuenta";
       switchText.textContent = "¿Ya tienes cuenta?";
       switchBtn.textContent = "Inicia sesión";
+      document.getElementById("jt-login-legal").style.display = "block";
     } else {
       title.textContent = "Iniciar sesión";
       submitBtn.textContent = "Iniciar sesión";
       switchText.textContent = "¿No tienes cuenta?";
       switchBtn.textContent = "Créala aquí";
+      document.getElementById("jt-login-legal").style.display = "none";
     }
     errBox.style.display = "none";
     infoBox.style.display = "none";
