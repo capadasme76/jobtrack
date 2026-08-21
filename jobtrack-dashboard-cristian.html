@@ -84,6 +84,8 @@
   .jt-stat .n{font-family:var(--font-display);font-size:25px;font-weight:600;line-height:1;}
   .jt-stat .l{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-top:4px;}
   .jt-section-title{font-family:var(--font-display);font-size:22px;font-weight:700;text-transform:none;letter-spacing:.2px;color:var(--ink);border-bottom:3px solid var(--brick);padding-bottom:6px;margin:32px 0 4px;}
+  .jt-section-title.jt-collapsible-title{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+  .jt-section-toggle{font-family:var(--font-mono);font-size:14px;color:var(--ink-faint);}
   .jt-section-sub{font-family:var(--font-body);font-size:12.5px;color:var(--ink-faint);margin-bottom:16px;}
   .jt-lead{font-size:13px;color:var(--ink-faint);margin:0 0 12px;}
   .jt-hint{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-faint);cursor:help;}
@@ -108,9 +110,9 @@
   .jt-dispatch a.link{font-family:var(--font-mono);font-size:13px;color:var(--brick);text-decoration:none;border-bottom:1px solid var(--brick);white-space:nowrap;}
   .jt-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
   select,input[type=text]{font-family:var(--font-mono);font-size:13px;background:var(--card-bg);color:var(--ink);border:1px solid var(--line);padding:7px 9px;border-radius:var(--radius-ctrl);}
-  .jt-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
-  .jt-col{background:var(--paper-dim);border:1px solid var(--line);padding:14px;min-height:60px;border-radius:var(--radius-card);}
-  .jt-col h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0 0 8px;display:flex;justify-content:space-between;}
+  .jt-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:start;}
+  .jt-col{background:var(--paper-dim);border:1px solid var(--line);padding:14px;min-height:60px;max-height:600px;overflow-y:auto;border-radius:var(--radius-card);}
+  .jt-col h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0 0 8px;display:flex;justify-content:space-between;position:sticky;top:0;background:inherit;padding-top:2px;}
   .jt-card{background:var(--card-bg);border:1px solid var(--line);padding:12px 14px;margin-bottom:10px;font-size:14px;border-radius:var(--radius-ctrl);box-shadow:0 1px 2px rgba(32,30,29,.14);}
   .jt-card .co{font-family:var(--font-display);font-weight:600;font-size:15.5px;}
   .jt-card .role{color:var(--ink-soft);margin:2px 0 6px;}
@@ -308,13 +310,13 @@
         <div class="jt-sidebar-user" id="jt-mast-name-side">Tu nombre aquí</div>
       </div>
     </div>
-    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
     <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Pipeline</a>
-    <a href="#sec-red" data-target="sec-red"><i class="jt-ic">◍</i>Red de contactos</a>
     <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">☕</i>Reuniones</a>
+    <a href="#sec-red" data-target="sec-red"><i class="jt-ic">◍</i>Red de contactos</a>
     <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
     <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic">▦</i>Métricas</a>
+    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic">⊞</i>Portales</a>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
   </nav>
@@ -334,14 +336,6 @@
   </div>
 
   <div class="jt-module">
-<div class="jt-section-title" id="sec-perfil">Mi perfil</div>
-  <div class="jt-section-sub">Tus datos base, listos para reutilizar en cualquier postulación</div>
-  <div class="jt-profile" id="jt-profile-view"></div>
-
-  <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
-
-  </div>
-<div class="jt-module">
 <div class="jt-ticker" id="sec-hoy"><div class="jt-ticker-inner" id="jt-ticker-text"></div></div>
 
   <div class="jt-stats" id="jt-stats"></div>
@@ -409,6 +403,41 @@
 
   </div>
 <div class="jt-module">
+<div class="jt-section-title" id="sec-reuniones">Reuniones</div>
+  <div class="jt-section-sub">Cafés y conversaciones 1:1 — la vía más efectiva para encontrar trabajo</div>
+  <div class="jt-stat-callout">
+    <div class="row"><span class="num">85%</span><span class="lbl">de las vacantes se consiguen aprovechando la red de contactos</span></div>
+    <div class="row"><span class="num">81%</span><span class="lbl">encuentra empleo a través de su red de contactos</span></div>
+    <div class="row"><span class="num">60–70%</span><span class="lbl">de los puestos se cubren con candidatos referenciados, no por postulación abierta</span></div>
+    <div class="jt-stat-source">Fuentes: Meetwork 2024, RRHH Digital, Zumo de Empleo, Infobae — no existe una cifra única verificada de "cuántas reuniones necesitas", pero el patrón es consistente: más conversaciones 1:1 correlacionan con más oportunidades.</div>
+  </div>
+  <div class="jt-controls">
+    <button class="jt-addbtn" id="jt-toggle-meeting-form" type="button">+ Registrar reunión/café</button>
+  </div>
+  <div class="jt-form" id="jt-meeting-form" style="display:none;">
+    <select id="jt-meeting-contact"></select>
+    <input type="date" id="jt-meeting-fecha" />
+    <select id="jt-meeting-tipo">
+      <option value="Café">Café</option>
+      <option value="Llamada">Llamada</option>
+      <option value="Reunión formal">Reunión formal</option>
+      <option value="Evento">Evento</option>
+    </select>
+    <textarea id="jt-meeting-notas" placeholder="Notas: de qué hablaron, próximo paso..." style="grid-column:1/-1;"></textarea>
+    <div class="jt-err" id="jt-meeting-err">Elige un contacto y una fecha.</div>
+    <div class="jt-form-actions">
+      <button class="jt-btn-ghost" id="jt-meeting-cancel" type="button">Cancelar</button>
+      <button class="jt-btn-primary" id="jt-meeting-save" type="button">Guardar reunión</button>
+    </div>
+  </div>
+  <div class="jt-metric-highlights" style="margin-bottom:14px;">
+    <div class="jt-stat"><div class="jt-meeting-count" id="jt-meeting-count-month">0</div><div class="l">Reuniones este mes</div></div>
+    <div class="jt-stat"><div class="jt-meeting-count" id="jt-meeting-count-total">0</div><div class="l">Reuniones totales</div></div>
+  </div>
+  <div id="jt-meetings-list"></div>
+
+  </div>
+<div class="jt-module">
 <div class="jt-section-title" id="sec-red">Contactos</div>
   <div class="jt-section-sub">Tu red relevante para esta búsqueda</div>
   <div class="jt-controls">
@@ -447,41 +476,6 @@
 
   </div>
 <div class="jt-module">
-<div class="jt-section-title" id="sec-reuniones">Reuniones</div>
-  <div class="jt-section-sub">Cafés y conversaciones 1:1 — la vía más efectiva para encontrar trabajo</div>
-  <div class="jt-stat-callout">
-    <div class="row"><span class="num">85%</span><span class="lbl">de las vacantes se consiguen aprovechando la red de contactos</span></div>
-    <div class="row"><span class="num">81%</span><span class="lbl">encuentra empleo a través de su red de contactos</span></div>
-    <div class="row"><span class="num">60–70%</span><span class="lbl">de los puestos se cubren con candidatos referenciados, no por postulación abierta</span></div>
-    <div class="jt-stat-source">Fuentes: Meetwork 2024, RRHH Digital, Zumo de Empleo, Infobae — no existe una cifra única verificada de "cuántas reuniones necesitas", pero el patrón es consistente: más conversaciones 1:1 correlacionan con más oportunidades.</div>
-  </div>
-  <div class="jt-controls">
-    <button class="jt-addbtn" id="jt-toggle-meeting-form" type="button">+ Registrar reunión/café</button>
-  </div>
-  <div class="jt-form" id="jt-meeting-form" style="display:none;">
-    <select id="jt-meeting-contact"></select>
-    <input type="date" id="jt-meeting-fecha" />
-    <select id="jt-meeting-tipo">
-      <option value="Café">Café</option>
-      <option value="Llamada">Llamada</option>
-      <option value="Reunión formal">Reunión formal</option>
-      <option value="Evento">Evento</option>
-    </select>
-    <textarea id="jt-meeting-notas" placeholder="Notas: de qué hablaron, próximo paso..." style="grid-column:1/-1;"></textarea>
-    <div class="jt-err" id="jt-meeting-err">Elige un contacto y una fecha.</div>
-    <div class="jt-form-actions">
-      <button class="jt-btn-ghost" id="jt-meeting-cancel" type="button">Cancelar</button>
-      <button class="jt-btn-primary" id="jt-meeting-save" type="button">Guardar reunión</button>
-    </div>
-  </div>
-  <div class="jt-metric-highlights" style="margin-bottom:14px;">
-    <div class="jt-stat"><div class="jt-meeting-count" id="jt-meeting-count-month">0</div><div class="l">Reuniones este mes</div></div>
-    <div class="jt-stat"><div class="jt-meeting-count" id="jt-meeting-count-total">0</div><div class="l">Reuniones totales</div></div>
-  </div>
-  <div id="jt-meetings-list"></div>
-
-  </div>
-<div class="jt-module">
 <div class="jt-section-title" id="sec-match">Match CV</div>
   <div class="jt-section-sub">Compara tu perfil contra una vacante específica</div>
   <div class="jt-match">
@@ -499,6 +493,16 @@
     <div class="jt-hint" id="jt-metrics-caption" style="margin-bottom:10px;"></div>
     <div class="jt-metrics" id="jt-metrics-bars"></div>
     <div class="jt-metric-highlights" id="jt-metrics-highlights"></div>
+  </div>
+
+  </div>
+<div class="jt-module">
+<div class="jt-section-title jt-collapsible-title" id="sec-perfil"><span>Mi perfil</span><span class="jt-section-toggle" id="jt-profile-toggle-ic">Ver ▾</span></div>
+  <div id="jt-profile-section-body" style="display:none;">
+  <div class="jt-section-sub">Tus datos base, listos para reutilizar en cualquier postulación</div>
+  <div class="jt-profile" id="jt-profile-view"></div>
+
+  <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
   </div>
 
   </div>
@@ -2077,12 +2081,22 @@ function renderProfileEdit(){
   });
 }
 
+function setProfileSectionExpanded(expanded){
+  document.getElementById("jt-profile-section-body").style.display = expanded ? "block" : "none";
+  document.getElementById("jt-profile-toggle-ic").textContent = expanded ? "Ocultar ▴" : "Ver ▾";
+}
+
 function wireNav(){
   document.getElementById("jt-logout-btn").addEventListener("click", logout);
+  document.getElementById("sec-perfil").addEventListener("click", function(){
+    var expanded = document.getElementById("jt-profile-section-body").style.display !== "none";
+    setProfileSectionExpanded(!expanded);
+  });
   var links = document.querySelectorAll('.jt-nav a');
   links.forEach(function(link){
     link.addEventListener('click', function(e){
       e.preventDefault();
+      if(link.getAttribute('data-target') === 'sec-perfil'){ setProfileSectionExpanded(true); }
       var el = document.getElementById(link.getAttribute('data-target'));
       if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
     });
