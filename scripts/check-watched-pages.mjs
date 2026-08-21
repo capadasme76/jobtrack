@@ -17,6 +17,15 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   process.exit(1);
 }
 
+// Diagnóstico: confirma qué key quedó cargada sin exponerla — decodifica solo
+// el claim "role" del JWT (public por diseño, no es información sensible).
+try {
+  const payload = JSON.parse(Buffer.from(SERVICE_ROLE_KEY.split(".")[1], "base64").toString("utf8"));
+  console.log(`Key cargada con role: "${payload.role}" (debería decir "service_role")`);
+} catch (e) {
+  console.log("No se pudo decodificar el JWT de la key cargada — ¿es realmente una key de Supabase?");
+}
+
 const FETCH_TIMEOUT_MS = 15000;
 const DELAY_BETWEEN_FETCHES_MS = 500;
 const USER_AGENT = "JobTrackWatcher/1.0 (+https://jobtrack.cl; watches pages users opted into)";
