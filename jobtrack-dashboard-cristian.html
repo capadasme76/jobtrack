@@ -299,6 +299,8 @@
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <div class="jt-root">
 <div class="jt-app">
 
@@ -2035,11 +2037,121 @@ function renderProfile(){
   });
 }
 
+if(typeof pdfjsLib !== "undefined"){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+function extractTextFromPdf(file){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      pdfjsLib.getDocument({ data: e.target.result }).promise.then(function(pdf){
+        var pagePromises = [];
+        for(var i = 1; i <= pdf.numPages; i++){
+          pagePromises.push(pdf.getPage(i).then(function(page){
+            return page.getTextContent().then(function(tc){
+              return tc.items.map(function(it){ return it.str; }).join(" ");
+            });
+          }));
+        }
+        Promise.all(pagePromises).then(function(texts){ resolve(texts.join("\n")); }).catch(reject);
+      }).catch(reject);
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function extractTextFromDocx(file){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      mammoth.extractRawText({ arrayBuffer: e.target.result }).then(function(result){
+        resolve(result.value);
+      }).catch(reject);
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function extractCvAndFillForm(file){
+  var statusEl = document.getElementById("pe-cv-status");
+  statusEl.style.display = "block";
+  statusEl.style.color = "var(--ink-soft)";
+  statusEl.textContent = "Leyendo el archivo…";
+
+  var name = file.name.toLowerCase();
+  var cvText = "";
+  try{
+    if(name.endsWith(".pdf")){
+      cvText = await extractTextFromPdf(file);
+    } else if(name.endsWith(".docx")){
+      cvText = await extractTextFromDocx(file);
+    } else if(name.endsWith(".doc")){
+      statusEl.style.color = "var(--brick)";
+      statusEl.textContent = "Ese formato (.doc antiguo) no lo podemos leer — guárdalo como PDF o .docx e intenta de nuevo.";
+      return;
+    } else {
+      statusEl.style.color = "var(--brick)";
+      statusEl.textContent = "Formato no soportado — usa PDF o Word (.docx).";
+      return;
+    }
+  } catch(e){
+    statusEl.style.color = "var(--brick)";
+    statusEl.textContent = "No se pudo leer ese archivo. Intenta con otro.";
+    return;
+  }
+
+  if(!cvText || cvText.trim().length < 30){
+    statusEl.style.color = "var(--brick)";
+    statusEl.textContent = "No encontramos texto suficiente en ese archivo.";
+    return;
+  }
+
+  statusEl.textContent = "Analizando tu CV…";
+
+  try{
+    var sessionRes = await supabase.auth.getSession();
+    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+    var res = await fetch("/api/extract-cv", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + (token || "") },
+      body: JSON.stringify({ cvText: cvText })
+    });
+    var data = await res.json();
+    if(!res.ok){
+      statusEl.style.color = "var(--brick)";
+      statusEl.textContent = data.error || "No se pudo analizar el CV.";
+      return;
+    }
+
+    if(data.nombre) document.getElementById("pe-nombre").value = data.nombre;
+    if(data.tituloProfesional) document.getElementById("pe-titulo").value = data.tituloProfesional;
+    if(data.resumen) document.getElementById("pe-resumen").value = data.resumen;
+    if(data.habilidades && data.habilidades.length) document.getElementById("pe-habilidades").value = data.habilidades.join(", ");
+    if(data.experiencia && data.experiencia.length) document.getElementById("pe-experiencia").value = data.experiencia.join("\n");
+    if(data.formacion && data.formacion.length) document.getElementById("pe-formacion").value = data.formacion.join("\n");
+    if(data.linkedinUrl) document.getElementById("pe-li-url").value = data.linkedinUrl;
+
+    statusEl.style.color = "var(--teal)";
+    statusEl.textContent = "Listo — revisa los campos de abajo y corrige lo que haga falta antes de guardar.";
+  } catch(e){
+    statusEl.style.color = "var(--brick)";
+    statusEl.textContent = "Error de red al analizar el CV. Intenta de nuevo.";
+  }
+}
+
 function renderProfileEdit(){
   var p = state.profile;
   var edit = document.getElementById("jt-profile-edit");
   edit.innerHTML =
     '<div class="jt-profile-head"><h2>Editando perfil</h2></div>'
+    + '<div class="jt-pblock" style="background:var(--paper-dim);"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">¿Tienes tu CV a mano?</h3>'
+    + '<p class="jt-hint" style="margin:0 0 8px;">Súbelo en PDF o Word (.docx) y completamos estos campos por ti — igual puedes revisar y corregir todo antes de guardar.</p>'
+    + '<input type="file" id="pe-cv-file" accept=".pdf,.docx" />'
+    + '<div id="pe-cv-status" style="margin-top:8px;font-size:12.5px;display:none;"></div>'
+    + '</div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Tu nombre</h3><input class="wide" type="text" id="pe-nombre" value="'+esc(p.nombre||"")+'" /></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Título profesional (aparece en el encabezado)</h3><input class="wide" type="text" id="pe-titulo" value="'+esc(p.tituloProfesional||"")+'" /></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Resumen profesional</h3><textarea class="wide" id="pe-resumen">'+esc(p.resumen)+'</textarea></div>'
@@ -2054,6 +2166,10 @@ function renderProfileEdit(){
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Carta de presentación base</h3><textarea class="wide" id="pe-carta" style="min-height:160px;">'+esc(p.cartaBase)+'</textarea></div>'
     + '<div class="jt-edit-actions"><button class="jt-btn-mini" id="pe-cancel" type="button">Cancelar</button><button class="jt-btn-mini primary" id="pe-save" type="button">Guardar perfil</button></div>';
 
+  document.getElementById("pe-cv-file").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(file) extractCvAndFillForm(file);
+  });
   document.getElementById("pe-cancel").addEventListener("click", function(){
     document.getElementById("jt-profile-edit").style.display = "none";
     document.getElementById("jt-profile-view").style.display = "block";
