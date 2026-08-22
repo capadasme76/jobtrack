@@ -48,6 +48,10 @@
   .jt-login-field{margin-bottom:14px;}
   .jt-login-field input{width:100%;font-family:var(--font-body);font-size:14.5px;background:var(--paper);color:var(--ink);border:1px solid var(--line);padding:10px 11px;}
   .jt-login-field input:focus-visible{outline:2px solid var(--brick);outline-offset:1px;}
+  .jt-login-pw-wrap{position:relative;}
+  .jt-login-pw-wrap input{padding-right:60px;}
+  .jt-login-pw-toggle{position:absolute;right:0;top:0;bottom:0;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-faint);background:none;border:none;padding:0 11px;cursor:pointer;}
+  .jt-login-pw-toggle:hover{color:var(--ink-soft);}
   .jt-login-submit{width:100%;font-family:var(--font-body);font-weight:600;font-size:14.5px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:11px 16px;cursor:pointer;margin-top:4px;}
   .jt-login-submit:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
   .jt-login-submit:disabled{opacity:.6;cursor:default;}
@@ -85,7 +89,10 @@
       </div>
       <div class="jt-login-field">
         <label for="jt-login-password">Contraseña</label>
-        <input type="password" id="jt-login-password" autocomplete="current-password" required minlength="6" />
+        <div class="jt-login-pw-wrap">
+          <input type="password" id="jt-login-password" autocomplete="current-password" required minlength="6" />
+          <button type="button" class="jt-login-pw-toggle" id="jt-login-pw-toggle">Ver</button>
+        </div>
       </div>
       <p class="jt-login-legal" id="jt-login-legal" style="display:none;">Al crear tu cuenta aceptas los <a href="terminos.html" target="_blank">Términos y Condiciones</a> y la <a href="privacidad.html" target="_blank">Política de Privacidad</a>.</p>
       <button type="submit" class="jt-login-submit" id="jt-login-submit">Iniciar sesión</button>
@@ -119,6 +126,13 @@
   const sessionNotice = document.getElementById("jt-login-session-notice");
   const sessionText = document.getElementById("jt-login-session-text");
   const sessionSignoutBtn = document.getElementById("jt-login-session-signout");
+  const pwToggle = document.getElementById("jt-login-pw-toggle");
+
+  pwToggle.addEventListener("click", function(){
+    var showing = passwordInput.type === "text";
+    passwordInput.type = showing ? "password" : "text";
+    pwToggle.textContent = showing ? "Ver" : "Ocultar";
+  });
 
   function applyMode(){
     if(mode === "signup"){
