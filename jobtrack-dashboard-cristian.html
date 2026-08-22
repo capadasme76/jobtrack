@@ -632,10 +632,10 @@ var seedOpportunities = [
   {id:"op30",sector:"Financiero",priority:"Baja",empresa:"Santander Chile",cargo:"Gerente de Comunicaciones",renta:"$5M–$7M",status:"Por postular"},
   {id:"op31",sector:"Sector Público",priority:"Baja",empresa:"Corfo",cargo:"Jefe de Comunicaciones",renta:"$3M–$5M",status:"Por postular"},
   {id:"op32",sector:"Sector Público",priority:"Baja",empresa:"ProChile",cargo:"Director de Comunicaciones",renta:"$3M–$5M",status:"Por postular"},
-  {id:"op33",sector:"Financiero",priority:"Alta",empresa:"AFP Modelo",cargo:"Subgerente de comunicaciones y asuntos corporativos",renta:"No especificada",status:"Enviada",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). 38 contactos de tu red estudiaron en la misma institución.",link:"https://www.linkedin.com/comm/jobs/view/4447065901"},
-  {id:"op34",sector:"Retail",priority:"Alta",empresa:"Cencosud",cargo:"Jefe de Reputación Corporativo",renta:"No especificada",status:"Enviada",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). Empresa prioritaria de tu lista target. 4 contactos en tu red.",link:"https://www.linkedin.com/comm/jobs/view/4409143302"},
-  {id:"op35",sector:"Automotriz",priority:"Media",empresa:"Inchcape Américas",cargo:"Communications Lead - Americas",renta:"No especificada",status:"Enviada",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). 1 contacto en tu red.",link:"https://www.linkedin.com/comm/jobs/view/4437477664"},
-  {id:"op36",sector:"Automotriz",priority:"Media",empresa:"HRGROWIN",cargo:"Subgerente de Marketing Estratégico y Digital",renta:"No especificada",status:"Enviada",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). Multinacional automotriz. 2 personas de tu misma casa de estudios.",link:"https://www.linkedin.com/comm/jobs/view/4440186729"}
+  {id:"op33",sector:"Financiero",priority:"Alta",empresa:"AFP Modelo",cargo:"Subgerente de comunicaciones y asuntos corporativos",renta:"No especificada",status:"Contactado",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). 38 contactos de tu red estudiaron en la misma institución.",link:"https://www.linkedin.com/comm/jobs/view/4447065901"},
+  {id:"op34",sector:"Retail",priority:"Alta",empresa:"Cencosud",cargo:"Jefe de Reputación Corporativo",renta:"No especificada",status:"Contactado",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). Empresa prioritaria de tu lista target. 4 contactos en tu red.",link:"https://www.linkedin.com/comm/jobs/view/4409143302"},
+  {id:"op35",sector:"Automotriz",priority:"Media",empresa:"Inchcape Américas",cargo:"Communications Lead - Americas",renta:"No especificada",status:"Contactado",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). 1 contacto en tu red.",link:"https://www.linkedin.com/comm/jobs/view/4437477664"},
+  {id:"op36",sector:"Automotriz",priority:"Media",empresa:"HRGROWIN",cargo:"Subgerente de Marketing Estratégico y Digital",renta:"No especificada",status:"Contactado",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Postulado vía LinkedIn (alerta de correo). Multinacional automotriz. 2 personas de tu misma casa de estudios.",link:"https://www.linkedin.com/comm/jobs/view/4440186729"}
 ];
 
 var seedDispatches = [
@@ -762,6 +762,12 @@ async function loadState(){
     if(row && row.data){
       var parsed = row.data;
       if(parsed.opportunities) state.opportunities = parsed.opportunities;
+      // Migración: "Enviada" no era una etapa válida del Pipeline (ver STATUSES) —
+      // cualquier oportunidad que haya quedado con ese estado no se mostraba en
+      // ninguna columna. Se corrige sola a "Contactado" al cargar.
+      state.opportunities.forEach(function(o){
+        if(o.status === "Enviada") o.status = "Contactado";
+      });
       if(parsed.networking) state.networking = parsed.networking;
       if(parsed.dispatches) state.dispatches = parsed.dispatches;
       if(parsed.watchedPages) state.watchedPages = parsed.watchedPages;
@@ -889,7 +895,7 @@ function renderDispatches(){
       var priority = getPriorityFor(d.id, d.type === "verified" ? "Alta" : "Media");
       var tracked = findTrackedOpp(d);
       if(tracked){
-        tracked.status = "Enviada";
+        tracked.status = "Contactado";
         tracked.priority = priority;
         tracked.fechaContacto = new Date().toISOString();
       } else {
@@ -900,7 +906,7 @@ function renderDispatches(){
           empresa: d.empresa || d.headline,
           cargo: d.headline,
           renta: "No especificada",
-          status: "Enviada",
+          status: "Contactado",
           fechaContacto: new Date().toISOString(),
           link: d.link,
           notas: "Marcado como postulado desde Despachos del día."
