@@ -112,6 +112,8 @@
   select,input[type=text]{font-family:var(--font-mono);font-size:13px;background:var(--card-bg);color:var(--ink);border:1px solid var(--line);padding:7px 9px;border-radius:var(--radius-ctrl);}
   .jt-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:start;}
   .jt-col{background:var(--paper-dim);border:1px solid var(--line);padding:14px;min-height:60px;max-height:600px;overflow-y:auto;border-radius:var(--radius-card);}
+  .jt-col-empty{min-height:0;padding-bottom:10px;opacity:.7;}
+  .jt-col-empty h3{margin-bottom:0;}
   .jt-col h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0 0 8px;display:flex;justify-content:space-between;position:sticky;top:0;background:inherit;padding-top:2px;}
   .jt-card{background:var(--card-bg);border:1px solid var(--line);padding:12px 14px;margin-bottom:10px;font-size:14px;border-radius:var(--radius-ctrl);box-shadow:0 1px 2px rgba(32,30,29,.14);}
   .jt-card .co{font-family:var(--font-display);font-weight:600;font-size:15.5px;}
@@ -314,9 +316,9 @@
     </div>
     <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
     <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Pipeline</a>
+    <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
     <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">☕</i>Reuniones</a>
     <a href="#sec-red" data-target="sec-red"><i class="jt-ic">◍</i>Red de contactos</a>
-    <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
     <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic">▦</i>Métricas</a>
     <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic">⊞</i>Portales</a>
@@ -405,6 +407,17 @@
 
   </div>
 <div class="jt-module">
+<div class="jt-section-title" id="sec-match">Match CV</div>
+  <div class="jt-section-sub">Compara tu perfil contra una vacante específica</div>
+  <div class="jt-match">
+    <p class="jt-lead">Pega una vacante y compara contra tu perfil.</p>
+    <textarea id="jt-match-input" placeholder="Pega aquí la descripción completa de la vacante..."></textarea>
+    <div style="margin-top:10px;"><button class="jt-btn-primary" id="jt-match-btn" type="button">Analizar match</button></div>
+    <div class="jt-match-result" id="jt-match-result"></div>
+  </div>
+
+  </div>
+<div class="jt-module">
 <div class="jt-section-title" id="sec-reuniones">Reuniones</div>
   <div class="jt-section-sub">Cafés y conversaciones 1:1 — la vía más efectiva para encontrar trabajo</div>
   <div class="jt-stat-callout">
@@ -474,17 +487,6 @@
   <div class="jt-net">
     <div class="jt-net-row head"><div>Nombre</div><div>Empresa</div><div>Región</div><div>Tier</div><div>Últ. reunión</div><div>Relación</div><div>Acciones</div></div>
     <div id="jt-net-body"></div>
-  </div>
-
-  </div>
-<div class="jt-module">
-<div class="jt-section-title" id="sec-match">Match CV</div>
-  <div class="jt-section-sub">Compara tu perfil contra una vacante específica</div>
-  <div class="jt-match">
-    <p class="jt-lead">Pega una vacante y compara contra tu perfil.</p>
-    <textarea id="jt-match-input" placeholder="Pega aquí la descripción completa de la vacante..."></textarea>
-    <div style="margin-top:10px;"><button class="jt-btn-primary" id="jt-match-btn" type="button">Analizar match</button></div>
-    <div class="jt-match-result" id="jt-match-result"></div>
   </div>
 
   </div>
@@ -979,8 +981,8 @@ function renderBoard(){
   var html = "";
   cols.forEach(function(col){
     var items = filtered.filter(function(o){ return o.status===col; });
-    html += '<div class="jt-col"><h3>'+esc(col)+'<span>'+items.length+'</span></h3>';
-    if(items.length===0){ html += '<div class="jt-empty">Sin oportunidades</div>'; }
+    var isEmpty = items.length === 0;
+    html += '<div class="jt-col'+(isEmpty?' jt-col-empty':'')+'"><h3>'+esc(col)+'<span>'+items.length+'</span></h3>';
     items.forEach(function(o){
       if(editingOppId === o.id){
         var contactOptions = '<option value="">Sin contacto vinculado</option>' + state.networking.map(function(n){
