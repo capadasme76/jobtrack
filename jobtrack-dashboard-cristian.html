@@ -183,6 +183,12 @@
   .jt-onboarding-item.done .jt-onboarding-label{color:var(--ink-faint);text-decoration:line-through;}
   .jt-onboarding-label{font-size:13.5px;font-weight:600;}
   .jt-onboarding-hint{font-size:12px;color:var(--ink-soft);margin-top:1px;}
+  .jt-guide-steps{display:flex;flex-direction:column;gap:10px;}
+  .jt-guide-step{display:flex;gap:12px;background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:14px 16px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-guide-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--brick);color:#fff;font-family:var(--font-mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .jt-guide-body{flex:1;min-width:0;}
+  .jt-guide-body h4{font-family:var(--font-display);font-size:14.5px;font-weight:700;margin:0 0 3px;}
+  .jt-guide-body p{font-size:13px;color:var(--ink-soft);margin:0 0 8px;line-height:1.45;}
   .jt-profile{background:var(--card-bg);border:1px solid var(--line);padding:24px;margin-bottom:6px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);}
   .jt-profile-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
   .jt-profile-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:24px;align-items:start;}
@@ -335,6 +341,7 @@
     <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic">▦</i>Métricas</a>
     <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic">⊞</i>Portales</a>
+    <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic">?</i>Guía</a>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
   </nav>
 
@@ -574,6 +581,78 @@
   </div>
 
   </div>
+
+<div class="jt-module">
+<div class="jt-section-title" id="sec-guia">Guía</div>
+  <p class="jt-lead">Cómo usar JobTrack, paso a paso.</p>
+  <div class="jt-guide-steps">
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">1</div>
+      <div class="jt-guide-body">
+        <h4>Completa tu perfil</h4>
+        <p>En "Mi perfil" puedes subir tu CV (PDF o Word) para que la IA rellene tus datos automáticamente, o escribirlos a mano. Es la base para el Match CV y para generar tu carta de presentación.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-perfil" data-target="sec-perfil">Ir a Mi perfil</a>
+      </div>
+    </div>
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">2</div>
+      <div class="jt-guide-body">
+        <h4>Agrega tus oportunidades al Pipeline</h4>
+        <p>Cada vacante que te interesa se guarda como una tarjeta — solo el link es obligatorio. Arrástrala entre columnas (Por postular, Contactado, Entrevista, etc.) a medida que avanza el proceso.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-pipeline" data-target="sec-pipeline">Ir a Pipeline</a>
+      </div>
+    </div>
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">3</div>
+      <div class="jt-guide-body">
+        <h4>Usa Match CV antes de postular</h4>
+        <p>Pega el texto de una oferta y compáralo con tu perfil para ver qué tan buen candidato eres y qué ajustar antes de enviar tu postulación.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-match" data-target="sec-match">Ir a Match CV</a>
+      </div>
+    </div>
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">4</div>
+      <div class="jt-guide-body">
+        <h4>Registra tu red de contactos</h4>
+        <p>Guarda a las personas que te pueden ayudar — ex colegas, headhunters, referidos — y el estado de la relación con cada una.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-red" data-target="sec-red">Ir a Contactos</a>
+      </div>
+    </div>
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">5</div>
+      <div class="jt-guide-body">
+        <h4>Anota tus reuniones</h4>
+        <p>Entrevistas, cafés y llamadas de networking quedan todas en un solo lugar, con fecha y notas.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-reuniones" data-target="sec-reuniones">Ir a Reuniones</a>
+      </div>
+    </div>
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">6</div>
+      <div class="jt-guide-body">
+        <h4>Revisa tus métricas</h4>
+        <p>Muestra en qué etapa se estancan tus postulaciones, para ajustar tu estrategia de búsqueda.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-metricas" data-target="sec-metricas">Ir a Métricas</a>
+      </div>
+    </div>
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">7</div>
+      <div class="jt-guide-body">
+        <h4>Explora Portales</h4>
+        <p>Links directos a los principales sitios de empleo en Chile — generalistas, Estado, headhunters y sectoriales.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-portales" data-target="sec-portales">Ir a Portales</a>
+      </div>
+    </div>
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">8</div>
+      <div class="jt-guide-body">
+        <h4>Revisa "Hoy" cada vez que entres</h4>
+        <p>Es tu resumen diario: tus estadísticas y avisos cuando una empresa que sigues publica algo nuevo en su página de trabajos.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-hoy" data-target="sec-hoy">Ir a Hoy</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="jt-save" id="jt-save-status"></div>
 </div>
 </main>
@@ -2302,6 +2381,15 @@ function wireNav(){
   }
   window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
+  document.querySelectorAll('.jt-guide-link').forEach(function(link){
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      var target = link.getAttribute('data-target');
+      if(target === 'sec-perfil'){ setProfileSectionExpanded(true); }
+      var el = document.getElementById(target);
+      if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+    });
+  });
 }
 
 document.getElementById("jt-match-btn").addEventListener("click", runMatchAnalysis);
