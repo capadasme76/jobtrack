@@ -185,6 +185,8 @@
   .jt-onboarding-progress{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);}
   .jt-onboarding-head .jt-btn-mini{margin-left:auto;}
   .jt-onboarding-list{display:flex;flex-direction:column;gap:2px;}
+  .jt-onboarding-guide-link{display:block;text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);text-decoration:none;padding-top:10px;margin-top:6px;border-top:1px dashed var(--line);}
+  .jt-onboarding-guide-link:hover{color:var(--brick);}
   .jt-onboarding-item{display:flex;align-items:flex-start;gap:10px;padding:8px 6px;cursor:pointer;border-radius:var(--radius-ctrl);}
   .jt-onboarding-item:hover{background:var(--paper-dim);}
   .jt-onboarding-check{flex-shrink:0;width:18px;height:18px;border:1.5px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--teal);margin-top:1px;}
@@ -193,10 +195,16 @@
   .jt-onboarding-label{font-size:13.5px;font-weight:600;}
   .jt-onboarding-hint{font-size:12px;color:var(--ink-soft);margin-top:1px;}
   .jt-guide-steps{display:flex;flex-direction:column;gap:10px;}
-  .jt-guide-step{display:flex;gap:12px;background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:14px 16px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
-  .jt-guide-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--brick);color:#fff;font-family:var(--font-mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:1px;}
-  .jt-guide-body{flex:1;min-width:0;}
-  .jt-guide-body h4{font-family:var(--font-display);font-size:14.5px;font-weight:700;margin:0 0 3px;}
+  .jt-guide-step{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:0;box-shadow:0 1px 2px rgba(32,30,29,.14);overflow:hidden;}
+  .jt-guide-summary{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;list-style:none;}
+  .jt-guide-summary::-webkit-details-marker{display:none;}
+  .jt-guide-summary::after{content:"▾";margin-left:auto;color:var(--ink-faint);font-size:12px;transition:transform .15s;flex-shrink:0;}
+  .jt-guide-step[open] .jt-guide-summary::after{transform:rotate(180deg);}
+  .jt-guide-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--brick);color:#fff;font-family:var(--font-mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .jt-guide-step.done .jt-guide-num{background:var(--teal);}
+  .jt-guide-title{font-family:var(--font-display);font-size:14.5px;font-weight:700;}
+  .jt-guide-step.done .jt-guide-title::after{content:" ✓";color:var(--teal-dark,var(--teal));font-weight:700;}
+  .jt-guide-body{padding:0 16px 16px 54px;}
   .jt-guide-body p{font-size:13px;color:var(--ink-soft);margin:0 0 8px;line-height:1.45;}
   .jt-profile{background:var(--card-bg);border:1px solid var(--line);padding:24px;margin-bottom:6px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);}
   .jt-profile-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
@@ -401,6 +409,7 @@
       <button class="jt-btn-mini" id="jt-onboarding-dismiss" type="button">Ocultar</button>
     </div>
     <div class="jt-onboarding-list" id="jt-onboarding-list"></div>
+    <a class="jt-onboarding-guide-link jt-guide-link" href="#sec-guia" data-target="sec-guia">Ver la guía completa →</a>
   </div>
 
   <div class="jt-module">
@@ -643,70 +652,62 @@
 <div class="jt-section-title" id="sec-guia">Guía</div>
   <p class="jt-lead">Cómo usar JobTrack, paso a paso.</p>
   <div class="jt-guide-steps">
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">1</div>
+    <details class="jt-guide-step" name="jt-guide-group" open>
+      <summary class="jt-guide-summary"><span class="jt-guide-num">1</span><span class="jt-guide-title">Empieza cada día por "Hoy"</span></summary>
       <div class="jt-guide-body">
-        <h4>Empieza cada día por "Hoy"</h4>
         <p>Es tu resumen diario: tus estadísticas y avisos cuando una empresa que sigues publica algo nuevo en su página de trabajos.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-hoy" data-target="sec-hoy">Ir a Hoy</a>
       </div>
-    </div>
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">2</div>
+    </details>
+    <details class="jt-guide-step" name="jt-guide-group">
+      <summary class="jt-guide-summary"><span class="jt-guide-num">2</span><span class="jt-guide-title">Completa tu perfil</span></summary>
       <div class="jt-guide-body">
-        <h4>Completa tu perfil</h4>
         <p>En "Mi perfil" puedes subir tu CV (PDF o Word) para que la IA rellene tus datos automáticamente, o escribirlos a mano. Es la base para el Match CV y para generar tu carta de presentación.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-perfil" data-target="sec-perfil">Ir a Mi perfil</a>
       </div>
-    </div>
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">3</div>
+    </details>
+    <details class="jt-guide-step" name="jt-guide-group">
+      <summary class="jt-guide-summary"><span class="jt-guide-num">3</span><span class="jt-guide-title">Agrega tus oportunidades al Pipeline</span></summary>
       <div class="jt-guide-body">
-        <h4>Agrega tus oportunidades al Pipeline</h4>
         <p>Cada vacante que te interesa se guarda como una tarjeta — solo el link es obligatorio. Arrástrala entre columnas (Por postular, Contactado, Entrevista, etc.) a medida que avanza el proceso.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-pipeline" data-target="sec-pipeline">Ir a Pipeline</a>
       </div>
-    </div>
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">4</div>
+    </details>
+    <details class="jt-guide-step" name="jt-guide-group">
+      <summary class="jt-guide-summary"><span class="jt-guide-num">4</span><span class="jt-guide-title">Usa Match CV antes de postular</span></summary>
       <div class="jt-guide-body">
-        <h4>Usa Match CV antes de postular</h4>
         <p>Pega el texto de una oferta y compáralo con tu perfil para ver qué tan buen candidato eres y qué ajustar antes de enviar tu postulación.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-match" data-target="sec-match">Ir a Match CV</a>
       </div>
-    </div>
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">5</div>
+    </details>
+    <details class="jt-guide-step" name="jt-guide-group">
+      <summary class="jt-guide-summary"><span class="jt-guide-num">5</span><span class="jt-guide-title">Anota tus reuniones</span></summary>
       <div class="jt-guide-body">
-        <h4>Anota tus reuniones</h4>
         <p>Entrevistas, cafés y llamadas de networking quedan todas en un solo lugar, con fecha y notas.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-reuniones" data-target="sec-reuniones">Ir a Reuniones</a>
       </div>
-    </div>
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">6</div>
+    </details>
+    <details class="jt-guide-step" name="jt-guide-group">
+      <summary class="jt-guide-summary"><span class="jt-guide-num">6</span><span class="jt-guide-title">Registra tu red de contactos</span></summary>
       <div class="jt-guide-body">
-        <h4>Registra tu red de contactos</h4>
         <p>Guarda a las personas que te pueden ayudar — ex colegas, headhunters, referidos — y el estado de la relación con cada una.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-red" data-target="sec-red">Ir a Mis contactos</a>
       </div>
-    </div>
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">7</div>
+    </details>
+    <details class="jt-guide-step" name="jt-guide-group">
+      <summary class="jt-guide-summary"><span class="jt-guide-num">7</span><span class="jt-guide-title">Revisa tus métricas</span></summary>
       <div class="jt-guide-body">
-        <h4>Revisa tus métricas</h4>
         <p>Muestra en qué etapa se estancan tus postulaciones, para ajustar tu estrategia de búsqueda.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-metricas" data-target="sec-metricas">Ir a Métricas</a>
       </div>
-    </div>
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">8</div>
+    </details>
+    <details class="jt-guide-step" name="jt-guide-group">
+      <summary class="jt-guide-summary"><span class="jt-guide-num">8</span><span class="jt-guide-title">Explora Portales</span></summary>
       <div class="jt-guide-body">
-        <h4>Explora Portales</h4>
         <p>Links directos a los principales sitios de empleo en Chile — generalistas, Estado, headhunters y sectoriales.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-portales" data-target="sec-portales">Ir a Portales</a>
       </div>
-    </div>
+    </details>
   </div>
 </div>
 
@@ -1739,11 +1740,24 @@ var ONBOARDING_STEPS = [
   { key: "meeting", label: "Registra tu primera reunión o café", hint: "Lleva el hilo de cada conversación 1:1 de tu búsqueda.", target: "sec-reuniones" }
 ];
 
+function renderGuideProgress(){
+  var ob = state.onboarding || {};
+  var targetToKey = {};
+  ONBOARDING_STEPS.forEach(function(s){ targetToKey[s.target] = s.key; });
+  document.querySelectorAll(".jt-guide-step").forEach(function(step){
+    var link = step.querySelector(".jt-guide-link");
+    var key = link ? targetToKey[link.getAttribute("data-target")] : null;
+    if(!key) return;
+    step.classList.toggle("done", !!ob[key]);
+  });
+}
+
 function renderOnboarding(){
   var card = document.getElementById("jt-onboarding-card");
   var ob = state.onboarding || {};
   var doneCount = ONBOARDING_STEPS.filter(function(s){ return ob[s.key]; }).length;
   var allDone = doneCount === ONBOARDING_STEPS.length;
+  renderGuideProgress();
   if(state.onboardingDismissed || allDone){
     card.style.display = "none";
     return;
