@@ -56,6 +56,7 @@
   .jt-root{font-family:var(--font-body);color:var(--ink);background:var(--paper);padding:0;}
   .jt-app{display:flex;min-height:100vh;align-items:flex-start;}
   .jt-sidebar{width:236px;flex-shrink:0;background:var(--card-bg);border-right:1px solid var(--line);padding:22px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+  .jt-nav-wrap{display:contents;}
   .jt-sidebar-brand{display:flex;align-items:center;gap:10px;padding:4px 10px 20px;}
   .jt-sidebar-logo{width:34px;height:34px;border-radius:0;background:var(--brick);color:#fff;font-family:var(--font-display);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .jt-sidebar-title{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink);}
@@ -88,8 +89,9 @@
   .jt-section-toggle{font-family:var(--font-mono);font-size:14px;color:var(--ink-faint);}
   .jt-section-sub{font-family:var(--font-body);font-size:12.5px;color:var(--ink-faint);margin-bottom:16px;}
   .jt-lead{font-size:13px;color:var(--ink-faint);margin:0 0 12px;}
-  .jt-hint{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-faint);cursor:help;}
+  .jt-hint{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-faint);cursor:pointer;}
   .jt-hint-ic{width:14px;height:14px;border-radius:50%;border:1px solid var(--ink-faint);font-size:9.5px;display:inline-flex;align-items:center;justify-content:center;}
+  .jt-hint-detail{font-size:12px;color:var(--ink-soft);background:var(--paper-dim);border:1px solid var(--line);border-radius:var(--radius-ctrl);padding:7px 10px;margin-top:4px;max-width:440px;}
   .jt-dispatches{display:flex;flex-direction:column;gap:10px;}
   .jt-dispatch{background:var(--card-bg);border-left:4px solid var(--brick);padding:14px 18px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;border-radius:0 var(--radius-card) var(--radius-card) 0;box-shadow:0 1px 2px rgba(32,30,29,.14);}
   .jt-dispatch.verify{border-left-color:var(--brass);}
@@ -150,7 +152,9 @@
   .jt-err{grid-column:1/-1;font-family:var(--font-mono);font-size:13px;color:var(--brick);display:none;}
   .jt-del{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;margin-left:8px;}
   .jt-del:hover{color:var(--brick);}
-  .jt-legend{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);margin-bottom:10px;display:flex;gap:16px;flex-wrap:wrap;}
+  .jt-legend{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);margin-bottom:14px;display:flex;flex-direction:column;gap:5px;}
+  .jt-legend-item{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;}
+  .jt-legend-item b{white-space:nowrap;color:var(--ink-soft);}
   .jt-legend b{color:var(--ink-soft);}
   .jt-followup{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border:1px solid var(--line);color:var(--ink-faint);margin-left:6px;border-radius:var(--radius-pill);}
   .jt-followup.due{border-color:var(--brick);color:var(--brick);}
@@ -296,10 +300,21 @@
     .jt-sidebar a{white-space:nowrap;padding:8px 12px;}
     .jt-sidebar::-webkit-scrollbar{display:none;}
     .jt-nav::-webkit-scrollbar{display:none;}
+    .jt-nav-wrap{display:block;position:relative;}
+    .jt-nav-wrap::after{
+      content:"›";
+      position:absolute;top:0;right:0;bottom:0;width:32px;
+      display:flex;align-items:center;justify-content:flex-end;padding-right:4px;
+      font-size:20px;line-height:1;color:var(--ink-faint);
+      background:linear-gradient(to right, transparent, var(--card-bg) 60%);
+      pointer-events:none;transition:opacity .15s;
+    }
+    .jt-nav-wrap.at-end::after{opacity:0;}
     .jt-profile{padding:14px;}
     .jt-dispatch{flex-direction:column;align-items:stretch;}
     .jt-dispatch-actions{flex-direction:row;align-items:center;justify-content:flex-start;}
     .jt-board{grid-template-columns:1fr;}
+    .jt-col{max-height:none;overflow-y:visible;}
     .jt-net-row{grid-template-columns:1fr;gap:2px;padding:10px;}
     .jt-net-row.head{display:none;}
     .jt-net-row:not(.head){border:1px solid var(--line);border-radius:var(--radius-ctrl);margin-bottom:8px;}
@@ -311,6 +326,7 @@
     .jt-search{min-width:0;}
     .jt-io-row{flex-direction:column;align-items:stretch;}
     .jt-stats{grid-template-columns:repeat(2,1fr);}
+    .jt-stats .jt-stat:last-child{grid-column:1/-1;}
     .jt-profile-head{flex-direction:column;align-items:stretch;gap:8px;}
     .jt-profile-head h2{word-break:break-word;}
     .jt-profile-grid{grid-template-columns:1fr;}
@@ -325,6 +341,7 @@
 <div class="jt-root">
 <div class="jt-app">
 
+  <div class="jt-nav-wrap" id="jt-nav-wrap">
   <nav class="jt-sidebar jt-nav" id="jt-nav">
     <div class="jt-sidebar-brand">
       <div class="jt-sidebar-logo">JT</div>
@@ -344,6 +361,7 @@
     <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic">?</i>Guía</a>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
   </nav>
+  </div>
 
   <main class="jt-main">
   <div class="jt-container">
@@ -371,7 +389,11 @@
 
   <div class="jt-section-title">Hoy</div>
   <div class="jt-section-sub">Tus oportunidades más urgentes de hoy</div>
-  <div class="jt-legend"><b>🟤 oferta verificada:</b> aviso específico en portal de empleo, listo para postular · <b>🟡 verificar tú:</b> portal correcto pero sin link al aviso puntual · <b>🟢 señal:</b> noticia o movimiento ejecutivo — networking, no postular</div>
+  <div class="jt-legend">
+    <div class="jt-legend-item"><b>🟤 Oferta verificada</b><span>aviso específico en portal de empleo, listo para postular</span></div>
+    <div class="jt-legend-item"><b>🟡 Verificar tú</b><span>portal correcto pero sin link al aviso puntual</span></div>
+    <div class="jt-legend-item"><b>🟢 Señal</b><span>noticia o movimiento ejecutivo — networking, no postular</span></div>
+  </div>
   <div class="jt-dispatches" id="jt-dispatches"></div>
 
   </div>
@@ -379,11 +401,8 @@
 <div class="jt-module">
 <div class="jt-section-title" id="sec-pipeline">Pipeline</div>
   <div class="jt-section-sub">Todas tus postulaciones organizadas por etapa</div>
-  <div class="jt-io-row">
-    <button class="jt-addbtn secondary" id="jt-export-btn" type="button">⇩ Exportar a Excel</button>
-    <button class="jt-addbtn secondary" id="jt-import-btn" type="button">⇧ Importar Excel</button>
-    <input type="file" id="jt-import-file" accept=".xlsx,.xls" style="display:none;" />
-    <div class="jt-hint" title="Incluye 3 hojas: Perfil, Oportunidades y Networking. No reemplaza tu Excel de 7 pestañas.">Respaldo del pipeline <span class="jt-hint-ic">?</span></div>
+  <div class="jt-controls">
+    <button class="jt-addbtn" id="jt-toggle-opp-form" type="button">+ Agregar oportunidad</button>
   </div>
   <div class="jt-controls">
     <input type="text" id="jt-search" class="jt-search" placeholder="Buscar por empresa o cargo..." />
@@ -407,7 +426,6 @@
       <option value="porvencer">Por vencer (≤3 días)</option>
       <option value="incompletas">Incompletas</option>
     </select>
-    <button class="jt-addbtn" id="jt-toggle-opp-form" type="button">+ Agregar oportunidad</button>
   </div>
   <div class="jt-form" id="jt-opp-form" style="display:none;">
     <input type="text" id="jt-opp-link" placeholder="Link del aviso (obligatorio) — para postular" style="grid-column:1/-1;" />
@@ -430,12 +448,24 @@
   </div>
   <div class="jt-board" id="jt-board"></div>
 
+  <div class="jt-io-row" style="margin-top:16px;">
+    <button class="jt-addbtn secondary" id="jt-export-btn" type="button">⇩ Exportar a Excel</button>
+    <button class="jt-addbtn secondary" id="jt-import-btn" type="button">⇧ Importar Excel</button>
+    <input type="file" id="jt-import-file" accept=".xlsx,.xls" style="display:none;" />
+    <div class="jt-hint" title="Incluye 3 hojas: Perfil, Oportunidades y Networking. No reemplaza tu Excel de 7 pestañas.">Respaldo del pipeline <span class="jt-hint-ic">?</span></div>
+  </div>
+
   </div>
 <div class="jt-module">
 <div class="jt-section-title" id="sec-match">Match CV</div>
   <div class="jt-section-sub">Compara tu perfil contra una vacante específica</div>
   <div class="jt-match">
     <p class="jt-lead">Pega una vacante y compara contra tu perfil.</p>
+    <div class="jt-stat-callout" style="border-left-color:var(--brick);">
+      <div class="row"><span class="lbl">✓ Cuánto de la vacante ya cubres, con tus propias habilidades</span></div>
+      <div class="row"><span class="lbl">✓ Qué te falta, para saber qué ajustar antes de postular</span></div>
+      <div class="row"><span class="lbl">✓ Una carta de presentación generada para esa vacante específica</span></div>
+    </div>
     <textarea id="jt-match-input" placeholder="Pega aquí la descripción completa de la vacante..."></textarea>
     <div style="margin-top:10px;"><button class="jt-btn-primary" id="jt-match-btn" type="button">Analizar match</button></div>
     <div class="jt-match-result" id="jt-match-result"></div>
@@ -485,6 +515,9 @@
     <button class="jt-addbtn secondary" id="jt-net-template-btn" type="button">⇩ Descargar plantilla Excel</button>
     <button class="jt-addbtn secondary" id="jt-net-import-btn" type="button">⇧ Importar contactos</button>
     <input type="file" id="jt-net-import-file" accept=".xlsx,.xls" style="display:none;" />
+  </div>
+  <div class="jt-controls">
+    <input type="text" id="jt-net-search" class="jt-search" placeholder="Buscar por nombre o empresa..." />
   </div>
   <div class="jt-hint" title="Descarga, completa en Excel o Drive, y súbela con Importar. No toca tu pipeline." style="margin-bottom:10px;">Cómo funciona <span class="jt-hint-ic">?</span></div>
   <div class="jt-form" id="jt-net-form" style="display:none;">
@@ -589,9 +622,9 @@
     <div class="jt-guide-step">
       <div class="jt-guide-num">1</div>
       <div class="jt-guide-body">
-        <h4>Completa tu perfil</h4>
-        <p>En "Mi perfil" puedes subir tu CV (PDF o Word) para que la IA rellene tus datos automáticamente, o escribirlos a mano. Es la base para el Match CV y para generar tu carta de presentación.</p>
-        <a class="jt-btn-mini jt-guide-link" href="#sec-perfil" data-target="sec-perfil">Ir a Mi perfil</a>
+        <h4>Empieza cada día por "Hoy"</h4>
+        <p>Es tu resumen diario: tus estadísticas y avisos cuando una empresa que sigues publica algo nuevo en su página de trabajos.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-hoy" data-target="sec-hoy">Ir a Hoy</a>
       </div>
     </div>
     <div class="jt-guide-step">
@@ -613,17 +646,17 @@
     <div class="jt-guide-step">
       <div class="jt-guide-num">4</div>
       <div class="jt-guide-body">
-        <h4>Registra tu red de contactos</h4>
-        <p>Guarda a las personas que te pueden ayudar — ex colegas, headhunters, referidos — y el estado de la relación con cada una.</p>
-        <a class="jt-btn-mini jt-guide-link" href="#sec-red" data-target="sec-red">Ir a Contactos</a>
+        <h4>Anota tus reuniones</h4>
+        <p>Entrevistas, cafés y llamadas de networking quedan todas en un solo lugar, con fecha y notas.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-reuniones" data-target="sec-reuniones">Ir a Reuniones</a>
       </div>
     </div>
     <div class="jt-guide-step">
       <div class="jt-guide-num">5</div>
       <div class="jt-guide-body">
-        <h4>Anota tus reuniones</h4>
-        <p>Entrevistas, cafés y llamadas de networking quedan todas en un solo lugar, con fecha y notas.</p>
-        <a class="jt-btn-mini jt-guide-link" href="#sec-reuniones" data-target="sec-reuniones">Ir a Reuniones</a>
+        <h4>Registra tu red de contactos</h4>
+        <p>Guarda a las personas que te pueden ayudar — ex colegas, headhunters, referidos — y el estado de la relación con cada una.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-red" data-target="sec-red">Ir a Contactos</a>
       </div>
     </div>
     <div class="jt-guide-step">
@@ -637,17 +670,17 @@
     <div class="jt-guide-step">
       <div class="jt-guide-num">7</div>
       <div class="jt-guide-body">
-        <h4>Explora Portales</h4>
-        <p>Links directos a los principales sitios de empleo en Chile — generalistas, Estado, headhunters y sectoriales.</p>
-        <a class="jt-btn-mini jt-guide-link" href="#sec-portales" data-target="sec-portales">Ir a Portales</a>
+        <h4>Completa tu perfil</h4>
+        <p>En "Mi perfil" puedes subir tu CV (PDF o Word) para que la IA rellene tus datos automáticamente, o escribirlos a mano. Es la base para el Match CV y para generar tu carta de presentación.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-perfil" data-target="sec-perfil">Ir a Mi perfil</a>
       </div>
     </div>
     <div class="jt-guide-step">
       <div class="jt-guide-num">8</div>
       <div class="jt-guide-body">
-        <h4>Revisa "Hoy" cada vez que entres</h4>
-        <p>Es tu resumen diario: tus estadísticas y avisos cuando una empresa que sigues publica algo nuevo en su página de trabajos.</p>
-        <a class="jt-btn-mini jt-guide-link" href="#sec-hoy" data-target="sec-hoy">Ir a Hoy</a>
+        <h4>Explora Portales</h4>
+        <p>Links directos a los principales sitios de empleo en Chile — generalistas, Estado, headhunters y sectoriales.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-portales" data-target="sec-portales">Ir a Portales</a>
       </div>
     </div>
   </div>
@@ -762,6 +795,7 @@ var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"", reg
 var saveTimer = null;
 var editingOppId = null;
 var editingNetId = null;
+var netFilterText = "";
 var expandedTasksId = null;
 var expandedCardIds = [];
 var profileExpanded = { experiencia: false, formacion: false, carta: false };
@@ -1315,8 +1349,13 @@ function lastMeetingFor(contactId){
 
 function renderNetworking(){
   var html = "";
-  if(state.networking.length===0){ html = '<div class="jt-empty">Sin contactos</div>'; }
-  state.networking.forEach(function(n){
+  var t = netFilterText.toLowerCase();
+  var visible = state.networking.filter(function(n){
+    if(!t) return true;
+    return n.name.toLowerCase().indexOf(t)!==-1 || n.empresa.toLowerCase().indexOf(t)!==-1;
+  });
+  if(visible.length===0){ html = '<div class="jt-empty">'+(t ? "Sin contactos que coincidan con \""+esc(netFilterText)+"\"" : "Sin contactos")+'</div>'; }
+  visible.forEach(function(n){
     if(editingNetId === n.id){
       html += '<div class="jt-net-row">'
         + '<input type="text" id="edit-net-name" value="'+esc(n.name)+'" />'
@@ -1717,6 +1756,9 @@ document.getElementById("jt-filter-deadline").addEventListener("change", functio
 document.getElementById("jt-search").addEventListener("input", function(e){
   filters.text = e.target.value; renderBoard();
 });
+document.getElementById("jt-net-search").addEventListener("input", function(e){
+  netFilterText = e.target.value; renderNetworking();
+});
 function exportToExcel(){
   if(typeof XLSX === "undefined"){
     window.alert("No se pudo cargar la librería de Excel (revisa tu conexión) e inténtalo de nuevo.");
@@ -2018,6 +2060,7 @@ function runMatchAnalysis(){
 
   var barColor = score >= 70 ? "var(--teal)" : score >= 40 ? "var(--brass)" : "var(--brick)";
   var html = '<div class="jt-match-score"><div><div class="num">'+score+'%</div><div class="lbl">Cobertura</div></div><div class="jt-match-bar"><div class="jt-match-bar-fill" style="width:'+score+'%;background:'+barColor+';"></div></div></div>'
+    + '<div class="jt-io-note" style="margin-bottom:14px;">Comparación por palabras clave de tu perfil contra el aviso — no es una evaluación real de qué tan buen candidato eres para el cargo.</div>'
     + '<div class="jt-match-cols">'
     + '<div><h4>Ya cubres ('+hits.length+')</h4><div class="jt-match-chips">'+(hits.map(function(w){ return '<span class="jt-match-chip hit">'+esc(w)+'</span>'; }).join("") || '<span class="jt-io-note">Sin coincidencias</span>')+'</div></div>'
     + '<div><h4>Te faltan ('+misses.length+')</h4><div class="jt-match-chips">'+(misses.map(function(w){ return '<span class="jt-match-chip miss">'+esc(w)+'</span>'; }).join("") || '<span class="jt-io-note">Ninguna — buena cobertura</span>')+'</div></div>'
@@ -2357,6 +2400,15 @@ function setProfileSectionExpanded(expanded){
 
 function wireNav(){
   document.getElementById("jt-logout-btn").addEventListener("click", logout);
+  var navWrap = document.getElementById("jt-nav-wrap");
+  var navEl = document.getElementById("jt-nav");
+  function updateNavFade(){
+    var atEnd = navEl.scrollWidth - navEl.clientWidth <= navEl.scrollLeft + 4;
+    navWrap.classList.toggle("at-end", atEnd);
+  }
+  navEl.addEventListener("scroll", updateNavFade, {passive:true});
+  window.addEventListener("resize", updateNavFade);
+  updateNavFade();
   document.getElementById("sec-perfil").addEventListener("click", function(){
     var expanded = document.getElementById("jt-profile-section-body").style.display !== "none";
     setProfileSectionExpanded(!expanded);
@@ -2381,6 +2433,19 @@ function wireNav(){
   }
   window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
+  document.addEventListener('click', function(e){
+    var hint = e.target.closest('.jt-hint[title]');
+    if(!hint) return;
+    var existing = hint.nextElementSibling;
+    if(existing && existing.classList.contains('jt-hint-detail')){
+      existing.remove();
+      return;
+    }
+    var detail = document.createElement('div');
+    detail.className = 'jt-hint-detail';
+    detail.textContent = hint.getAttribute('title');
+    hint.insertAdjacentElement('afterend', detail);
+  });
   document.querySelectorAll('.jt-guide-link').forEach(function(link){
     link.addEventListener('click', function(e){
       e.preventDefault();
