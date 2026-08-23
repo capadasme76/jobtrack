@@ -1006,7 +1006,11 @@ function renderDispatches(){
         actionsHtml = priSelect + saveBtn + applyBtn;
       }
     } else {
-      actionsHtml = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Archivar señal</button>';
+      var archiveBtn = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Archivar señal</button>';
+      var signalSaveBtn = tracked
+        ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en pipeline</span>'
+        : '<button class="jt-btn-mini" data-save-dispatch="'+d.id+'" type="button">Guardar</button>';
+      actionsHtml = signalSaveBtn + archiveBtn;
     }
     html += '<div class="jt-dispatch '+cls+'">'
       + '<div>'
@@ -1027,6 +1031,10 @@ function renderDispatches(){
   function getPriorityFor(dispatchId, fallback){
     var sel = document.querySelector('[data-priority-for="'+dispatchId+'"]');
     return sel ? sel.value : fallback;
+  }
+
+  function notasFromDispatch(d, actionLine){
+    return (d.meta ? d.meta + "\n\n" : "") + actionLine;
   }
 
   document.querySelectorAll('[data-mark-applied]').forEach(function(btn){
@@ -1050,7 +1058,7 @@ function renderDispatches(){
           status: "Contactado",
           fechaContacto: new Date().toISOString(),
           link: d.link,
-          notas: "Marcado como postulado desde Despachos del día."
+          notas: notasFromDispatch(d, "Marcado como postulado desde Despachos del día.")
         });
       }
       renderDispatches(); populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); persist();
@@ -1071,7 +1079,7 @@ function renderDispatches(){
         renta: "No especificada",
         status: "Por postular",
         link: d.link,
-        notas: "Guardado desde Despachos del día."
+        notas: notasFromDispatch(d, "Guardado desde Despachos del día.")
       });
       renderDispatches(); populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); persist();
     });
