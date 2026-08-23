@@ -56,6 +56,9 @@
   .jt-login-submit:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
   .jt-login-submit:disabled{opacity:.6;cursor:default;}
   .jt-login-switch{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-top:16px;}
+  .jt-login-forgot{text-align:center;margin-top:10px;}
+  .jt-login-forgot button{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
+  .jt-login-forgot button:hover{color:var(--ink-soft);}
   .jt-login-legal{font-size:12px;line-height:1.5;color:var(--ink-faint);margin:0 0 10px;}
   .jt-login-legal a{color:var(--brick);}
   .jt-login-switch button{font-family:var(--font-body);font-size:13.5px;color:var(--brick);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
@@ -83,12 +86,12 @@
     <div class="jt-login-err" id="jt-login-err"></div>
     <div class="jt-login-info" id="jt-login-info"></div>
     <form id="jt-login-form">
-      <div class="jt-login-field">
+      <div class="jt-login-field" id="jt-login-email-field">
         <label for="jt-login-email">Email</label>
         <input type="email" id="jt-login-email" autocomplete="email" required />
       </div>
-      <div class="jt-login-field">
-        <label for="jt-login-password">Contraseña</label>
+      <div class="jt-login-field" id="jt-login-password-field">
+        <label for="jt-login-password" id="jt-login-password-label">Contraseña</label>
         <div class="jt-login-pw-wrap">
           <input type="password" id="jt-login-password" autocomplete="current-password" required minlength="6" />
           <button type="button" class="jt-login-pw-toggle" id="jt-login-pw-toggle">Ver</button>
@@ -97,7 +100,10 @@
       <p class="jt-login-legal" id="jt-login-legal" style="display:none;">Al crear tu cuenta aceptas los <a href="terminos.html" target="_blank">Términos y Condiciones</a> y la <a href="privacidad.html" target="_blank">Política de Privacidad</a>.</p>
       <button type="submit" class="jt-login-submit" id="jt-login-submit">Iniciar sesión</button>
     </form>
-    <div class="jt-login-switch">
+    <div class="jt-login-forgot" id="jt-login-forgot">
+      <button type="button" id="jt-login-forgot-btn">¿Olvidaste tu contraseña?</button>
+    </div>
+    <div class="jt-login-switch" id="jt-login-switch">
       <span id="jt-login-switch-text">¿No tienes cuenta?</span>
       <button type="button" id="jt-login-switch-btn">Créala aquí</button>
     </div>
@@ -127,6 +133,14 @@
   const sessionText = document.getElementById("jt-login-session-text");
   const sessionSignoutBtn = document.getElementById("jt-login-session-signout");
   const pwToggle = document.getElementById("jt-login-pw-toggle");
+  const emailField = document.getElementById("jt-login-email-field");
+  const passwordField = document.getElementById("jt-login-password-field");
+  const passwordLabel = document.getElementById("jt-login-password-label");
+  const forgotWrap = document.getElementById("jt-login-forgot");
+  const forgotBtn = document.getElementById("jt-login-forgot-btn");
+  const switchWrap = document.getElementById("jt-login-switch");
+
+  let recoveryActive = false;
 
   pwToggle.addEventListener("click", function(){
     var showing = passwordInput.type === "text";
@@ -134,19 +148,50 @@
     pwToggle.textContent = showing ? "Ver" : "Ocultar";
   });
 
+  // Supabase procesa el link de recuperación de contraseña apenas se crea el
+  // cliente (lee el token de la URL) y avisa acá — hay que interceptarlo antes
+  // de que checkSessionAndApply() redirija al dashboard creyendo que es un login normal.
+  supabase.auth.onAuthStateChange(function(event){
+    if(event === "PASSWORD_RECOVERY"){
+      recoveryActive = true;
+      mode = "recovery";
+      sessionNotice.style.display = "none";
+      form.style.display = "block";
+      applyMode();
+    }
+  });
+
   function applyMode(){
+    emailField.style.display = mode === "recovery" ? "none" : "block";
+    emailInput.required = mode !== "recovery";
+    passwordField.style.display = mode === "forgot" ? "none" : "block";
+    passwordInput.required = mode !== "forgot";
+    passwordInput.autocomplete = mode === "recovery" ? "new-password" : "current-password";
+    forgotWrap.style.display = mode === "login" ? "block" : "none";
+    switchWrap.style.display = mode === "recovery" ? "none" : "block";
+    document.getElementById("jt-login-legal").style.display = mode === "signup" ? "block" : "none";
+
     if(mode === "signup"){
       title.textContent = "Crear cuenta";
       submitBtn.textContent = "Crear cuenta";
       switchText.textContent = "¿Ya tienes cuenta?";
       switchBtn.textContent = "Inicia sesión";
-      document.getElementById("jt-login-legal").style.display = "block";
+    } else if(mode === "forgot"){
+      title.textContent = "Recuperar contraseña";
+      passwordLabel.textContent = "Contraseña";
+      submitBtn.textContent = "Enviar link de recuperación";
+      switchText.textContent = "¿Recordaste tu contraseña?";
+      switchBtn.textContent = "Inicia sesión";
+    } else if(mode === "recovery"){
+      title.textContent = "Elige una nueva contraseña";
+      passwordLabel.textContent = "Nueva contraseña";
+      submitBtn.textContent = "Guardar nueva contraseña";
     } else {
       title.textContent = "Iniciar sesión";
+      passwordLabel.textContent = "Contraseña";
       submitBtn.textContent = "Iniciar sesión";
       switchText.textContent = "¿No tienes cuenta?";
       switchBtn.textContent = "Créala aquí";
-      document.getElementById("jt-login-legal").style.display = "none";
     }
     errBox.style.display = "none";
     infoBox.style.display = "none";
@@ -156,8 +201,11 @@
   // Si ya hay sesión activa: en modo login, saltar directo al dashboard.
   // En modo signup, NUNCA saltar en silencio (eso metía al usuario a una cuenta
   // ajena que seguía abierta en ese navegador) — hay que avisar y pedir confirmación.
+  // En recuperación, tampoco: recoveryActive corta el salto para mostrar el
+  // formulario de nueva contraseña en vez de mandar al dashboard.
   function checkSessionAndApply(){
     supabase.auth.getSession().then(function(res){
+      if(recoveryActive) return;
       var session = res.data.session;
       if(!session){
         sessionNotice.style.display = "none";
@@ -168,16 +216,23 @@
         sessionText.textContent = "Ya hay una sesión abierta en este navegador como " + session.user.email + ". Para crear una cuenta nueva, primero cierra esa sesión.";
         sessionNotice.style.display = "block";
         form.style.display = "none";
-      } else {
+      } else if(mode === "login"){
         location.href = "jobtrack-dashboard-cristian.html";
       }
     });
   }
 
   switchBtn.addEventListener("click", function(){
-    mode = mode === "signup" ? "login" : "signup";
+    mode = mode === "login" ? "signup" : "login";
     applyMode();
     checkSessionAndApply();
+  });
+
+  forgotBtn.addEventListener("click", function(){
+    mode = "forgot";
+    sessionNotice.style.display = "none";
+    form.style.display = "block";
+    applyMode();
   });
 
   checkSessionAndApply();
@@ -208,6 +263,17 @@
           infoBox.textContent = "Cuenta creada. Revisa tu correo para confirmar antes de iniciar sesión.";
           infoBox.style.display = "block";
         }
+      } else if(mode === "forgot"){
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+        if(error) throw error;
+        mode = "login";
+        applyMode();
+        infoBox.textContent = "Si existe una cuenta con ese correo, te enviamos un link para recuperar tu contraseña.";
+        infoBox.style.display = "block";
+      } else if(mode === "recovery"){
+        const { error } = await supabase.auth.updateUser({ password });
+        if(error) throw error;
+        location.href = "jobtrack-dashboard-cristian.html";
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if(error) throw error;
