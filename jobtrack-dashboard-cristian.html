@@ -118,8 +118,10 @@
   .jt-col-empty{min-height:0;padding-bottom:10px;opacity:.7;}
   .jt-col-empty h3{margin-bottom:0;}
   .jt-col h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0 0 8px;display:flex;justify-content:space-between;position:sticky;top:0;background:var(--paper-dim);padding-top:2px;z-index:2;}
-  .jt-card{background:var(--card-bg);border:1px solid var(--line);padding:12px 14px;margin-bottom:10px;font-size:14px;border-radius:var(--radius-ctrl);box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-card{background:var(--card-bg);border:1px solid var(--line);padding:12px 30px 12px 14px;margin-bottom:10px;font-size:14px;border-radius:var(--radius-ctrl);box-shadow:0 1px 2px rgba(32,30,29,.14);position:relative;}
   .jt-card .co{font-family:var(--font-display);font-weight:600;font-size:15.5px;}
+  .jt-card-del{position:absolute;top:8px;right:8px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--ink-faint);font-size:13px;line-height:1;cursor:pointer;border-radius:50%;}
+  .jt-card-del:hover{color:var(--brick);background:var(--paper-dim);}
   .jt-card .role{color:var(--ink-soft);margin:2px 0 6px;}
   .jt-card .tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
   .jt-tag{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border:1px solid var(--line);color:var(--ink-soft);text-transform:uppercase;border-radius:var(--radius-pill);}
@@ -1222,10 +1224,10 @@ function renderBoard(){
           + '<div class="jt-tasks"><button class="jt-tasks-toggle" data-toggle-tasks="'+o.id+'" type="button">'+(tasksExpanded?'Ocultar tareas':'Tareas ('+doneCount+'/'+tasks.length+')')+'</button>'+taskListHtml+'</div>'
           + '<div class="card-actions">'
           + '<button class="jt-btn-mini" data-edit-id="'+o.id+'" type="button">Editar</button>'
-          + '<button class="jt-btn-mini" data-id="'+o.id+'" data-kind="opp" data-empresa="'+esc(o.empresa)+'">Eliminar</button>'
           + '</div>';
       }
       html += '<div class="jt-card">'
+        + '<button class="jt-card-del" data-id="'+o.id+'" data-kind="opp" data-empresa="'+esc(o.empresa)+'" type="button" aria-label="Eliminar oportunidad" title="Eliminar">✕</button>'
         + '<div class="co">'+esc(o.empresa)+followup+deadlineBadge+incompleteBadge+'</div>'
         + '<div class="role">'+esc(o.cargo)+'</div>'
         + '<div class="tags"><span class="jt-tag'+tagCls+'">'+esc(o.priority)+'</span>'+(o.region?'<span class="jt-tag">'+esc(o.region)+'</span>':'')+'</div>'
@@ -1271,7 +1273,7 @@ function renderBoard(){
       }
     });
   });
-  document.querySelectorAll('.jt-del[data-kind="opp"], .jt-btn-mini[data-kind="opp"]').forEach(function(btn){
+  document.querySelectorAll('.jt-del[data-kind="opp"], .jt-btn-mini[data-kind="opp"], .jt-card-del[data-kind="opp"]').forEach(function(btn){
     btn.addEventListener("click", function(){
       var id = btn.getAttribute("data-id");
       var empresa = btn.getAttribute("data-empresa") || "esta oportunidad";
