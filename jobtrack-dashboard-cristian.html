@@ -351,12 +351,12 @@
       </div>
     </div>
     <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
+    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Pipeline</a>
     <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
     <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">☕</i>Reuniones</a>
     <a href="#sec-red" data-target="sec-red"><i class="jt-ic">◍</i>Red de contactos</a>
     <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic">▦</i>Métricas</a>
-    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic">⊞</i>Portales</a>
     <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic">?</i>Guía</a>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
@@ -395,6 +395,17 @@
     <div class="jt-legend-item"><b>🟢 Señal</b><span>noticia o movimiento ejecutivo — networking, no postular</span></div>
   </div>
   <div class="jt-dispatches" id="jt-dispatches"></div>
+
+  </div>
+
+<div class="jt-module">
+<div class="jt-section-title jt-collapsible-title" id="sec-perfil"><span>Mi perfil</span><span class="jt-section-toggle" id="jt-profile-toggle-ic">Ver ▾</span></div>
+  <div id="jt-profile-section-body" style="display:none;">
+  <div class="jt-section-sub">Tus datos base, listos para reutilizar en cualquier postulación</div>
+  <div class="jt-profile" id="jt-profile-view"></div>
+
+  <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
+  </div>
 
   </div>
 
@@ -559,16 +570,6 @@
 
   </div>
 <div class="jt-module">
-<div class="jt-section-title jt-collapsible-title" id="sec-perfil"><span>Mi perfil</span><span class="jt-section-toggle" id="jt-profile-toggle-ic">Ver ▾</span></div>
-  <div id="jt-profile-section-body" style="display:none;">
-  <div class="jt-section-sub">Tus datos base, listos para reutilizar en cualquier postulación</div>
-  <div class="jt-profile" id="jt-profile-view"></div>
-
-  <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
-  </div>
-
-  </div>
-<div class="jt-module">
 <div class="jt-section-title" id="sec-portales">Portales</div>
   <p class="jt-lead">Links directos para revisar tú mismo.</p>
 
@@ -630,13 +631,21 @@
     <div class="jt-guide-step">
       <div class="jt-guide-num">2</div>
       <div class="jt-guide-body">
+        <h4>Completa tu perfil</h4>
+        <p>En "Mi perfil" puedes subir tu CV (PDF o Word) para que la IA rellene tus datos automáticamente, o escribirlos a mano. Es la base para el Match CV y para generar tu carta de presentación.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-perfil" data-target="sec-perfil">Ir a Mi perfil</a>
+      </div>
+    </div>
+    <div class="jt-guide-step">
+      <div class="jt-guide-num">3</div>
+      <div class="jt-guide-body">
         <h4>Agrega tus oportunidades al Pipeline</h4>
         <p>Cada vacante que te interesa se guarda como una tarjeta — solo el link es obligatorio. Arrástrala entre columnas (Por postular, Contactado, Entrevista, etc.) a medida que avanza el proceso.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-pipeline" data-target="sec-pipeline">Ir a Pipeline</a>
       </div>
     </div>
     <div class="jt-guide-step">
-      <div class="jt-guide-num">3</div>
+      <div class="jt-guide-num">4</div>
       <div class="jt-guide-body">
         <h4>Usa Match CV antes de postular</h4>
         <p>Pega el texto de una oferta y compáralo con tu perfil para ver qué tan buen candidato eres y qué ajustar antes de enviar tu postulación.</p>
@@ -644,7 +653,7 @@
       </div>
     </div>
     <div class="jt-guide-step">
-      <div class="jt-guide-num">4</div>
+      <div class="jt-guide-num">5</div>
       <div class="jt-guide-body">
         <h4>Anota tus reuniones</h4>
         <p>Entrevistas, cafés y llamadas de networking quedan todas en un solo lugar, con fecha y notas.</p>
@@ -652,7 +661,7 @@
       </div>
     </div>
     <div class="jt-guide-step">
-      <div class="jt-guide-num">5</div>
+      <div class="jt-guide-num">6</div>
       <div class="jt-guide-body">
         <h4>Registra tu red de contactos</h4>
         <p>Guarda a las personas que te pueden ayudar — ex colegas, headhunters, referidos — y el estado de la relación con cada una.</p>
@@ -660,19 +669,11 @@
       </div>
     </div>
     <div class="jt-guide-step">
-      <div class="jt-guide-num">6</div>
+      <div class="jt-guide-num">7</div>
       <div class="jt-guide-body">
         <h4>Revisa tus métricas</h4>
         <p>Muestra en qué etapa se estancan tus postulaciones, para ajustar tu estrategia de búsqueda.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-metricas" data-target="sec-metricas">Ir a Métricas</a>
-      </div>
-    </div>
-    <div class="jt-guide-step">
-      <div class="jt-guide-num">7</div>
-      <div class="jt-guide-body">
-        <h4>Completa tu perfil</h4>
-        <p>En "Mi perfil" puedes subir tu CV (PDF o Word) para que la IA rellene tus datos automáticamente, o escribirlos a mano. Es la base para el Match CV y para generar tu carta de presentación.</p>
-        <a class="jt-btn-mini jt-guide-link" href="#sec-perfil" data-target="sec-perfil">Ir a Mi perfil</a>
       </div>
     </div>
     <div class="jt-guide-step">
