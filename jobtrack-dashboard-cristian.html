@@ -838,6 +838,10 @@ function daysUntil(dateStr){
   return Math.ceil((target - now) / 86400000);
 }
 
+function isIncomplete(o){
+  return !!(o.incompleta || !o.link);
+}
+
 function isSameDay(dateStr, ref){
   var d = new Date(dateStr);
   return d.getFullYear()===ref.getFullYear() && d.getMonth()===ref.getMonth() && d.getDate()===ref.getDate();
@@ -1139,7 +1143,7 @@ function renderBoard(){
       if(du2 === null || du2 < 0 || du2 > 3) return false;
     }
     if(filters.deadline === "incompletas"){
-      if(!o.incompleta) return false;
+      if(!isIncomplete(o)) return false;
     }
     return true;
   });
@@ -1193,7 +1197,7 @@ function renderBoard(){
           else deadlineBadge = '<span class="jt-followup">Vence en '+du+'d</span>';
         }
       }
-      var incompleteBadge = o.incompleta ? '<span class="jt-followup due">⚠ Incompleta</span>' : "";
+      var incompleteBadge = isIncomplete(o) ? '<span class="jt-followup due">⚠ Incompleta</span>' : "";
       var isExpanded = expandedCardIds.indexOf(o.id) !== -1;
       var notasPreview = o.notas ? '<div class="notas-preview">'+esc(o.notas.length>80?o.notas.slice(0,80)+'…':o.notas)+'</div>' : '';
       var linkedContact = "";
@@ -1688,7 +1692,7 @@ function renderMetrics(){
     var du = daysUntil(o.fechaLimite);
     return du !== null && du >= 0 && du <= 3 && o.status !== "Descartado" && o.status !== "Oferta";
   }).length;
-  var incompletas = state.opportunities.filter(function(o){ return o.incompleta; }).length;
+  var incompletas = state.opportunities.filter(function(o){ return isIncomplete(o); }).length;
 
   var highlights = [
     {n: total, l: "Total oportunidades", t: "Todas las oportunidades que has cargado, en cualquier etapa."},
