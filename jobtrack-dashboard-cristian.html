@@ -1206,6 +1206,7 @@ function renderBoard(){
         if(c){ linkedContact = '<div class="jt-linked-contact">🔗 '+esc(c.name)+'</div>'; }
       }
       var applyLink = o.link ? '<a class="link jt-apply-link" href="'+esc(o.link)+'" target="_blank" rel="noopener">Postular / ver aviso ↗</a>' : '';
+      var deadlineCalLink = o.fechaLimite ? '<a class="jt-btn-mini" href="'+opportunityCalendarLink(o)+'" target="_blank" rel="noopener">+ Calendar</a>' : '';
       var cartaBadge = o.carta ? '<div class="jt-io-note" style="margin:6px 0 0;">✎ Carta guardada para esta postulación — <button class="jt-copybtn" data-copy-opp-carta="'+o.id+'" type="button" style="padding:2px 8px;">Copiar</button></div>' : "";
       var tasks = o.tasks || [];
       var doneCount = tasks.filter(function(t){ return t.done; }).length;
@@ -1227,7 +1228,7 @@ function renderBoard(){
           + '</div>'
           + notasPreview
           + linkedContact
-          + (applyLink ? '<div style="margin-top:6px;">'+applyLink+'</div>' : '')
+          + (applyLink || deadlineCalLink ? '<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'+applyLink+deadlineCalLink+'</div>' : '')
           + cartaBadge
           + '<div class="jt-tasks"><button class="jt-tasks-toggle" data-toggle-tasks="'+o.id+'" type="button">'+(tasksExpanded?'Ocultar tareas':'Tareas ('+doneCount+'/'+tasks.length+')')+'</button>'+taskListHtml+'</div>'
           + '<div class="card-actions">'
@@ -1461,6 +1462,19 @@ function renderNetworking(){
       renderStats(); renderNetworking(); renderMeetings(); persist();
     });
   });
+}
+
+function opportunityCalendarLink(o){
+  var d = new Date(o.fechaLimite + "T00:00:00");
+  var start = d.toISOString().slice(0,10).replace(/-/g,"");
+  var endDate = new Date(d); endDate.setUTCDate(endDate.getUTCDate()+1);
+  var end = endDate.toISOString().slice(0,10).replace(/-/g,"");
+  var title = "Postular a " + o.cargo + " — " + o.empresa;
+  var details = "Fecha límite de postulación. Registrado en JobTrack." + (o.link ? "\n\n" + o.link : "");
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE"
+    + "&text=" + encodeURIComponent(title)
+    + "&dates=" + start + "/" + end
+    + "&details=" + encodeURIComponent(details);
 }
 
 function googleCalendarLink(m, contactName){
