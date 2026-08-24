@@ -124,9 +124,9 @@ export default async function handler(req, res) {
 
     watch.lastCheckedAt = now;
     watch.hash = newHash;
+    if (!Array.isArray(data.dispatches)) data.dispatches = [];
     if (changed) {
       watch.lastChangedAt = now;
-      if (!Array.isArray(data.dispatches)) data.dispatches = [];
       data.dispatches.push({
         id: `ws${Date.now()}-${watch.id}`,
         type: "verify",
@@ -135,6 +135,17 @@ export default async function handler(req, res) {
         empresa: watch.label || "una búsqueda que vigilas",
         sector: "Sin sector",
         meta: "Detectamos un cambio en los resultados de esta búsqueda — revisa si hay una vacante nueva antes de asumir que es algo relevante.",
+        link: watch.url,
+      });
+    } else if (isFirstCheck) {
+      data.dispatches.push({
+        id: `ws${Date.now()}-${watch.id}`,
+        type: "signal",
+        dateline: "Búsqueda activada hoy",
+        headline: `Tu búsqueda "${watch.label || "nueva búsqueda"}" ya está activa`,
+        empresa: watch.label || "tu búsqueda",
+        sector: "Sin sector",
+        meta: "La estamos vigilando todos los días. En cuanto detectemos un cambio en sus resultados, te avisamos aquí en \"Hoy\" para que revises y la guardes en Pipeline si te sirve.",
         link: watch.url,
       });
     }

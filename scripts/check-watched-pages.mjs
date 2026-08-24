@@ -169,8 +169,20 @@ async function processRow(row) {
     watch.lastCheckedAt = now;
     mutated = true;
 
+    const label = watch.label || "una búsqueda que vigilas";
+
     if (watch.hash === null || watch.hash === undefined) {
       watch.hash = result.hash;
+      data.dispatches.push({
+        id: `ws${Date.now()}-${watch.id}`,
+        type: "signal",
+        dateline: "Búsqueda activada hoy",
+        headline: `Tu búsqueda "${label}" ya está activa`,
+        empresa: label,
+        sector: "Sin sector",
+        meta: "La estamos vigilando todos los días. En cuanto detectemos un cambio en sus resultados, te avisamos aquí en \"Hoy\" para que revises y la guardes en Pipeline si te sirve.",
+        link: watch.url,
+      });
       continue;
     }
 
@@ -178,7 +190,6 @@ async function processRow(row) {
       changed++;
       watch.hash = result.hash;
       watch.lastChangedAt = now;
-      const label = watch.label || "una búsqueda que vigilas";
       data.dispatches.push({
         id: `ws${Date.now()}-${watch.id}`,
         type: "verify",

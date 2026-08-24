@@ -387,8 +387,8 @@
       </div>
     </div>
     <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
-    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-busquedas" data-target="sec-busquedas"><i class="jt-ic">🔍</i>Búsquedas de empleo</a>
+    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Pipeline</a>
     <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
     <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">☕</i>Reuniones</a>
@@ -436,17 +436,6 @@
   </div>
 
 <div class="jt-module">
-<div class="jt-section-title jt-collapsible-title" id="sec-perfil"><span>Mi perfil</span><span class="jt-section-toggle" id="jt-profile-toggle-ic">Ver ▾</span></div>
-  <div id="jt-profile-section-body" style="display:none;">
-  <div class="jt-section-sub">Tus datos base, listos para reutilizar en cualquier postulación</div>
-  <div class="jt-profile" id="jt-profile-view"></div>
-
-  <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
-  </div>
-
-  </div>
-
-<div class="jt-module">
 <div class="jt-section-title" id="sec-busquedas">Búsquedas de empleo</div>
   <div class="jt-section-sub">Vigilamos portales por ti — te avisamos en "Hoy" apenas aparece algo nuevo</div>
   <p class="jt-lead">Escribe un cargo o palabras clave y generamos búsquedas en los portales que podemos vigilar todos los días.</p>
@@ -459,6 +448,17 @@
     <button class="jt-addbtn secondary" id="jt-ws-add-manual-btn" type="button">+ Agregar URL</button>
   </div>
   <div id="jt-watched-searches-list"></div>
+  </div>
+
+<div class="jt-module">
+<div class="jt-section-title jt-collapsible-title" id="sec-perfil"><span>Mi perfil</span><span class="jt-section-toggle" id="jt-profile-toggle-ic">Ver ▾</span></div>
+  <div id="jt-profile-section-body" style="display:none;">
+  <div class="jt-section-sub">Tus datos base, listos para reutilizar en cualquier postulación</div>
+  <div class="jt-profile" id="jt-profile-view"></div>
+
+  <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
+  </div>
+
   </div>
 
 <div class="jt-module">
@@ -1646,47 +1646,62 @@ function renderWatchedSearches(){
       var originalLabel = btn.textContent;
       btn.textContent = "Comprobando…";
       if(statusEl) statusEl.textContent = "Comprobando ahora…";
-      try{
-        var sessionRes = await supabase.auth.getSession();
-        var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
-        if(!token){ window.alert("Tu sesión expiró — recarga la página e intenta de nuevo."); return; }
-        var res = await fetch("/api/check-watched-search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-          body: JSON.stringify({ searchId: id })
-        });
-        var result = await res.json();
-        if(!res.ok){
-          window.alert(result.error || "No se pudo comprobar la búsqueda.");
-          return;
-        }
+      var result = await checkOneWatchedSearch(id);
+      if(result.error){
+        window.alert(result.error);
+      } else {
         await loadState();
         renderAll();
         if(result.changed){
           window.alert("¡Encontramos novedades! Revisa \"Hoy\" para verlas.");
         } else if(result.isFirstCheck){
-          window.alert("Listo — quedó guardada como punto de partida. La próxima vez que algo cambie, te avisamos.");
+          window.alert("Listo — tu búsqueda ya está activa. Revisa \"Hoy\" para ver la confirmación.");
         } else {
           window.alert("Sin novedades por ahora.");
         }
-      } catch(e){
-        window.alert("No se pudo comprobar la búsqueda — intenta de nuevo.");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = originalLabel;
       }
+      btn.disabled = false;
+      btn.textContent = originalLabel;
     });
   });
 }
 
+// Comprueba una búsqueda vigilada contra el servidor (usa el propio token del
+// usuario, no la service_role key). Se reusa tanto para el botón "Comprobar
+// ahora" como para activarla altiro apenas se crea, en vez de dejarla sin
+// revisar hasta el cron del día siguiente.
+async function checkOneWatchedSearch(id){
+  try{
+    var sessionRes = await supabase.auth.getSession();
+    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+    if(!token) return { error: "Tu sesión expiró — recarga la página e intenta de nuevo." };
+    var res = await fetch("/api/check-watched-search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ searchId: id })
+    });
+    var result = await res.json();
+    if(!res.ok) return { error: result.error || "No se pudo comprobar la búsqueda." };
+    return result;
+  } catch(e){
+    return { error: "No se pudo comprobar la búsqueda — intenta de nuevo." };
+  }
+}
+
 function wireWatchedSearches(){
-  document.getElementById("jt-ws-generate-btn").addEventListener("click", function(){
+  document.getElementById("jt-ws-generate-btn").addEventListener("click", async function(){
     var cargo = document.getElementById("jt-ws-cargo").value.trim();
     if(!cargo){ window.alert("Escribe un cargo o palabras clave primero."); return; }
     if(!state.watchedSearches) state.watchedSearches = [];
+    var genBtn = this;
+    genBtn.disabled = true;
+    var originalLabel = genBtn.textContent;
+    genBtn.textContent = "Activando…";
+    var newIds = [];
     WATCHED_SEARCH_PORTALS.forEach(function(portal){
+      var id = nextId("ws", state.watchedSearches);
       state.watchedSearches.push({
-        id: nextId("ws", state.watchedSearches),
+        id: id,
         portal: portal.key,
         label: cargo + " — " + portal.label,
         url: portal.buildUrl(cargo),
@@ -1695,18 +1710,35 @@ function wireWatchedSearches(){
         lastChangedAt: null,
         source: "auto"
       });
+      newIds.push(id);
     });
     document.getElementById("jt-ws-cargo").value = "";
     renderWatchedSearches();
-    persist();
+    await persist();
+    // Comprueba de inmediato cada búsqueda recién creada — así queda activa
+    // altiro y deja una confirmación visible en "Hoy", en vez de quedar en
+    // silencio hasta el cron del día siguiente.
+    for(var i=0; i<newIds.length; i++){
+      await checkOneWatchedSearch(newIds[i]);
+    }
+    await loadState();
+    renderAll();
+    genBtn.disabled = false;
+    genBtn.textContent = originalLabel;
+    window.alert("Listo — tu búsqueda ya está activa. Revisa \"Hoy\" para ver la confirmación.");
   });
-  document.getElementById("jt-ws-add-manual-btn").addEventListener("click", function(){
+  document.getElementById("jt-ws-add-manual-btn").addEventListener("click", async function(){
     var url = document.getElementById("jt-ws-manual-url").value.trim();
     if(!url){ window.alert("Pega una URL primero."); return; }
     if(!/^https?:\/\//i.test(url)){ window.alert("Eso no parece una URL válida — debe empezar con http:// o https://"); return; }
     if(!state.watchedSearches) state.watchedSearches = [];
+    var addBtn = this;
+    addBtn.disabled = true;
+    var originalLabel = addBtn.textContent;
+    addBtn.textContent = "Activando…";
+    var id = nextId("ws", state.watchedSearches);
     state.watchedSearches.push({
-      id: nextId("ws", state.watchedSearches),
+      id: id,
       portal: "manual",
       label: "Búsqueda personalizada",
       url: url,
@@ -1717,7 +1749,17 @@ function wireWatchedSearches(){
     });
     document.getElementById("jt-ws-manual-url").value = "";
     renderWatchedSearches();
-    persist();
+    await persist();
+    var result = await checkOneWatchedSearch(id);
+    await loadState();
+    renderAll();
+    addBtn.disabled = false;
+    addBtn.textContent = originalLabel;
+    if(result.error){
+      window.alert("Se guardó la URL, pero no se pudo comprobar todavía: " + result.error);
+    } else {
+      window.alert("Listo — tu búsqueda ya está activa. Revisa \"Hoy\" para ver la confirmación.");
+    }
   });
 }
 
