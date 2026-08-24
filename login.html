@@ -247,6 +247,21 @@
     location.href = "jobtrack-dashboard-cristian.html";
   });
 
+  // Ninguna llamada a Supabase tenía límite de tiempo — si el servidor tarda
+  // (carga, plan gratuito bajo mucho tráfico, etc.), el botón se quedaba
+  // pegado en "Un momento…" para siempre, sin avisar nada. Con esto, después
+  // de TIMEOUT_MS se corta la espera y se muestra un error claro en vez de
+  // colgar la pantalla en silencio.
+  var TIMEOUT_MS = 20000;
+  function withTimeout(promise){
+    return Promise.race([
+      promise,
+      new Promise(function(_, reject){
+        setTimeout(function(){ reject(new Error("TIMEOUT")); }, TIMEOUT_MS);
+      })
+    ]);
+  }
+
   switchBtn.addEventListener("click", function(){
     mode = mode === "login" ? "signup" : "login";
     applyMode();
@@ -277,6 +292,9 @@
     if(/email not confirmed/i.test(msg)){
       return "Todavía no confirmaste tu correo. Revisa tu bandeja (y spam) o usa el botón de abajo para que te reenviemos el link.";
     }
+    if(msg === "TIMEOUT"){
+      return "El servidor está tardando más de lo normal en responder. Espera unos segundos e intenta de nuevo — si ya se había procesado, no pasa nada por reintentar.";
+    }
     if(/password should be at least/i.test(msg)){
       return "La contraseña debe tener al menos 6 caracteres.";
     }
@@ -289,7 +307,7 @@
     var originalResendLabel = resendBtn.textContent;
     resendBtn.textContent = "Enviando…";
     try{
-      const { error } = await supabase.auth.resend({ type: "signup", email: pendingConfirmEmail });
+      const { error } = await withTimeout(supabase.auth.resend({ type: "signup", email: pendingConfirmEmail }));
       if(error) throw error;
       infoBox.textContent = "Te reenviamos el correo de confirmación a " + pendingConfirmEmail + " — revisa tu bandeja (y spam) en unos minutos.";
       infoBox.style.display = "block";
@@ -324,7 +342,7 @@
 
     try{
       if(mode === "signup"){
-        const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + "/login.html" } });
+        const { data, error } = await withTimeout(supabase.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + "/login.html" } }));
         if(error) throw error;
         if(data.session){
           location.href = "jobtrack-dashboard-cristian.html";
@@ -335,18 +353,18 @@
           resendWrap.style.display = "block";
         }
       } else if(mode === "forgot"){
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+        const { error } = await withTimeout(supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }));
         if(error) throw error;
         mode = "login";
         applyMode();
         infoBox.textContent = "Si existe una cuenta con ese correo, te enviamos un link para recuperar tu contraseña.";
         infoBox.style.display = "block";
       } else if(mode === "recovery"){
-        const { error } = await supabase.auth.updateUser({ password });
+        const { error } = await withTimeout(supabase.auth.updateUser({ password }));
         if(error) throw error;
         location.href = "jobtrack-dashboard-cristian.html";
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }));
         if(error) throw error;
         location.href = "jobtrack-dashboard-cristian.html";
       }
