@@ -310,7 +310,7 @@
 
     try{
       if(mode === "signup"){
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + "/login.html" } });
         if(error) throw error;
         if(data.session){
           location.href = "jobtrack-dashboard-cristian.html";
