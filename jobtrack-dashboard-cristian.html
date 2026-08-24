@@ -218,6 +218,11 @@
   .jt-pblock-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
   .jt-pblock-head h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0;}
   .jt-pblock p{font-size:14.5px;line-height:1.5;margin:0;color:var(--ink);}
+  .jt-ws-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .jt-ws-row:last-child{border-bottom:none;}
+  .jt-ws-label{font-size:13.5px;font-weight:600;}
+  .jt-ws-status{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:2px;}
+  .jt-ws-row.changed .jt-ws-status{color:var(--teal-dark,var(--teal));}
   .jt-chips{display:flex;flex-wrap:wrap;gap:6px;}
   .jt-chip{font-family:var(--font-mono);font-size:12px;padding:4px 11px;border:1px solid var(--line);color:var(--ink-soft);border-radius:var(--radius-pill);background:var(--paper-dim);}
   .jt-explist{display:flex;flex-direction:column;gap:8px;}
@@ -435,6 +440,20 @@
   <div class="jt-profile" id="jt-profile-view"></div>
 
   <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
+
+  <div class="jt-pblock" id="jt-watched-searches-block">
+    <div class="jt-pblock-head"><h3>Búsquedas vigiladas</h3></div>
+    <p class="jt-lead">Escribe un cargo o palabras clave y generamos búsquedas en los portales que podemos vigilar — si aparece algo nuevo, te avisamos en "Hoy".</p>
+    <div class="jt-controls">
+      <input type="text" id="jt-ws-cargo" placeholder="Ej. Gerente de Comunicaciones" style="flex:1;min-width:200px;" />
+      <button class="jt-addbtn" id="jt-ws-generate-btn" type="button">+ Generar búsquedas</button>
+    </div>
+    <div class="jt-controls">
+      <input type="text" id="jt-ws-manual-url" placeholder="O pega la URL de una búsqueda ya armada" style="flex:1;min-width:200px;" />
+      <button class="jt-addbtn secondary" id="jt-ws-add-manual-btn" type="button">+ Agregar URL</button>
+    </div>
+    <div id="jt-watched-searches-list"></div>
+  </div>
   </div>
 
   </div>
@@ -815,7 +834,7 @@ var seedProfile = {
   linkedinLastSync: null
 };
 
-var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", dismissedDispatchIds: [], meetings: seedMeetings, dispatches: JSON.parse(JSON.stringify(seedDispatches)), watchedPages: [], onboarding: { profile: false, opportunity: false, contact: false, match: false, meeting: false }, onboardingDismissed: false };
+var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", dismissedDispatchIds: [], meetings: seedMeetings, dispatches: JSON.parse(JSON.stringify(seedDispatches)), watchedPages: [], watchedSearches: [], onboarding: { profile: false, opportunity: false, contact: false, match: false, meeting: false }, onboardingDismissed: false };
 var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"", region:"" };
 var saveTimer = null;
 var editingOppId = null;
@@ -913,6 +932,7 @@ async function loadState(){
       if(parsed.networking) state.networking = parsed.networking;
       if(parsed.dispatches) state.dispatches = parsed.dispatches;
       if(parsed.watchedPages) state.watchedPages = parsed.watchedPages;
+      if(parsed.watchedSearches) state.watchedSearches = parsed.watchedSearches;
       // Checklist de primeros pasos: si la cuenta ya existía antes de esta función
       // (no trae "onboarding" guardado), no se le muestra retroactivamente.
       if(parsed.onboarding) state.onboarding = parsed.onboarding;
@@ -1569,6 +1589,87 @@ function removeWatchedPage(opportunityId){
   if(existing) state.watchedPages.splice(state.watchedPages.indexOf(existing), 1);
 }
 
+// Portales confirmados como vigilables (contenido real en el HTML, sin bloqueo
+// de bots) — ver hallazgos de la sesión: Laborum e Indeed son SPAs/bloquean
+// requests automatizadas, así que quedan fuera hasta que cambie esa situación.
+var WATCHED_SEARCH_PORTALS = [
+  { key: "computrabajo", label: "Computrabajo", buildUrl: function(q){ return "https://cl.computrabajo.com/trabajo-de-" + slugifySearchTerm(q); } },
+  { key: "chiletrabajos", label: "ChileTrabajos", buildUrl: function(q){ return "https://www.chiletrabajos.cl/encuentra-un-empleo?action=search&order_by=&ord=&within=25&2=" + encodeURIComponent(q); } }
+];
+
+function slugifySearchTerm(text){
+  return text.toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+function renderWatchedSearches(){
+  var list = state.watchedSearches || [];
+  var html = list.map(function(w){
+    var changed = !!w.lastChangedAt;
+    var statusText = changed
+      ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
+      : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario");
+    return '<div class="jt-ws-row'+(changed?' changed':'')+'">'
+      + '<div><div class="jt-ws-label">'+esc(w.label)+'</div><div class="jt-ws-status">'+esc(statusText)+'</div></div>'
+      + '<span><a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
+      + '</div>';
+  }).join("") || '<div class="jt-empty">Sin búsquedas vigiladas todavía.</div>';
+  document.getElementById("jt-watched-searches-list").innerHTML = html;
+  document.querySelectorAll('[data-del-watched-search]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-del-watched-search");
+      state.watchedSearches = state.watchedSearches.filter(function(w){ return w.id !== id; });
+      renderWatchedSearches();
+      persist();
+    });
+  });
+}
+
+function wireWatchedSearches(){
+  document.getElementById("jt-ws-generate-btn").addEventListener("click", function(){
+    var cargo = document.getElementById("jt-ws-cargo").value.trim();
+    if(!cargo){ window.alert("Escribe un cargo o palabras clave primero."); return; }
+    if(!state.watchedSearches) state.watchedSearches = [];
+    WATCHED_SEARCH_PORTALS.forEach(function(portal){
+      state.watchedSearches.push({
+        id: nextId("ws", state.watchedSearches),
+        portal: portal.key,
+        label: cargo + " — " + portal.label,
+        url: portal.buildUrl(cargo),
+        hash: null,
+        lastCheckedAt: null,
+        lastChangedAt: null,
+        source: "auto"
+      });
+    });
+    document.getElementById("jt-ws-cargo").value = "";
+    renderWatchedSearches();
+    persist();
+  });
+  document.getElementById("jt-ws-add-manual-btn").addEventListener("click", function(){
+    var url = document.getElementById("jt-ws-manual-url").value.trim();
+    if(!url){ window.alert("Pega una URL primero."); return; }
+    if(!/^https?:\/\//i.test(url)){ window.alert("Eso no parece una URL válida — debe empezar con http:// o https://"); return; }
+    if(!state.watchedSearches) state.watchedSearches = [];
+    state.watchedSearches.push({
+      id: nextId("ws", state.watchedSearches),
+      portal: "manual",
+      label: "Búsqueda personalizada",
+      url: url,
+      hash: null,
+      lastCheckedAt: null,
+      lastChangedAt: null,
+      source: "manual"
+    });
+    document.getElementById("jt-ws-manual-url").value = "";
+    renderWatchedSearches();
+    persist();
+  });
+}
+
 function wireForms(){
   var oppBtn = document.getElementById("jt-toggle-opp-form");
   var oppForm = document.getElementById("jt-opp-form");
@@ -1792,6 +1893,7 @@ function renderAll(){
   renderNetworking();
   renderMeetings();
   renderProfile();
+  renderWatchedSearches();
   renderMetrics();
   renderOnboarding();
 }
@@ -2559,6 +2661,7 @@ document.getElementById("jt-match-btn").addEventListener("click", runMatchAnalys
 wireForms();
 wireNav();
 wireIO();
+wireWatchedSearches();
 
 loadState().then(renderAll);
 
