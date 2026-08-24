@@ -218,7 +218,8 @@
   .jt-pblock-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
   .jt-pblock-head h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0;}
   .jt-pblock p{font-size:14.5px;line-height:1.5;margin:0;color:var(--ink);}
-  .jt-ws-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .jt-ws-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .jt-ws-row > span{display:inline-flex;gap:6px;flex-wrap:wrap;}
   .jt-ws-row:last-child{border-bottom:none;}
   .jt-ws-label{font-size:13.5px;font-weight:600;}
   .jt-ws-status{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:2px;}
@@ -1613,8 +1614,8 @@ function renderWatchedSearches(){
       ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
       : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario");
     return '<div class="jt-ws-row'+(changed?' changed':'')+'">'
-      + '<div><div class="jt-ws-label">'+esc(w.label)+'</div><div class="jt-ws-status">'+esc(statusText)+'</div></div>'
-      + '<span><a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
+      + '<div><div class="jt-ws-label">'+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
+      + '<span><button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> <a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
       + '</div>';
   }).join("") || '<div class="jt-empty">Sin búsquedas vigiladas todavía.</div>';
   document.getElementById("jt-watched-searches-list").innerHTML = html;
@@ -1624,6 +1625,45 @@ function renderWatchedSearches(){
       state.watchedSearches = state.watchedSearches.filter(function(w){ return w.id !== id; });
       renderWatchedSearches();
       persist();
+    });
+  });
+  document.querySelectorAll('[data-check-watched-search]').forEach(function(btn){
+    btn.addEventListener("click", async function(){
+      var id = btn.getAttribute("data-check-watched-search");
+      var statusEl = document.querySelector('[data-ws-status="'+id+'"]');
+      btn.disabled = true;
+      var originalLabel = btn.textContent;
+      btn.textContent = "Comprobando…";
+      if(statusEl) statusEl.textContent = "Comprobando ahora…";
+      try{
+        var sessionRes = await supabase.auth.getSession();
+        var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+        if(!token){ window.alert("Tu sesión expiró — recarga la página e intenta de nuevo."); return; }
+        var res = await fetch("/api/check-watched-search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+          body: JSON.stringify({ searchId: id })
+        });
+        var result = await res.json();
+        if(!res.ok){
+          window.alert(result.error || "No se pudo comprobar la búsqueda.");
+          return;
+        }
+        await loadState();
+        renderAll();
+        if(result.changed){
+          window.alert("¡Encontramos novedades! Revisa \"Hoy\" para verlas.");
+        } else if(result.isFirstCheck){
+          window.alert("Listo — quedó guardada como punto de partida. La próxima vez que algo cambie, te avisamos.");
+        } else {
+          window.alert("Sin novedades por ahora.");
+        }
+      } catch(e){
+        window.alert("No se pudo comprobar la búsqueda — intenta de nuevo.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+      }
     });
   });
 }
