@@ -186,17 +186,10 @@ async function processRow(row) {
     const portalSuffix = watch.portalLabel ? ` en ${watch.portalLabel}` : "";
 
     if (watch.hash === null || watch.hash === undefined) {
+      // Solo se guarda el hash de referencia — la fila ya visible en "Búsquedas
+      // de empleo" es suficiente confirmación de que quedó activa, no hace falta
+      // duplicarlo con una tarjeta en "Hoy" que además nunca es accionable.
       watch.hash = result.hash;
-      data.dispatches.push({
-        id: `ws${Date.now()}-${watch.id}`,
-        type: "signal",
-        dateline: "Búsqueda activada hoy",
-        headline: `Tu búsqueda de "${cargo}"${portalSuffix} ya está activa`,
-        empresa: cargo,
-        sector: "Sin sector",
-        meta: "La estamos vigilando todos los días. En cuanto detectemos un cambio en sus resultados, te avisamos aquí en \"Hoy\" para que revises y la guardes en Pipeline si te sirve.",
-        link: watch.url,
-      });
       continue;
     }
 

@@ -146,18 +146,10 @@ export default async function handler(req, res) {
         meta: "Detectamos un cambio en los resultados de esta búsqueda — revisa si hay una vacante nueva antes de asumir que es algo relevante.",
         link: watch.url,
       });
-    } else if (isFirstCheck) {
-      data.dispatches.push({
-        id: `ws${Date.now()}-${watch.id}`,
-        type: "signal",
-        dateline: "Búsqueda activada hoy",
-        headline: `Tu búsqueda de "${cargo}"${portalSuffix} ya está activa`,
-        empresa: cargo,
-        sector: "Sin sector",
-        meta: "La estamos vigilando todos los días. En cuanto detectemos un cambio en sus resultados, te avisamos aquí en \"Hoy\" para que revises y la guardes en Pipeline si te sirve.",
-        link: watch.url,
-      });
     }
+    // isFirstCheck sin cambio: solo se guarda el hash de referencia — la fila ya
+    // visible en "Búsquedas de empleo" confirma que quedó activa, no hace falta
+    // duplicarlo con una tarjeta en "Hoy" que además nunca es accionable.
 
     await writeState(user.id, accessToken, data);
     res.status(200).json({ checked: true, changed, isFirstCheck, lastCheckedAt: now });

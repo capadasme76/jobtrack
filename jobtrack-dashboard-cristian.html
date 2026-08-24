@@ -945,6 +945,11 @@ async function loadState(){
       });
       if(parsed.networking) state.networking = parsed.networking;
       if(parsed.dispatches) state.dispatches = parsed.dispatches;
+      // Limpieza: la tarjeta "Búsqueda activada hoy" (type "signal") duplicaba
+      // información que ya se ve en la fila de "Búsquedas de empleo" y nunca fue
+      // accionable — se dejó de generar, y las que ya estaban guardadas se sacan
+      // acá para no dejarlas como ruido viejo en "Hoy".
+      state.dispatches = state.dispatches.filter(function(d){ return d.type !== "signal"; });
       // Limpieza: un bug previo podía dejar varias tarjetas idénticas (mismo tipo +
       // mismo titular) sin revisar para el mismo watch, apiladas en "Hoy" sin
       // forma de descartarlas — se deja solo la más reciente de cada una.
@@ -975,6 +980,19 @@ async function loadState(){
           w.cargo = w.label && w.label.indexOf(" — ") !== -1 ? w.label.split(" — ")[0] : (w.label || "");
         }
       });
+      // Limpieza: antes de que "generateSearchesForCargos" evitara crear
+      // combinaciones cargo+portal repetidas, se podían generar filas duplicadas
+      // (mismo cargo, mismo portal) — se deja solo la primera de cada combinación.
+      (function(){
+        var seenCombos = {};
+        state.watchedSearches = state.watchedSearches.filter(function(w){
+          if(w.source === "manual") return true; // cada URL pegada a mano es intencional, no se compara por cargo
+          var comboKey = w.portal + "|" + (w.cargo || "").toLowerCase();
+          if(seenCombos[comboKey]) return false;
+          seenCombos[comboKey] = true;
+          return true;
+        });
+      })();
       // Checklist de primeros pasos: si la cuenta ya existía antes de esta función
       // (no trae "onboarding" guardado), no se le muestra retroactivamente.
       if(parsed.onboarding) state.onboarding = parsed.onboarding;
@@ -1706,7 +1724,7 @@ function renderWatchedSearches(){
         if(result.changed){
           window.alert("¡Encontramos novedades! Revisa \"Hoy\" para verlas.");
         } else if(result.isFirstCheck){
-          window.alert("Listo — tu búsqueda ya está activa. Revisa \"Hoy\" para ver la confirmación.");
+          window.alert("Listo — tu búsqueda ya está activa.");
         } else {
           window.alert("Sin novedades por ahora.");
         }
@@ -1823,7 +1841,7 @@ function renderSuggestedTerms(terms){
     if(result.created === 0){
       window.alert("Ya tenías búsquedas generadas para " + cargosMsg + " — no se repitieron.");
     } else {
-      window.alert("Listo — generamos links de búsqueda para " + cargosMsg + " en " + SEARCH_PORTALS.length + " portales. Revisa \"Hoy\" y la lista de abajo.");
+      window.alert("Listo — generamos links de búsqueda para " + cargosMsg + " en " + SEARCH_PORTALS.length + " portales. Revisa la lista de abajo.");
     }
   });
   document.getElementById("jt-ws-suggest-dismiss-btn").addEventListener("click", function(){
@@ -1851,7 +1869,7 @@ function wireWatchedSearches(){
     if(result.created === 0){
       window.alert("Ya tenías búsquedas generadas para " + cargosMsg + " — no se repitieron.");
     } else {
-      window.alert("Listo — generamos links de búsqueda para " + cargosMsg + " en " + SEARCH_PORTALS.length + " portales. ChileTrabajos queda vigilado automáticamente; revisa \"Hoy\" para ver la confirmación. Los demás portales están listos para que entres tú cuando quieras.");
+      window.alert("Listo — generamos links de búsqueda para " + cargosMsg + " en " + SEARCH_PORTALS.length + " portales. ChileTrabajos queda vigilado automáticamente. Los demás portales están listos para que entres tú cuando quieras.");
     }
   });
   document.getElementById("jt-ws-suggest-btn").addEventListener("click", async function(){
@@ -1911,7 +1929,7 @@ function wireWatchedSearches(){
     if(result.error){
       window.alert("Se guardó la URL, pero no se pudo comprobar todavía: " + result.error);
     } else {
-      window.alert("Listo — tu búsqueda ya está activa. Revisa \"Hoy\" para ver la confirmación.");
+      window.alert("Listo — tu búsqueda ya está activa.");
     }
   });
 }
