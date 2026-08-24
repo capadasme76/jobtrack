@@ -237,6 +237,24 @@
 
   checkSessionAndApply();
 
+  function translateAuthError(err){
+    var msg = (err && err.message) || "";
+    var waitMatch = msg.match(/after (\d+) seconds/i);
+    if(waitMatch){
+      return "Por seguridad, espera " + waitMatch[1] + " segundos antes de volver a intentarlo — no hace falta hacer clic varias veces, el botón ya registró tu primer intento.";
+    }
+    if(/already registered/i.test(msg)){
+      return "Ya existe una cuenta con ese correo. Prueba iniciar sesión o usa \"¿Olvidaste tu contraseña?\".";
+    }
+    if(/invalid login credentials/i.test(msg)){
+      return "Correo o contraseña incorrectos.";
+    }
+    if(/password should be at least/i.test(msg)){
+      return "La contraseña debe tener al menos 6 caracteres.";
+    }
+    return msg || "Ocurrió un error, intenta de nuevo.";
+  }
+
   sessionSignoutBtn.addEventListener("click", async function(){
     sessionSignoutBtn.disabled = true;
     await supabase.auth.signOut();
@@ -249,7 +267,9 @@
     e.preventDefault();
     errBox.style.display = "none";
     infoBox.style.display = "none";
+    var originalLabel = submitBtn.textContent;
     submitBtn.disabled = true;
+    submitBtn.textContent = "Un momento…";
     const email = emailInput.value.trim();
     const password = passwordInput.value;
 
@@ -280,10 +300,11 @@
         location.href = "jobtrack-dashboard-cristian.html";
       }
     } catch(err){
-      errBox.textContent = err.message || "Ocurrió un error, intenta de nuevo.";
+      errBox.textContent = translateAuthError(err);
       errBox.style.display = "block";
     } finally {
       submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
     }
   });
 </script>
