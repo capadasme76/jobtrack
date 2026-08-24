@@ -1701,7 +1701,7 @@ function renderWatchedSearches(){
         : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario"));
     return '<div class="jt-ws-row'+(changed?' changed':'')+'">'
       + '<div><div class="jt-ws-label">'+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
-      + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
+      + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
       + '</div>';
   }).join("") || '<div class="jt-empty">Sin búsquedas generadas todavía.</div>';
   document.getElementById("jt-watched-searches-list").innerHTML = html;
@@ -1711,6 +1711,34 @@ function renderWatchedSearches(){
       state.watchedSearches = state.watchedSearches.filter(function(w){ return w.id !== id; });
       renderWatchedSearches();
       persist();
+    });
+  });
+  // Los 4 portales que no vigilamos automáticamente (todo salvo ChileTrabajos) no
+  // tienen otra forma de llegar a "Hoy" — este botón deja que el usuario decida él
+  // mismo cuándo una búsqueda merece entrar a su cola de revisión de hoy, en vez de
+  // depender solo de la detección automática.
+  document.querySelectorAll('[data-send-to-hoy]').forEach(function(btn){
+    btn.addEventListener("click", async function(){
+      var id = btn.getAttribute("data-send-to-hoy");
+      var w = state.watchedSearches.find(function(x){ return x.id === id; });
+      if(!w) return;
+      if(!state.dispatches) state.dispatches = [];
+      state.dispatches = state.dispatches.filter(function(d){ return !(d.type === "verify" && d.sourceWatchId === w.id); });
+      state.dispatches.push({
+        id: "ws" + Date.now() + "-" + w.id,
+        type: "verify",
+        sourceWatchId: w.id,
+        fromWatchedSearch: true,
+        dateline: "Agregado por ti hoy",
+        headline: 'Revisar tu búsqueda de "' + w.cargo + '"' + (w.portalLabel ? " en " + w.portalLabel : ""),
+        empresa: w.cargo,
+        sector: "Sin sector",
+        meta: "La agregaste tú para revisarla hoy — entra y mira si hay algo nuevo.",
+        link: w.url
+      });
+      await persist();
+      renderAll();
+      window.alert('Agregada a "Hoy".');
     });
   });
   document.querySelectorAll('[data-check-watched-search]').forEach(function(btn){
