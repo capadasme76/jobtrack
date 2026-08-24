@@ -388,6 +388,7 @@
     </div>
     <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
     <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
+    <a href="#sec-busquedas" data-target="sec-busquedas"><i class="jt-ic">🔍</i>Búsquedas de empleo</a>
     <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Pipeline</a>
     <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
     <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">☕</i>Reuniones</a>
@@ -441,22 +442,23 @@
   <div class="jt-profile" id="jt-profile-view"></div>
 
   <div class="jt-profile" id="jt-profile-edit" style="display:none;"></div>
-
-  <div class="jt-pblock" id="jt-watched-searches-block">
-    <div class="jt-pblock-head"><h3>Búsquedas vigiladas</h3></div>
-    <p class="jt-lead">Escribe un cargo o palabras clave y generamos búsquedas en los portales que podemos vigilar — si aparece algo nuevo, te avisamos en "Hoy".</p>
-    <div class="jt-controls">
-      <input type="text" id="jt-ws-cargo" placeholder="Ej. Gerente de Comunicaciones" style="flex:1;min-width:200px;" />
-      <button class="jt-addbtn" id="jt-ws-generate-btn" type="button">+ Generar búsquedas</button>
-    </div>
-    <div class="jt-controls">
-      <input type="text" id="jt-ws-manual-url" placeholder="O pega la URL de una búsqueda ya armada" style="flex:1;min-width:200px;" />
-      <button class="jt-addbtn secondary" id="jt-ws-add-manual-btn" type="button">+ Agregar URL</button>
-    </div>
-    <div id="jt-watched-searches-list"></div>
-  </div>
   </div>
 
+  </div>
+
+<div class="jt-module">
+<div class="jt-section-title" id="sec-busquedas">Búsquedas de empleo</div>
+  <div class="jt-section-sub">Vigilamos portales por ti — te avisamos en "Hoy" apenas aparece algo nuevo</div>
+  <p class="jt-lead">Escribe un cargo o palabras clave y generamos búsquedas en los portales que podemos vigilar todos los días.</p>
+  <div class="jt-controls">
+    <input type="text" id="jt-ws-cargo" placeholder="Ej. Gerente de Comunicaciones" style="flex:1;min-width:200px;" />
+    <button class="jt-addbtn" id="jt-ws-generate-btn" type="button">+ Generar búsquedas</button>
+  </div>
+  <div class="jt-controls">
+    <input type="text" id="jt-ws-manual-url" placeholder="O pega la URL de una búsqueda ya armada" style="flex:1;min-width:200px;" />
+    <button class="jt-addbtn secondary" id="jt-ws-add-manual-btn" type="button">+ Agregar URL</button>
+  </div>
+  <div id="jt-watched-searches-list"></div>
   </div>
 
 <div class="jt-module">
@@ -687,42 +689,49 @@
       </div>
     </details>
     <details class="jt-guide-step" name="jt-guide-group">
-      <summary class="jt-guide-summary"><span class="jt-guide-num">3</span><span class="jt-guide-title">Agrega tus oportunidades al Pipeline</span></summary>
+      <summary class="jt-guide-summary"><span class="jt-guide-num">3</span><span class="jt-guide-title">Activa tus búsquedas de empleo</span></summary>
+      <div class="jt-guide-body">
+        <p>Escribe un cargo o palabras clave y vigilamos los portales que podemos revisar — te avisamos en "Hoy" apenas aparece algo nuevo, todos los días.</p>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-busquedas" data-target="sec-busquedas">Ir a Búsquedas de empleo</a>
+      </div>
+    </details>
+    <details class="jt-guide-step" name="jt-guide-group">
+      <summary class="jt-guide-summary"><span class="jt-guide-num">4</span><span class="jt-guide-title">Agrega tus oportunidades al Pipeline</span></summary>
       <div class="jt-guide-body">
         <p>Cada vacante que te interesa se guarda como una tarjeta — solo el link es obligatorio. Arrástrala entre columnas (Por postular, Contactado, Entrevista, etc.) a medida que avanza el proceso.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-pipeline" data-target="sec-pipeline">Ir a Pipeline</a>
       </div>
     </details>
     <details class="jt-guide-step" name="jt-guide-group">
-      <summary class="jt-guide-summary"><span class="jt-guide-num">4</span><span class="jt-guide-title">Usa Match CV antes de postular</span></summary>
+      <summary class="jt-guide-summary"><span class="jt-guide-num">5</span><span class="jt-guide-title">Usa Match CV antes de postular</span></summary>
       <div class="jt-guide-body">
         <p>Pega el texto de una oferta y compáralo con tu perfil para ver qué tan buen candidato eres y qué ajustar antes de enviar tu postulación.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-match" data-target="sec-match">Ir a Match CV</a>
       </div>
     </details>
     <details class="jt-guide-step" name="jt-guide-group">
-      <summary class="jt-guide-summary"><span class="jt-guide-num">5</span><span class="jt-guide-title">Anota tus reuniones</span></summary>
+      <summary class="jt-guide-summary"><span class="jt-guide-num">6</span><span class="jt-guide-title">Anota tus reuniones</span></summary>
       <div class="jt-guide-body">
         <p>Entrevistas, cafés y llamadas de networking quedan todas en un solo lugar, con fecha y notas.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-reuniones" data-target="sec-reuniones">Ir a Reuniones</a>
       </div>
     </details>
     <details class="jt-guide-step" name="jt-guide-group">
-      <summary class="jt-guide-summary"><span class="jt-guide-num">6</span><span class="jt-guide-title">Registra tu red de contactos</span></summary>
+      <summary class="jt-guide-summary"><span class="jt-guide-num">7</span><span class="jt-guide-title">Registra tu red de contactos</span></summary>
       <div class="jt-guide-body">
         <p>Guarda a las personas que te pueden ayudar — ex colegas, headhunters, referidos — y el estado de la relación con cada una.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-red" data-target="sec-red">Ir a Mis contactos</a>
       </div>
     </details>
     <details class="jt-guide-step" name="jt-guide-group">
-      <summary class="jt-guide-summary"><span class="jt-guide-num">7</span><span class="jt-guide-title">Revisa tus métricas</span></summary>
+      <summary class="jt-guide-summary"><span class="jt-guide-num">8</span><span class="jt-guide-title">Revisa tus métricas</span></summary>
       <div class="jt-guide-body">
         <p>Muestra en qué etapa se estancan tus postulaciones, para ajustar tu estrategia de búsqueda.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-metricas" data-target="sec-metricas">Ir a Métricas</a>
       </div>
     </details>
     <details class="jt-guide-step" name="jt-guide-group">
-      <summary class="jt-guide-summary"><span class="jt-guide-num">8</span><span class="jt-guide-title">Explora Portales</span></summary>
+      <summary class="jt-guide-summary"><span class="jt-guide-num">9</span><span class="jt-guide-title">Explora Portales</span></summary>
       <div class="jt-guide-body">
         <p>Links directos a los principales sitios de empleo en Chile — generalistas, Estado, headhunters y sectoriales.</p>
         <a class="jt-btn-mini jt-guide-link" href="#sec-portales" data-target="sec-portales">Ir a Portales</a>
