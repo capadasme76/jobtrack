@@ -1076,7 +1076,13 @@ function renderDispatches(){
     // (ej. un falso positivo de una página vigilada) — antes solo "signal" tenía
     // cómo descartarse y el resto se quedaba pegado ahí para siempre.
     var discardBtn = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Descartar</button>';
-    if(d.type !== "signal"){
+    if(d.fromWatchedSearch){
+      // Esta tarjeta viene de una búsqueda vigilada, no de una vacante puntual —
+      // "Guardar"/"Ya postulé"/prioridad no aplican porque todavía no hay un
+      // aviso concreto al que postular, solo un resultado que cambió y hay que
+      // revisar. Se deja solo la acción real: ir a mirar, o descartar.
+      actionsHtml = discardBtn;
+    } else if(d.type !== "signal"){
       var defaultPriority = d.type === "verified" ? "Alta" : "Media";
       if(tracked && tracked.status !== "Por postular"){
         actionsHtml = '<button class="jt-btn-mini applied" type="button" disabled>✓ Ya postulaste</button>' + discardBtn;
@@ -1105,7 +1111,7 @@ function renderDispatches(){
       + liHelp
       + '</div>'
       + '<div class="jt-dispatch-actions">'
-      + '<a class="link" href="'+d.link+'" target="_blank" rel="noopener">'+(d.type==="verified"?"Postular":"Abrir")+' ↗</a>'
+      + '<a class="link" href="'+d.link+'" target="_blank" rel="noopener">'+(d.type==="verified"?"Postular":(d.fromWatchedSearch?"Ver resultados":"Abrir"))+' ↗</a>'
       + (isLinkedIn ? '<button class="jt-copybtn" data-copy="'+esc(d.link)+'" data-idx="'+idx+'" type="button">Copiar link</button>' : '')
       + actionsHtml
       + '</div>'

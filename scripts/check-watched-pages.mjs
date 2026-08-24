@@ -202,6 +202,7 @@ async function processRow(row) {
         id: `ws${Date.now()}-${watch.id}`,
         type: "verify",
         sourceWatchId: watch.id,
+        fromWatchedSearch: true,
         dateline: "Cambio detectado hoy",
         headline: `Posible novedad en tu búsqueda de "${cargo}"${portalSuffix}`,
         empresa: cargo,
