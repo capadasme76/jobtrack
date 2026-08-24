@@ -1590,11 +1590,13 @@ function removeWatchedPage(opportunityId){
   if(existing) state.watchedPages.splice(state.watchedPages.indexOf(existing), 1);
 }
 
-// Portales confirmados como vigilables (contenido real en el HTML, sin bloqueo
-// de bots) — ver hallazgos de la sesión: Laborum e Indeed son SPAs/bloquean
-// requests automatizadas, así que quedan fuera hasta que cambie esa situación.
+// Portales confirmados como vigilables desde nuestra infraestructura real (no solo
+// probados desde una máquina local) — ver hallazgos de la sesión: Laborum e Indeed
+// son SPAs/bloquean requests automatizadas; Computrabajo devolvía contenido real
+// probado localmente, pero bloquea con 403 las IPs de Vercel/GitHub Actions en
+// producción — se sacó de la lista hasta que exista una forma confiable de
+// consultarlo desde un servidor.
 var WATCHED_SEARCH_PORTALS = [
-  { key: "computrabajo", label: "Computrabajo", buildUrl: function(q){ return "https://cl.computrabajo.com/trabajo-de-" + slugifySearchTerm(q); } },
   { key: "chiletrabajos", label: "ChileTrabajos", buildUrl: function(q){ return "https://www.chiletrabajos.cl/encuentra-un-empleo?action=search&order_by=&ord=&within=25&2=" + encodeURIComponent(q); } }
 ];
 
