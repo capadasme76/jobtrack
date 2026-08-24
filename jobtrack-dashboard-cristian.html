@@ -437,10 +437,10 @@
 
 <div class="jt-module">
 <div class="jt-section-title" id="sec-busquedas">Búsquedas de empleo</div>
-  <div class="jt-section-sub">Vigilamos portales por ti — te avisamos en "Hoy" apenas aparece algo nuevo</div>
-  <p class="jt-lead">Escribe un cargo o palabras clave y generamos búsquedas en los portales que podemos vigilar todos los días.</p>
+  <div class="jt-section-sub">Un cargo, todos los portales — con links listos para revisar tú mismo</div>
+  <p class="jt-lead">Escribe un cargo o palabras clave y armamos la búsqueda ya filtrada en cada portal. En ChileTrabajos además la vigilamos por ti todos los días y te avisamos en "Hoy" si algo cambia — en el resto, entra cuando quieras con el link ya listo.</p>
   <div class="jt-controls">
-    <input type="text" id="jt-ws-cargo" placeholder="Ej. Gerente de Comunicaciones" style="flex:1;min-width:200px;" />
+    <input type="text" id="jt-ws-cargo" placeholder="Ej. Gerente de Comunicaciones, Jefe de Comunicaciones (separa con coma si son varios)" style="flex:1;min-width:200px;" />
     <button class="jt-addbtn" id="jt-ws-generate-btn" type="button">+ Generar búsquedas</button>
   </div>
   <div class="jt-controls">
@@ -943,6 +943,12 @@ async function loadState(){
       if(parsed.dispatches) state.dispatches = parsed.dispatches;
       if(parsed.watchedPages) state.watchedPages = parsed.watchedPages;
       if(parsed.watchedSearches) state.watchedSearches = parsed.watchedSearches;
+      // Migración: búsquedas guardadas antes de sumar portales solo-link no traen
+      // "monitored" — todas venían de ChileTrabajos o de una URL pegada a mano,
+      // ambos casos vigilados de verdad hasta ahora, así que quedan en true.
+      state.watchedSearches.forEach(function(w){
+        if(w.monitored === undefined) w.monitored = true;
+      });
       // Checklist de primeros pasos: si la cuenta ya existía antes de esta función
       // (no trae "onboarding" guardado), no se le muestra retroactivamente.
       if(parsed.onboarding) state.onboarding = parsed.onboarding;
@@ -1599,14 +1605,22 @@ function removeWatchedPage(opportunityId){
   if(existing) state.watchedPages.splice(state.watchedPages.indexOf(existing), 1);
 }
 
-// Portales confirmados como vigilables desde nuestra infraestructura real (no solo
-// probados desde una máquina local) — ver hallazgos de la sesión: Laborum e Indeed
-// son SPAs/bloquean requests automatizadas; Computrabajo devolvía contenido real
-// probado localmente, pero bloquea con 403 las IPs de Vercel/GitHub Actions en
-// producción — se sacó de la lista hasta que exista una forma confiable de
-// consultarlo desde un servidor.
-var WATCHED_SEARCH_PORTALS = [
-  { key: "chiletrabajos", label: "ChileTrabajos", buildUrl: function(q){ return "https://www.chiletrabajos.cl/encuentra-un-empleo?action=search&order_by=&ord=&within=25&2=" + encodeURIComponent(q); } }
+// "Generar búsquedas" arma el link de resultados ya filtrado en cada portal de esta
+// lista (igual que ya hacíamos solo para LinkedIn en los dispatches) — eso siempre
+// funciona porque un humano abriendo el link en su navegador no choca con bloqueos
+// de bot ni con páginas que solo renderiza JavaScript. `monitored:true` marca los
+// portales donde ADEMÁS vigilamos el resultado por él automáticamente (hash diario +
+// "Comprobar ahora") — hoy solo ChileTrabajos, el único que un fetch de servidor
+// puede leer: Indeed bloquea requests automatizadas con 403, Laborum/Trabajando.cl
+// son SPAs que a un servidor le devuelven una página vacía, LinkedIn está prohibido
+// por sus términos de uso, y Computrabajo devolvía contenido real probado desde una
+// máquina local pero bloquea con 403 las IPs de Vercel/GitHub Actions en producción.
+var SEARCH_PORTALS = [
+  { key: "chiletrabajos", label: "ChileTrabajos", monitored: true, buildUrl: function(q){ return "https://www.chiletrabajos.cl/encuentra-un-empleo?action=search&order_by=&ord=&within=25&2=" + encodeURIComponent(q); } },
+  { key: "linkedin", label: "LinkedIn", monitored: false, buildUrl: function(q){ return "https://www.linkedin.com/jobs/search/?keywords=" + encodeURIComponent(q) + "&location=Chile"; } },
+  { key: "indeed", label: "Indeed", monitored: false, buildUrl: function(q){ return "https://cl.indeed.com/jobs?q=" + encodeURIComponent(q); } },
+  { key: "laborum", label: "Laborum", monitored: false, buildUrl: function(q){ return "https://www.laborum.cl/empleos-busqueda-" + slugifySearchTerm(q) + ".html"; } },
+  { key: "trabajando", label: "Trabajando.cl", monitored: false, buildUrl: function(q){ return "https://www.trabajando.cl/trabajo-empleo/" + encodeURIComponent(q); } }
 ];
 
 function slugifySearchTerm(text){
@@ -1618,17 +1632,24 @@ function slugifySearchTerm(text){
 }
 
 function renderWatchedSearches(){
+  var cargoInput = document.getElementById("jt-ws-cargo");
+  if(cargoInput && !cargoInput.value && state.profile && state.profile.tituloProfesional){
+    cargoInput.value = state.profile.tituloProfesional;
+  }
   var list = state.watchedSearches || [];
   var html = list.map(function(w){
+    var monitored = w.monitored !== false;
     var changed = !!w.lastChangedAt;
-    var statusText = changed
-      ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
-      : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario");
+    var statusText = !monitored
+      ? "Link listo — ábrelo cuando quieras, no lo vigilamos automáticamente"
+      : (changed
+        ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
+        : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario"));
     return '<div class="jt-ws-row'+(changed?' changed':'')+'">'
       + '<div><div class="jt-ws-label">'+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
-      + '<span><button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> <a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
+      + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
       + '</div>';
-  }).join("") || '<div class="jt-empty">Sin búsquedas vigiladas todavía.</div>';
+  }).join("") || '<div class="jt-empty">Sin búsquedas generadas todavía.</div>';
   document.getElementById("jt-watched-searches-list").innerHTML = html;
   document.querySelectorAll('[data-del-watched-search]').forEach(function(btn){
     btn.addEventListener("click", function(){
@@ -1690,42 +1711,49 @@ async function checkOneWatchedSearch(id){
 
 function wireWatchedSearches(){
   document.getElementById("jt-ws-generate-btn").addEventListener("click", async function(){
-    var cargo = document.getElementById("jt-ws-cargo").value.trim();
-    if(!cargo){ window.alert("Escribe un cargo o palabras clave primero."); return; }
+    // Admite varios cargos a la vez separados por coma, ej. "Periodista, Jefe de Comunicaciones".
+    var cargos = document.getElementById("jt-ws-cargo").value.split(",")
+      .map(function(c){ return c.trim(); })
+      .filter(function(c){ return c.length > 0; });
+    if(!cargos.length){ window.alert("Escribe uno o más cargos o palabras clave primero (sepáralos con coma si son varios)."); return; }
     if(!state.watchedSearches) state.watchedSearches = [];
     var genBtn = this;
     genBtn.disabled = true;
     var originalLabel = genBtn.textContent;
-    genBtn.textContent = "Activando…";
-    var newIds = [];
-    WATCHED_SEARCH_PORTALS.forEach(function(portal){
-      var id = nextId("ws", state.watchedSearches);
-      state.watchedSearches.push({
-        id: id,
-        portal: portal.key,
-        label: cargo + " — " + portal.label,
-        url: portal.buildUrl(cargo),
-        hash: null,
-        lastCheckedAt: null,
-        lastChangedAt: null,
-        source: "auto"
+    genBtn.textContent = "Generando…";
+    var monitoredIds = [];
+    cargos.forEach(function(cargo){
+      SEARCH_PORTALS.forEach(function(portal){
+        var id = nextId("ws", state.watchedSearches);
+        state.watchedSearches.push({
+          id: id,
+          portal: portal.key,
+          label: cargo + " — " + portal.label,
+          url: portal.buildUrl(cargo),
+          hash: null,
+          lastCheckedAt: null,
+          lastChangedAt: null,
+          source: "auto",
+          monitored: portal.monitored
+        });
+        if(portal.monitored) monitoredIds.push(id);
       });
-      newIds.push(id);
     });
     document.getElementById("jt-ws-cargo").value = "";
     renderWatchedSearches();
     await persist();
-    // Comprueba de inmediato cada búsqueda recién creada — así queda activa
-    // altiro y deja una confirmación visible en "Hoy", en vez de quedar en
-    // silencio hasta el cron del día siguiente.
-    for(var i=0; i<newIds.length; i++){
-      await checkOneWatchedSearch(newIds[i]);
+    // Solo los portales "monitored" (hoy: ChileTrabajos) pasan por el chequeo
+    // automático del servidor — el resto son links puros, no hay nada que
+    // comprobar en el backend para ellos.
+    for(var i=0; i<monitoredIds.length; i++){
+      await checkOneWatchedSearch(monitoredIds[i]);
     }
     await loadState();
     renderAll();
     genBtn.disabled = false;
     genBtn.textContent = originalLabel;
-    window.alert("Listo — tu búsqueda ya está activa. Revisa \"Hoy\" para ver la confirmación.");
+    var cargosMsg = cargos.length > 1 ? (cargos.length + " cargos") : ('"' + cargos[0] + '"');
+    window.alert("Listo — generamos links de búsqueda para " + cargosMsg + " en " + SEARCH_PORTALS.length + " portales. ChileTrabajos queda vigilado automáticamente; revisa \"Hoy\" para ver la confirmación. Los demás portales están listos para que entres tú cuando quieras.");
   });
   document.getElementById("jt-ws-add-manual-btn").addEventListener("click", async function(){
     var url = document.getElementById("jt-ws-manual-url").value.trim();

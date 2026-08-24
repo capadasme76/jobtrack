@@ -34,11 +34,17 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Fechas, horas y días de la semana sueltos en una página (ej. un banner "hoy es
+// miércoles 19 de agosto") cambian todos los días sin que haya ninguna vacante
+// nueva — se descartan antes de hashear para no generar avisos falsos.
+const DATE_NOISE_RE = /\b\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+\d{4}\b|\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b|\b\d{1,2}:\d{2}(:\d{2})?|\b(lunes|martes|miércoles|jueves|viernes|sábado|domingo)\b/gi;
+
 function normalizeHtml(html) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
+    .replace(DATE_NOISE_RE, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -138,9 +144,14 @@ async function processRow(row) {
       watch.lastChangedAt = now;
       const opp = opportunities.find((o) => o.id === watch.opportunityId);
       const empresa = opp ? opp.empresa : "una empresa que vigilas";
+      // Antes de avisar de nuevo, se saca cualquier aviso anterior de esta misma
+      // página que el usuario todavía no haya revisado — así nunca se acumulan
+      // varias tarjetas duplicadas del mismo watch en "Hoy".
+      data.dispatches = data.dispatches.filter((d) => !(d.type === "verify" && d.sourceWatchId === watch.opportunityId));
       data.dispatches.push({
         id: `wd${Date.now()}-${watch.opportunityId}`,
         type: "verify",
+        sourceWatchId: watch.opportunityId,
         dateline: "Cambio detectado hoy",
         headline: `Posible novedad en la página de empleos de ${empresa}`,
         empresa,
@@ -154,6 +165,7 @@ async function processRow(row) {
 
   for (const watch of watchedSearches) {
     if (!watch.url) { skipped++; continue; }
+    if (watch.monitored === false) { skipped++; continue; }
     if (watch.url.toLowerCase().includes("linkedin.com")) { skipped++; continue; }
 
     await sleep(DELAY_BETWEEN_FETCHES_MS);
@@ -190,9 +202,11 @@ async function processRow(row) {
       changed++;
       watch.hash = result.hash;
       watch.lastChangedAt = now;
+      data.dispatches = data.dispatches.filter((d) => !(d.type === "verify" && d.sourceWatchId === watch.id));
       data.dispatches.push({
         id: `ws${Date.now()}-${watch.id}`,
         type: "verify",
+        sourceWatchId: watch.id,
         dateline: "Cambio detectado hoy",
         headline: `Posible novedad en tu búsqueda "${label}"`,
         empresa: label,

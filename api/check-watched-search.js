@@ -23,11 +23,16 @@ async function verifySupabaseUser(accessToken) {
   return res.json();
 }
 
+// Ver scripts/check-watched-pages.mjs: fechas/horas/días sueltos cambian solos
+// en muchas páginas sin que haya vacante nueva — se descartan antes de hashear.
+const DATE_NOISE_RE = /\b\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+\d{4}\b|\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b|\b\d{1,2}:\d{2}(:\d{2})?|\b(lunes|martes|miércoles|jueves|viernes|sábado|domingo)\b/gi;
+
 function normalizeHtml(html) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
+    .replace(DATE_NOISE_RE, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -95,8 +100,8 @@ export default async function handler(req, res) {
       res.status(404).json({ error: "No encontré esa búsqueda vigilada." });
       return;
     }
-    if (watch.url.toLowerCase().includes("linkedin.com")) {
-      res.status(400).json({ error: "LinkedIn no se puede vigilar (viola sus términos de uso)." });
+    if (watch.monitored === false || watch.url.toLowerCase().includes("linkedin.com")) {
+      res.status(400).json({ error: "Este portal no se puede vigilar automáticamente — usa \"Ver\" para revisarlo tú mismo." });
       return;
     }
 
@@ -127,9 +132,11 @@ export default async function handler(req, res) {
     if (!Array.isArray(data.dispatches)) data.dispatches = [];
     if (changed) {
       watch.lastChangedAt = now;
+      data.dispatches = data.dispatches.filter((d) => !(d.type === "verify" && d.sourceWatchId === watch.id));
       data.dispatches.push({
         id: `ws${Date.now()}-${watch.id}`,
         type: "verify",
+        sourceWatchId: watch.id,
         dateline: "Cambio detectado hoy",
         headline: `Posible novedad en tu búsqueda "${watch.label || "una búsqueda que vigilas"}"`,
         empresa: watch.label || "una búsqueda que vigilas",
