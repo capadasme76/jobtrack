@@ -1847,18 +1847,37 @@ function renderSuggestedTerms(terms){
     window.alert("No se generaron sugerencias — intenta de nuevo o escribe el cargo directamente.");
     return;
   }
-  var checksHtml = terms.map(function(t){
+  function suggestedTermRow(t){
     return '<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 0;">'
       + '<input type="checkbox" class="jt-ws-suggested-term" value="'+esc(t)+'" checked /> '+esc(t)
       + '</label>';
-  }).join("");
-  box.innerHTML = '<div class="jt-lead" style="margin-bottom:4px;">Términos sugeridos según tu perfil — marca los que quieras activar:</div>'
-    + checksHtml
+  }
+  var checksHtml = terms.map(suggestedTermRow).join("");
+  box.innerHTML = '<div class="jt-lead" style="margin-bottom:4px;">Términos sugeridos según tu perfil — marca los que quieras activar, o agrega los tuyos:</div>'
+    + '<div id="jt-ws-suggested-list">' + checksHtml + '</div>'
+    + '<div class="jt-controls" style="margin-top:6px;">'
+    + '<input type="text" id="jt-ws-suggest-add-input" placeholder="Agregar otro término" style="flex:1;min-width:160px;" />'
+    + '<button class="jt-btn-mini" id="jt-ws-suggest-add-btn" type="button">+ Añadir</button>'
+    + '</div>'
     + '<div class="jt-controls" style="margin-top:6px;">'
     + '<button class="jt-addbtn" id="jt-ws-suggest-generate-btn" type="button">+ Generar búsquedas para seleccionados</button>'
     + '<button class="jt-btn-ghost" id="jt-ws-suggest-dismiss-btn" type="button">Descartar sugerencias</button>'
     + '</div>';
   box.style.display = "block";
+  function addCustomTerm(){
+    var input = document.getElementById("jt-ws-suggest-add-input");
+    var value = input.value.trim();
+    if(!value) return;
+    var already = Array.prototype.slice.call(document.querySelectorAll(".jt-ws-suggested-term")).some(function(cb){ return cb.value.toLowerCase() === value.toLowerCase(); });
+    if(already){ window.alert('"' + value + '" ya está en la lista.'); return; }
+    document.getElementById("jt-ws-suggested-list").insertAdjacentHTML("beforeend", suggestedTermRow(value));
+    input.value = "";
+    input.focus();
+  }
+  document.getElementById("jt-ws-suggest-add-btn").addEventListener("click", addCustomTerm);
+  document.getElementById("jt-ws-suggest-add-input").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); addCustomTerm(); }
+  });
   document.getElementById("jt-ws-suggest-generate-btn").addEventListener("click", async function(){
     var selected = Array.prototype.slice.call(document.querySelectorAll(".jt-ws-suggested-term:checked")).map(function(cb){ return cb.value; });
     if(!selected.length){ window.alert("Marca al menos un término."); return; }
