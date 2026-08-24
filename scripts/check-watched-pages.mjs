@@ -144,6 +144,7 @@ async function processRow(row) {
       watch.lastChangedAt = now;
       const opp = opportunities.find((o) => o.id === watch.opportunityId);
       const empresa = opp ? opp.empresa : "una empresa que vigilas";
+      const cargoSuffix = opp && opp.cargo ? ` — buscas: ${opp.cargo}` : "";
       // Antes de avisar de nuevo, se saca cualquier aviso anterior de esta misma
       // página que el usuario todavía no haya revisado — así nunca se acumulan
       // varias tarjetas duplicadas del mismo watch en "Hoy".
@@ -153,7 +154,7 @@ async function processRow(row) {
         type: "verify",
         sourceWatchId: watch.opportunityId,
         dateline: "Cambio detectado hoy",
-        headline: `Posible novedad en la página de empleos de ${empresa}`,
+        headline: `Posible novedad en la página de empleos de ${empresa}${cargoSuffix}`,
         empresa,
         sector: opp ? opp.sector : "Sin sector",
         meta: "Detectamos un cambio en la página que vigilas — revisa si hay una vacante nueva antes de asumir que es algo relevante.",
@@ -181,7 +182,8 @@ async function processRow(row) {
     watch.lastCheckedAt = now;
     mutated = true;
 
-    const label = watch.label || "una búsqueda que vigilas";
+    const cargo = watch.cargo || watch.label || "una búsqueda que vigilas";
+    const portalSuffix = watch.portalLabel ? ` en ${watch.portalLabel}` : "";
 
     if (watch.hash === null || watch.hash === undefined) {
       watch.hash = result.hash;
@@ -189,8 +191,8 @@ async function processRow(row) {
         id: `ws${Date.now()}-${watch.id}`,
         type: "signal",
         dateline: "Búsqueda activada hoy",
-        headline: `Tu búsqueda "${label}" ya está activa`,
-        empresa: label,
+        headline: `Tu búsqueda de "${cargo}"${portalSuffix} ya está activa`,
+        empresa: cargo,
         sector: "Sin sector",
         meta: "La estamos vigilando todos los días. En cuanto detectemos un cambio en sus resultados, te avisamos aquí en \"Hoy\" para que revises y la guardes en Pipeline si te sirve.",
         link: watch.url,
@@ -208,13 +210,13 @@ async function processRow(row) {
         type: "verify",
         sourceWatchId: watch.id,
         dateline: "Cambio detectado hoy",
-        headline: `Posible novedad en tu búsqueda "${label}"`,
-        empresa: label,
+        headline: `Posible novedad en tu búsqueda de "${cargo}"${portalSuffix}`,
+        empresa: cargo,
         sector: "Sin sector",
         meta: "Detectamos un cambio en los resultados de esta búsqueda — revisa si hay una vacante nueva antes de asumir que es algo relevante.",
         link: watch.url,
       });
-      console.log(`  CAMBIO (búsqueda) ${watch.url} (${label})`);
+      console.log(`  CAMBIO (búsqueda) ${watch.url} (${cargo})`);
     }
   }
 

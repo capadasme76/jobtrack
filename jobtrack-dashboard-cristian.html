@@ -440,6 +440,10 @@
   <div class="jt-section-sub">Un cargo, todos los portales — con links listos para revisar tú mismo</div>
   <p class="jt-lead">Escribe un cargo o palabras clave y armamos la búsqueda ya filtrada en cada portal. En ChileTrabajos además la vigilamos por ti todos los días y te avisamos en "Hoy" si algo cambia — en el resto, entra cuando quieras con el link ya listo.</p>
   <div class="jt-controls">
+    <button class="jt-addbtn secondary" id="jt-ws-suggest-btn" type="button">💡 Sugerir términos según mi perfil</button>
+  </div>
+  <div id="jt-ws-suggestions" style="display:none;"></div>
+  <div class="jt-controls">
     <input type="text" id="jt-ws-cargo" placeholder="Ej. Gerente de Comunicaciones, Jefe de Comunicaciones (separa con coma si son varios)" style="flex:1;min-width:200px;" />
     <button class="jt-addbtn" id="jt-ws-generate-btn" type="button">+ Generar búsquedas</button>
   </div>
@@ -941,13 +945,35 @@ async function loadState(){
       });
       if(parsed.networking) state.networking = parsed.networking;
       if(parsed.dispatches) state.dispatches = parsed.dispatches;
+      // Limpieza: un bug previo podía dejar varias tarjetas idénticas (mismo tipo +
+      // mismo titular) sin revisar para el mismo watch, apiladas en "Hoy" sin
+      // forma de descartarlas — se deja solo la más reciente de cada una.
+      (function(){
+        var seen = {};
+        for(var i = state.dispatches.length - 1; i >= 0; i--){
+          var d = state.dispatches[i];
+          if(d.type !== "verify" && d.type !== "signal") continue;
+          var key = d.type + "|" + d.headline;
+          if(seen[key]) state.dispatches.splice(i, 1);
+          else seen[key] = true;
+        }
+      })();
       if(parsed.watchedPages) state.watchedPages = parsed.watchedPages;
       if(parsed.watchedSearches) state.watchedSearches = parsed.watchedSearches;
       // Migración: búsquedas guardadas antes de sumar portales solo-link no traen
       // "monitored" — todas venían de ChileTrabajos o de una URL pegada a mano,
-      // ambos casos vigilados de verdad hasta ahora, así que quedan en true.
+      // ambos casos vigilados de verdad hasta ahora, así que quedan en true. Tampoco
+      // traían "cargo"/"portalLabel" por separado (solo el "label" combinado) —
+      // se reconstruyen para poder armar textos más claros en los avisos.
       state.watchedSearches.forEach(function(w){
         if(w.monitored === undefined) w.monitored = true;
+        if(!w.portalLabel){
+          var portalDef = SEARCH_PORTALS.find(function(p){ return p.key === w.portal; });
+          w.portalLabel = portalDef ? portalDef.label : (w.label && w.label.indexOf(" — ") !== -1 ? w.label.split(" — ").pop() : "");
+        }
+        if(!w.cargo){
+          w.cargo = w.label && w.label.indexOf(" — ") !== -1 ? w.label.split(" — ")[0] : (w.label || "");
+        }
       });
       // Checklist de primeros pasos: si la cuenta ya existía antes de esta función
       // (no trae "onboarding" guardado), no se le muestra retroactivamente.
@@ -1028,10 +1054,14 @@ function renderDispatches(){
     }
     var tracked = findTrackedOpp(d);
     var actionsHtml = "";
+    // Toda tarjeta necesita una forma de sacarla de "Hoy" aunque no sea relevante
+    // (ej. un falso positivo de una página vigilada) — antes solo "signal" tenía
+    // cómo descartarse y el resto se quedaba pegado ahí para siempre.
+    var discardBtn = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Descartar</button>';
     if(d.type !== "signal"){
       var defaultPriority = d.type === "verified" ? "Alta" : "Media";
       if(tracked && tracked.status !== "Por postular"){
-        actionsHtml = '<button class="jt-btn-mini applied" type="button" disabled>✓ Ya postulaste</button>';
+        actionsHtml = '<button class="jt-btn-mini applied" type="button" disabled>✓ Ya postulaste</button>' + discardBtn;
       } else {
         var priSelect = '<select class="jt-dispatch-priority" data-priority-for="'+d.id+'">'
           + ["Alta","Media","Baja"].map(function(p){ return '<option value="'+p+'"'+(p===defaultPriority?' selected':'')+'>'+p+'</option>'; }).join("")
@@ -1040,7 +1070,7 @@ function renderDispatches(){
           ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en pipeline</span>'
           : '<button class="jt-btn-mini" data-save-dispatch="'+d.id+'" type="button">Guardar</button>';
         var applyBtn = '<button class="jt-btn-mini" data-mark-applied="'+d.id+'" type="button">Ya postulé</button>';
-        actionsHtml = priSelect + saveBtn + applyBtn;
+        actionsHtml = priSelect + saveBtn + applyBtn + discardBtn;
       }
     } else {
       var archiveBtn = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Archivar señal</button>';
@@ -1709,6 +1739,99 @@ async function checkOneWatchedSearch(id){
   }
 }
 
+// Crea los links de portal para cada cargo dado y activa la vigilancia real donde
+// corresponde. Se reusa tanto desde el botón manual como desde "Sugerir términos
+// según mi perfil". Salta combinaciones cargo+portal que ya existan (evita las
+// filas y avisos "ya está activa" duplicados cuando el usuario repite un cargo).
+async function generateSearchesForCargos(cargos){
+  if(!state.watchedSearches) state.watchedSearches = [];
+  var monitoredIds = [];
+  var created = 0;
+  cargos.forEach(function(cargo){
+    SEARCH_PORTALS.forEach(function(portal){
+      var exists = state.watchedSearches.some(function(w){
+        return w.portal === portal.key && (w.cargo || "").toLowerCase() === cargo.toLowerCase();
+      });
+      if(exists) return;
+      var id = nextId("ws", state.watchedSearches);
+      state.watchedSearches.push({
+        id: id,
+        portal: portal.key,
+        portalLabel: portal.label,
+        cargo: cargo,
+        label: cargo + " — " + portal.label,
+        url: portal.buildUrl(cargo),
+        hash: null,
+        lastCheckedAt: null,
+        lastChangedAt: null,
+        source: "auto",
+        monitored: portal.monitored
+      });
+      created++;
+      if(portal.monitored) monitoredIds.push(id);
+    });
+  });
+  renderWatchedSearches();
+  await persist();
+  // Solo los portales "monitored" (hoy: ChileTrabajos) pasan por el chequeo
+  // automático del servidor — el resto son links puros, no hay nada que
+  // comprobar en el backend para ellos.
+  for(var i=0; i<monitoredIds.length; i++){
+    await checkOneWatchedSearch(monitoredIds[i]);
+  }
+  await loadState();
+  renderAll();
+  return { created: created, skipped: (cargos.length * SEARCH_PORTALS.length) - created };
+}
+
+// Muestra la lista de términos sugeridos por IA (según el perfil) como checklist —
+// el usuario elige cuáles activar en vez de tener que pensar él mismo los sinónimos
+// y variantes de cargo antes de poder buscar.
+function renderSuggestedTerms(terms){
+  var box = document.getElementById("jt-ws-suggestions");
+  if(!terms.length){
+    box.style.display = "none";
+    box.innerHTML = "";
+    window.alert("No se generaron sugerencias — intenta de nuevo o escribe el cargo directamente.");
+    return;
+  }
+  var checksHtml = terms.map(function(t){
+    return '<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 0;">'
+      + '<input type="checkbox" class="jt-ws-suggested-term" value="'+esc(t)+'" checked /> '+esc(t)
+      + '</label>';
+  }).join("");
+  box.innerHTML = '<div class="jt-lead" style="margin-bottom:4px;">Términos sugeridos según tu perfil — marca los que quieras activar:</div>'
+    + checksHtml
+    + '<div class="jt-controls" style="margin-top:6px;">'
+    + '<button class="jt-addbtn" id="jt-ws-suggest-generate-btn" type="button">+ Generar búsquedas para seleccionados</button>'
+    + '<button class="jt-btn-ghost" id="jt-ws-suggest-dismiss-btn" type="button">Descartar sugerencias</button>'
+    + '</div>';
+  box.style.display = "block";
+  document.getElementById("jt-ws-suggest-generate-btn").addEventListener("click", async function(){
+    var selected = Array.prototype.slice.call(document.querySelectorAll(".jt-ws-suggested-term:checked")).map(function(cb){ return cb.value; });
+    if(!selected.length){ window.alert("Marca al menos un término."); return; }
+    var btn = this;
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.textContent = "Generando…";
+    var result = await generateSearchesForCargos(selected);
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+    box.style.display = "none";
+    box.innerHTML = "";
+    var cargosMsg = selected.length > 1 ? (selected.length + " términos") : ('"' + selected[0] + '"');
+    if(result.created === 0){
+      window.alert("Ya tenías búsquedas generadas para " + cargosMsg + " — no se repitieron.");
+    } else {
+      window.alert("Listo — generamos links de búsqueda para " + cargosMsg + " en " + SEARCH_PORTALS.length + " portales. Revisa \"Hoy\" y la lista de abajo.");
+    }
+  });
+  document.getElementById("jt-ws-suggest-dismiss-btn").addEventListener("click", function(){
+    box.style.display = "none";
+    box.innerHTML = "";
+  });
+}
+
 function wireWatchedSearches(){
   document.getElementById("jt-ws-generate-btn").addEventListener("click", async function(){
     // Admite varios cargos a la vez separados por coma, ej. "Periodista, Jefe de Comunicaciones".
@@ -1716,44 +1839,46 @@ function wireWatchedSearches(){
       .map(function(c){ return c.trim(); })
       .filter(function(c){ return c.length > 0; });
     if(!cargos.length){ window.alert("Escribe uno o más cargos o palabras clave primero (sepáralos con coma si son varios)."); return; }
-    if(!state.watchedSearches) state.watchedSearches = [];
     var genBtn = this;
     genBtn.disabled = true;
     var originalLabel = genBtn.textContent;
     genBtn.textContent = "Generando…";
-    var monitoredIds = [];
-    cargos.forEach(function(cargo){
-      SEARCH_PORTALS.forEach(function(portal){
-        var id = nextId("ws", state.watchedSearches);
-        state.watchedSearches.push({
-          id: id,
-          portal: portal.key,
-          label: cargo + " — " + portal.label,
-          url: portal.buildUrl(cargo),
-          hash: null,
-          lastCheckedAt: null,
-          lastChangedAt: null,
-          source: "auto",
-          monitored: portal.monitored
-        });
-        if(portal.monitored) monitoredIds.push(id);
-      });
-    });
     document.getElementById("jt-ws-cargo").value = "";
-    renderWatchedSearches();
-    await persist();
-    // Solo los portales "monitored" (hoy: ChileTrabajos) pasan por el chequeo
-    // automático del servidor — el resto son links puros, no hay nada que
-    // comprobar en el backend para ellos.
-    for(var i=0; i<monitoredIds.length; i++){
-      await checkOneWatchedSearch(monitoredIds[i]);
-    }
-    await loadState();
-    renderAll();
+    var result = await generateSearchesForCargos(cargos);
     genBtn.disabled = false;
     genBtn.textContent = originalLabel;
     var cargosMsg = cargos.length > 1 ? (cargos.length + " cargos") : ('"' + cargos[0] + '"');
-    window.alert("Listo — generamos links de búsqueda para " + cargosMsg + " en " + SEARCH_PORTALS.length + " portales. ChileTrabajos queda vigilado automáticamente; revisa \"Hoy\" para ver la confirmación. Los demás portales están listos para que entres tú cuando quieras.");
+    if(result.created === 0){
+      window.alert("Ya tenías búsquedas generadas para " + cargosMsg + " — no se repitieron.");
+    } else {
+      window.alert("Listo — generamos links de búsqueda para " + cargosMsg + " en " + SEARCH_PORTALS.length + " portales. ChileTrabajos queda vigilado automáticamente; revisa \"Hoy\" para ver la confirmación. Los demás portales están listos para que entres tú cuando quieras.");
+    }
+  });
+  document.getElementById("jt-ws-suggest-btn").addEventListener("click", async function(){
+    var titulo = state.profile && state.profile.tituloProfesional ? state.profile.tituloProfesional.trim() : "";
+    if(!titulo){ window.alert("Completa al menos el título profesional en \"Mi perfil\" antes de pedir sugerencias."); return; }
+    var btn = this;
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.textContent = "Pensando…";
+    try{
+      var sessionRes = await supabase.auth.getSession();
+      var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+      if(!token){ window.alert("Tu sesión expiró — recarga la página e intenta de nuevo."); return; }
+      var res = await fetch("/api/suggest-search-terms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ tituloProfesional: titulo, resumen: state.profile.resumen, habilidades: state.profile.habilidades })
+      });
+      var data = await res.json();
+      if(!res.ok){ window.alert(data.error || "No se pudo generar sugerencias."); return; }
+      renderSuggestedTerms(data.terms || []);
+    } catch(e){
+      window.alert("No se pudo generar sugerencias — intenta de nuevo.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
   });
   document.getElementById("jt-ws-add-manual-btn").addEventListener("click", async function(){
     var url = document.getElementById("jt-ws-manual-url").value.trim();
