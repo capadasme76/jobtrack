@@ -59,6 +59,10 @@
   .jt-login-forgot{text-align:center;margin-top:10px;}
   .jt-login-forgot button{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
   .jt-login-forgot button:hover{color:var(--ink-soft);}
+  .jt-login-resend{text-align:center;margin-top:6px;}
+  .jt-login-resend button{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
+  .jt-login-resend button:hover{color:var(--ink-soft);}
+  .jt-login-resend button:disabled{cursor:default;text-decoration:none;opacity:.7;}
   .jt-login-legal{font-size:12px;line-height:1.5;color:var(--ink-faint);margin:0 0 10px;}
   .jt-login-legal a{color:var(--brick);}
   .jt-login-switch button{font-family:var(--font-body);font-size:13.5px;color:var(--brick);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
@@ -85,6 +89,9 @@
     </div>
     <div class="jt-login-err" id="jt-login-err"></div>
     <div class="jt-login-info" id="jt-login-info"></div>
+    <div class="jt-login-resend" id="jt-login-resend" style="display:none;">
+      <button type="button" id="jt-login-resend-btn">Reenviar correo de confirmación</button>
+    </div>
     <form id="jt-login-form">
       <div class="jt-login-field" id="jt-login-email-field">
         <label for="jt-login-email">Email</label>
@@ -126,6 +133,9 @@
   const switchBtn = document.getElementById("jt-login-switch-btn");
   const errBox = document.getElementById("jt-login-err");
   const infoBox = document.getElementById("jt-login-info");
+  const resendWrap = document.getElementById("jt-login-resend");
+  const resendBtn = document.getElementById("jt-login-resend-btn");
+  let pendingConfirmEmail = "";
   const form = document.getElementById("jt-login-form");
   const emailInput = document.getElementById("jt-login-email");
   const passwordInput = document.getElementById("jt-login-password");
@@ -195,6 +205,7 @@
     }
     errBox.style.display = "none";
     infoBox.style.display = "none";
+    resendWrap.style.display = "none";
   }
   applyMode();
 
@@ -249,11 +260,34 @@
     if(/invalid login credentials/i.test(msg)){
       return "Correo o contraseña incorrectos.";
     }
+    if(/email not confirmed/i.test(msg)){
+      return "Todavía no confirmaste tu correo. Revisa tu bandeja (y spam) o usa el botón de abajo para que te reenviemos el link.";
+    }
     if(/password should be at least/i.test(msg)){
       return "La contraseña debe tener al menos 6 caracteres.";
     }
     return msg || "Ocurrió un error, intenta de nuevo.";
   }
+
+  resendBtn.addEventListener("click", async function(){
+    if(!pendingConfirmEmail) return;
+    resendBtn.disabled = true;
+    var originalResendLabel = resendBtn.textContent;
+    resendBtn.textContent = "Enviando…";
+    try{
+      const { error } = await supabase.auth.resend({ type: "signup", email: pendingConfirmEmail });
+      if(error) throw error;
+      infoBox.textContent = "Te reenviamos el correo de confirmación a " + pendingConfirmEmail + " — revisa tu bandeja (y spam) en unos minutos.";
+      infoBox.style.display = "block";
+      errBox.style.display = "none";
+    } catch(err){
+      errBox.textContent = translateAuthError(err);
+      errBox.style.display = "block";
+    } finally {
+      resendBtn.disabled = false;
+      resendBtn.textContent = originalResendLabel;
+    }
+  });
 
   sessionSignoutBtn.addEventListener("click", async function(){
     sessionSignoutBtn.disabled = true;
@@ -267,6 +301,7 @@
     e.preventDefault();
     errBox.style.display = "none";
     infoBox.style.display = "none";
+    resendWrap.style.display = "none";
     var originalLabel = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.textContent = "Un momento…";
@@ -282,6 +317,8 @@
         } else {
           infoBox.textContent = "Cuenta creada. Revisa tu correo para confirmar antes de iniciar sesión.";
           infoBox.style.display = "block";
+          pendingConfirmEmail = email;
+          resendWrap.style.display = "block";
         }
       } else if(mode === "forgot"){
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
@@ -302,6 +339,10 @@
     } catch(err){
       errBox.textContent = translateAuthError(err);
       errBox.style.display = "block";
+      if(/email not confirmed/i.test((err && err.message) || "")){
+        pendingConfirmEmail = email;
+        resendWrap.style.display = "block";
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = originalLabel;
