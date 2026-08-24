@@ -99,7 +99,10 @@ async function checkOnePage(url) {
 async function processRow(row) {
   const data = row.data || {};
   const watchedPages = Array.isArray(data.watchedPages) ? data.watchedPages : [];
-  if (watchedPages.length === 0) return { checked: 0, changed: 0, skipped: 0, errors: 0, mutated: false };
+  const watchedSearches = Array.isArray(data.watchedSearches) ? data.watchedSearches : [];
+  if (watchedPages.length === 0 && watchedSearches.length === 0) {
+    return { checked: 0, changed: 0, skipped: 0, errors: 0, mutated: false };
+  }
 
   if (!Array.isArray(data.dispatches)) data.dispatches = [];
   const opportunities = Array.isArray(data.opportunities) ? data.opportunities : [];
@@ -146,6 +149,47 @@ async function processRow(row) {
         link: watch.url,
       });
       console.log(`  CAMBIO ${watch.url} (${empresa})`);
+    }
+  }
+
+  for (const watch of watchedSearches) {
+    if (!watch.url) { skipped++; continue; }
+    if (watch.url.toLowerCase().includes("linkedin.com")) { skipped++; continue; }
+
+    await sleep(DELAY_BETWEEN_FETCHES_MS);
+    const result = await checkOnePage(watch.url);
+    const now = new Date().toISOString();
+
+    if (!result.ok) {
+      console.log(`  ERROR ${watch.url} — ${result.reason}`);
+      errors++;
+      continue;
+    }
+    checked++;
+    watch.lastCheckedAt = now;
+    mutated = true;
+
+    if (watch.hash === null || watch.hash === undefined) {
+      watch.hash = result.hash;
+      continue;
+    }
+
+    if (result.hash !== watch.hash) {
+      changed++;
+      watch.hash = result.hash;
+      watch.lastChangedAt = now;
+      const label = watch.label || "una búsqueda que vigilas";
+      data.dispatches.push({
+        id: `ws${Date.now()}-${watch.id}`,
+        type: "verify",
+        dateline: "Cambio detectado hoy",
+        headline: `Posible novedad en tu búsqueda "${label}"`,
+        empresa: label,
+        sector: "Sin sector",
+        meta: "Detectamos un cambio en los resultados de esta búsqueda — revisa si hay una vacante nueva antes de asumir que es algo relevante.",
+        link: watch.url,
+      });
+      console.log(`  CAMBIO (búsqueda) ${watch.url} (${label})`);
     }
   }
 
