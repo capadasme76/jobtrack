@@ -74,6 +74,8 @@
   .jt-login-session-notice p{margin:0 0 10px;}
   .jt-login-session-notice button{width:100%;font-family:var(--font-body);font-weight:600;font-size:13.5px;background:var(--card-bg);color:var(--ink);border:1px solid var(--line);padding:9px 12px;cursor:pointer;}
   .jt-login-session-notice button:hover{border-color:var(--ink-soft);}
+  .jt-login-session-notice button#jt-login-session-continue{background:var(--brick);color:#fff;border-color:var(--brick);margin-bottom:8px;}
+  .jt-login-session-notice button#jt-login-session-continue:hover{background:var(--brick-dark);border-color:var(--brick-dark);}
 </style>
 
 <div class="jt-login-box">
@@ -85,6 +87,7 @@
     <h1 id="jt-login-title">Iniciar sesión</h1>
     <div class="jt-login-session-notice" id="jt-login-session-notice">
       <p id="jt-login-session-text"></p>
+      <button type="button" id="jt-login-session-continue" style="display:none;">Continuar con esta cuenta</button>
       <button type="button" id="jt-login-session-signout">Cerrar esa sesión y continuar</button>
     </div>
     <div class="jt-login-err" id="jt-login-err"></div>
@@ -142,6 +145,7 @@
   const sessionNotice = document.getElementById("jt-login-session-notice");
   const sessionText = document.getElementById("jt-login-session-text");
   const sessionSignoutBtn = document.getElementById("jt-login-session-signout");
+  const sessionContinueBtn = document.getElementById("jt-login-session-continue");
   const pwToggle = document.getElementById("jt-login-pw-toggle");
   const emailField = document.getElementById("jt-login-email-field");
   const passwordField = document.getElementById("jt-login-password-field");
@@ -209,11 +213,13 @@
   }
   applyMode();
 
-  // Si ya hay sesión activa: en modo login, saltar directo al dashboard.
-  // En modo signup, NUNCA saltar en silencio (eso metía al usuario a una cuenta
-  // ajena que seguía abierta en ese navegador) — hay que avisar y pedir confirmación.
-  // En recuperación, tampoco: recoveryActive corta el salto para mostrar el
-  // formulario de nueva contraseña en vez de mandar al dashboard.
+  // Si ya hay sesión activa, NUNCA saltar en silencio al dashboard — ni en
+  // login ni en signup. Un navegador compartido/reusado puede tener la sesión
+  // de otra persona guardada, y saltar directo metía a quien fuera a escribir
+  // su propio correo/clave derecho a la cuenta ajena que seguía abierta ahí,
+  // sin darle la oportunidad de cerrarla primero. Siempre se avisa y se pide
+  // confirmación explícita. En recuperación tampoco: recoveryActive corta el
+  // salto para mostrar el formulario de nueva contraseña.
   function checkSessionAndApply(){
     supabase.auth.getSession().then(function(res){
       if(recoveryActive) return;
@@ -225,13 +231,21 @@
       }
       if(mode === "signup"){
         sessionText.textContent = "Ya hay una sesión abierta en este navegador como " + session.user.email + ". Para crear una cuenta nueva, primero cierra esa sesión.";
+        sessionContinueBtn.style.display = "none";
         sessionNotice.style.display = "block";
         form.style.display = "none";
       } else if(mode === "login"){
-        location.href = "jobtrack-dashboard-cristian.html";
+        sessionText.textContent = "Ya hay una sesión abierta en este navegador como " + session.user.email + ". ¿Es tu cuenta?";
+        sessionContinueBtn.style.display = "block";
+        sessionNotice.style.display = "block";
+        form.style.display = "none";
       }
     });
   }
+
+  sessionContinueBtn.addEventListener("click", function(){
+    location.href = "jobtrack-dashboard-cristian.html";
+  });
 
   switchBtn.addEventListener("click", function(){
     mode = mode === "login" ? "signup" : "login";
