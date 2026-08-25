@@ -773,24 +773,15 @@ function regionOptionsHtml(selected){
   }).join("");
 }
 
-var seedOpportunities = [
-  {id:"op1",sector:"Ejemplo",priority:"Alta",empresa:"[Ejemplo] Empresa A",cargo:"Gerente de Comunicaciones (ejemplo)",renta:"$4M–$6M",status:"Por postular",link:"#",incompleta:false},
-  {id:"op2",sector:"Ejemplo",priority:"Media",empresa:"[Ejemplo] Empresa B",cargo:"Director de Marketing (ejemplo)",renta:"$4M–$6M",status:"Por postular",link:"#",incompleta:false},
-  {id:"op3",sector:"Ejemplo",priority:"Baja",empresa:"[Ejemplo] Empresa C",cargo:"Jefe de Comunicaciones (ejemplo)",renta:"$3M–$5M",status:"Por postular",link:"#",incompleta:false},
-  {id:"op4",sector:"Ejemplo",priority:"Alta",empresa:"[Ejemplo] Empresa D",cargo:"Gerente de Marketing (ejemplo)",renta:"$4M–$6M",status:"Contactado",fechaContacto:"2026-08-18T00:00:00.000Z",notas:"Este es un ejemplo de cómo se ve una oportunidad ya contactada — edítala o bórrala desde el pipeline una vez que agregues las tuyas.",link:"#",incompleta:false}
-];
-
-var seedDispatches = [
-  {id:"d1",type:"verified",dateline:"EJEMPLO — ASÍ SE VE UNA OFERTA VERIFICADA",headline:"Gerente de Comunicaciones (ejemplo)",empresa:"[Ejemplo] Empresa Demo",sector:"Ejemplo",meta:"Este es un ejemplo de cómo se ve un aviso verificado con link directo — edítalo o bórralo desde el pipeline una vez que agregues los tuyos.",link:"https://www.linkedin.com/jobs/"},
-  {id:"d2",type:"verify",dateline:"EJEMPLO — ASÍ SE VE 'VERIFICAR TÚ'",headline:"Jefe de Marketing (ejemplo)",empresa:"[Ejemplo] Otra Empresa",sector:"Ejemplo",meta:"Este es un ejemplo de una oferta que requiere verificación manual antes de postular.",link:"https://www.linkedin.com/jobs/"}
-];
-
-var seedNetworking = [
-  {id:"n1",name:"Contacto de ejemplo A",empresa:"[Ejemplo] Empresa A",relacion:"Conocido",tier:"1"},
-  {id:"n2",name:"Contacto de ejemplo B",empresa:"[Ejemplo] Empresa B",relacion:"Cercano",tier:"1"},
-  {id:"n3",name:"Headhunter de ejemplo",empresa:"[Ejemplo] Consultora de búsqueda",relacion:"Sin contacto",tier:"3"}
-];
-
+// Cada usuario nuevo parte con el dashboard completamente vacío — sin
+// oportunidades, avisos ni contactos de ejemplo. Ya hubo un incidente real de
+// datos personales expuestos vía datos "de ejemplo" hardcodeados en este mismo
+// archivo estático (visible sin sesión); la forma más segura de que no vuelva
+// a pasar es no sembrar ningún registro falso, solo texto de ayuda en los
+// formularios vacíos (ver "jt-empty" en cada sección).
+var seedOpportunities = [];
+var seedDispatches = [];
+var seedNetworking = [];
 var seedMeetings = [];
 
 var seedProfile = {
