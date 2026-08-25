@@ -760,10 +760,6 @@ var currentUserId = null;
 (function(){
 
 var STATUSES = ["Por postular","Contactado","En proceso","Entrevista agendada","Entrevista realizada","Propuesta recibida","Oferta","Descartado","En pausa"];
-// Cuando "Postulé" en una búsqueda vigilada abre el formulario de Pipeline
-// pre-llenado, la nueva oportunidad debe nacer más allá de "Por postular"
-// (ya se postuló) — se guarda acá el status pendiente hasta que se guarde.
-var pendingOppStatus = null;
 var REL_STATUSES = ["Sin contacto","Conocido","Cercano","En proceso","Activo"];
 var CHILE_REGIONS = ["Arica y Parinacota","Tarapacá","Antofagasta","Atacama","Coquimbo","Valparaíso","Metropolitana","O'Higgins","Maule","Ñuble","Biobío","La Araucanía","Los Ríos","Los Lagos","Aysén","Magallanes"];
 
@@ -1668,7 +1664,7 @@ function renderWatchedSearches(){
         : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario"));
     return '<div class="jt-ws-row'+(changed?' changed':'')+'">'
       + '<div><div class="jt-ws-label">'+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
-      + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-mark-postule="'+w.id+'" type="button">Postulé</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
+      + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-mark-postule="'+w.id+'" type="button">Guardar</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
       + '</div>';
   }).join("") || '<div class="jt-empty">Sin búsquedas generadas todavía.</div>';
   document.getElementById("jt-watched-searches-list").innerHTML = html;
@@ -1708,9 +1704,11 @@ function renderWatchedSearches(){
       window.alert('Agregada a "Hoy".');
     });
   });
-  // "Postulé" abre el formulario de Pipeline pre-llenado con el cargo de la
-  // búsqueda — el link específico del aviso al que se postuló no se puede saber
-  // solo con la URL de resultados, así que el usuario lo pega él mismo ahí.
+  // "Guardar" abre el formulario de Pipeline pre-llenado con el cargo de la
+  // búsqueda — el link específico del aviso no se puede saber solo con la URL
+  // de resultados, así que el usuario lo pega él mismo ahí. Nace como
+  // cualquier oportunidad nueva ("Por postular"); el estatus se ajusta después
+  // directo en Pipeline.
   document.querySelectorAll('[data-mark-postule]').forEach(function(btn){
     btn.addEventListener("click", function(){
       var id = btn.getAttribute("data-mark-postule");
@@ -1719,10 +1717,9 @@ function renderWatchedSearches(){
       var oppForm = document.getElementById("jt-opp-form");
       oppForm.style.display = "grid";
       document.getElementById("jt-opp-cargo").value = w.cargo || "";
-      pendingOppStatus = "Contactado";
       document.getElementById("sec-pipeline").scrollIntoView({behavior:"smooth"});
       document.getElementById("jt-opp-link").focus();
-      window.alert('Completa el link del aviso al que postulaste para "' + w.cargo + '" y guarda — quedará directo en Pipeline como "Contactado".');
+      window.alert('Completa el link del aviso para "' + w.cargo + '" y guarda — quedará en Pipeline, ajusta el estatus ahí.');
     });
   });
   document.querySelectorAll('[data-check-watched-search]').forEach(function(btn){
@@ -1981,7 +1978,6 @@ function wireForms(){
   document.getElementById("jt-opp-cancel").addEventListener("click", function(){
     oppForm.style.display = "none";
     document.getElementById("jt-opp-err").style.display = "none";
-    pendingOppStatus = null;
   });
   document.getElementById("jt-opp-save").addEventListener("click", function(){
     var empresa = document.getElementById("jt-opp-empresa").value.trim();
@@ -2001,9 +1997,8 @@ function wireForms(){
     var incompleta = !empresa || !cargo;
     var newOpp = {
       id: nextId("op", state.opportunities),
-      sector: sector || "Sin especificar", priority: priority, empresa: empresa || "Empresa por confirmar", cargo: cargo || "Cargo por confirmar", renta: renta, region: region, status: pendingOppStatus || "Por postular", link: link, careerUrl: careerUrl, incompleta: incompleta
+      sector: sector || "Sin especificar", priority: priority, empresa: empresa || "Empresa por confirmar", cargo: cargo || "Cargo por confirmar", renta: renta, region: region, status: "Por postular", link: link, careerUrl: careerUrl, incompleta: incompleta
     };
-    pendingOppStatus = null;
     state.opportunities.push(newOpp);
     syncWatchedPage(newOpp);
     document.getElementById("jt-opp-empresa").value = "";
