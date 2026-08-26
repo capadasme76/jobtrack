@@ -2876,9 +2876,9 @@ function renderProfileEdit(){
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Tu nombre</h3><input class="wide" type="text" id="pe-nombre" value="'+esc(p.nombre||"")+'" /></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Título profesional (aparece en el encabezado)</h3><input class="wide" type="text" id="pe-titulo" value="'+esc(p.tituloProfesional||"")+'" /></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Resumen profesional</h3><textarea class="wide" id="pe-resumen">'+esc(p.resumen)+'</textarea></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Habilidades (separadas por coma)</h3><input class="wide" type="text" id="pe-habilidades" value="'+esc(p.habilidades.join(", "))+'" /></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Experiencia (una por línea: Cargo | Empresa | Período | Descripción)</h3><textarea class="wide mono" id="pe-experiencia">'+esc(p.experiencia.join("\\n"))+'</textarea></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Formación (una por línea: Título | Institución | Período)</h3><textarea class="wide mono" id="pe-formacion">'+esc(p.formacion.join("\n"))+'</textarea></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Habilidades (separadas por coma)</h3><button class="jt-btn-mini" data-add-line="pe-habilidades" data-mode="comma" data-template="Nueva habilidad" type="button">+ Agregar</button></div><input class="wide" type="text" id="pe-habilidades" value="'+esc(p.habilidades.join(", "))+'" /></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Experiencia (una por línea: Cargo | Empresa | Período | Descripción)</h3><button class="jt-btn-mini" data-add-line="pe-experiencia" data-template="Cargo | Empresa | Período | Descripción breve" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-experiencia">'+esc(p.experiencia.join("\n"))+'</textarea></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Formación (una por línea: Título | Institución | Período)</h3><button class="jt-btn-mini" data-add-line="pe-formacion" data-template="Título | Institución | Período" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-formacion">'+esc(p.formacion.join("\n"))+'</textarea></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Respuestas rápidas (una por línea: Pregunta | Respuesta)</h3><textarea class="wide mono" id="pe-quickanswers">'+esc(p.quickAnswers.join("\n"))+'</textarea></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — URL</h3><input class="wide" type="text" id="pe-li-url" value="'+esc(p.linkedinUrl)+'" /></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — Titular</h3><input class="wide" type="text" id="pe-li-headline" value="'+esc(p.linkedinHeadline)+'" /></div>'
@@ -2890,6 +2890,22 @@ function renderProfileEdit(){
   document.getElementById("pe-cv-file").addEventListener("change", function(e){
     var file = e.target.files[0];
     if(file) extractCvAndFillForm(file);
+  });
+  // Cada "+ Agregar" suma una entrada plantilla al campo (con el formato
+  // esperado ya escrito) — para completar a mano lo que la lectura del CV
+  // no haya podido rellenar, sin tener que adivinar el formato.
+  document.querySelectorAll('[data-add-line]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var field = document.getElementById(btn.getAttribute("data-add-line"));
+      var template = btn.getAttribute("data-template");
+      if(btn.getAttribute("data-mode") === "comma"){
+        field.value = field.value.trim() ? field.value.replace(/,\s*$/, "") + ", " + template : template;
+      } else {
+        field.value = field.value.trim() ? field.value.replace(/\n+$/, "") + "\n" + template : template;
+      }
+      field.focus();
+      field.setSelectionRange(field.value.length - template.length, field.value.length);
+    });
   });
   document.getElementById("pe-cancel").addEventListener("click", function(){
     document.getElementById("jt-profile-edit").style.display = "none";
