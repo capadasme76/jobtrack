@@ -254,11 +254,16 @@
   .jt-portal-card:hover{border-color:var(--teal);}
   .jt-portal-card .name{font-weight:600;color:var(--ink);font-size:15px;}
   .jt-portal-card .note{font-size:13px;color:var(--ink-faint);margin-top:2px;}
+  .jt-home-grid-featured{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;}
   .jt-home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:8px;}
   .jt-tile{display:flex;flex-direction:column;gap:6px;background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 18px;text-decoration:none;color:var(--ink);box-shadow:0 1px 2px rgba(32,30,29,.14);transition:border-color .15s;}
   .jt-tile:hover{border-color:var(--brick);}
   .jt-tile .jt-tile-ic{width:24px;height:24px;display:inline-flex;color:var(--brick);}
   .jt-tile .jt-tile-ic svg{width:100%;height:100%;}
+  .jt-tile-featured{background:var(--brick-100);border-color:var(--brick);padding:28px 24px;gap:10px;}
+  .jt-tile-featured .jt-tile-ic{width:32px;height:32px;}
+  .jt-tile-featured .jt-tile-label{font-size:18px;}
+  .jt-tile-featured:hover{border-color:var(--brick-dark);}
   .jt-tile .jt-tile-label{font-family:var(--font-display);font-weight:700;font-size:15.5px;}
   .jt-tile .jt-tile-badge{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);}
   .jt-back-btn{margin-bottom:16px;}
@@ -322,6 +327,7 @@
     .jt-search{min-width:0;}
     .jt-io-row{flex-direction:column;align-items:stretch;}
     .jt-stats{grid-template-columns:repeat(2,1fr);}
+    .jt-home-grid-featured{grid-template-columns:1fr;}
     .jt-home-grid{grid-template-columns:1fr;}
     .jt-wizard-bar{flex-direction:column;align-items:stretch;}
     .jt-wizard-actions{justify-content:stretch;}
@@ -384,6 +390,7 @@
   <div class="jt-home" id="jt-home">
     <div class="jt-ticker"><div class="jt-ticker-inner" id="jt-ticker-text"></div></div>
     <div class="jt-stats" id="jt-stats"></div>
+    <div class="jt-home-grid-featured" id="jt-home-grid-featured"></div>
     <div class="jt-home-grid" id="jt-home-grid"></div>
   </div>
   <button type="button" class="jt-btn-ghost jt-back-btn" id="jt-back-btn" style="display:none;">← Volver</button>
@@ -767,12 +774,18 @@ var SECTION_ICON_PATHS = {
   "sec-portales": '<circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-6-4-9s1.5-6.5 4-9z"></path>',
   "sec-guia": '<circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a2.9 2.9 0 0 1 5.6 1c0 2-2.9 2.5-2.9 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.5"></line>'
 };
+// "featured" marca las 3 tarjetas del home a las que se les da más peso
+// visual (tamaño + fondo de acento) — Mi perfil, Búsquedas y Match CV son
+// las secciones donde el usuario hace el trabajo activo de armar su base
+// (perfil, términos de búsqueda, comparación contra una vacante); el resto
+// son más de seguimiento/consulta. Decisión de producto, no derivada de otra
+// señal — si cambia cuáles importan más, solo se mueve este flag.
 var SECTIONS = [
   {id:"sec-hoy", icon:svgIcon(SECTION_ICON_PATHS["sec-hoy"]), label:"Hoy"},
-  {id:"sec-busquedas", icon:svgIcon(SECTION_ICON_PATHS["sec-busquedas"]), label:"Búsquedas de empleo"},
-  {id:"sec-perfil", icon:svgIcon(SECTION_ICON_PATHS["sec-perfil"]), label:"Mi perfil"},
+  {id:"sec-busquedas", icon:svgIcon(SECTION_ICON_PATHS["sec-busquedas"]), label:"Búsquedas de empleo", featured:true},
+  {id:"sec-perfil", icon:svgIcon(SECTION_ICON_PATHS["sec-perfil"]), label:"Mi perfil", featured:true},
   {id:"sec-pipeline", icon:svgIcon(SECTION_ICON_PATHS["sec-pipeline"]), label:"Agenda de postulaciones"},
-  {id:"sec-match", icon:svgIcon(SECTION_ICON_PATHS["sec-match"]), label:"Match CV"},
+  {id:"sec-match", icon:svgIcon(SECTION_ICON_PATHS["sec-match"]), label:"Match CV", featured:true},
   {id:"sec-reuniones", icon:svgIcon(SECTION_ICON_PATHS["sec-reuniones"]), label:"Reuniones"},
   {id:"sec-red", icon:svgIcon(SECTION_ICON_PATHS["sec-red"]), label:"Mis contactos"},
   {id:"sec-metricas", icon:svgIcon(SECTION_ICON_PATHS["sec-metricas"]), label:"Métricas"},
@@ -914,17 +927,18 @@ function syncViewFromHash(){
 }
 
 function renderHome(){
-  var grid = document.getElementById("jt-home-grid");
-  grid.innerHTML = SECTIONS.map(function(s){
+  function tileHtml(s){
     var badge = s.id === "sec-hoy" && lastHoyTaskCount > 0
       ? '<div class="jt-tile-badge">'+lastHoyTaskCount+' pendiente'+(lastHoyTaskCount===1?'':'s')+'</div>'
       : '';
-    return '<a class="jt-tile" href="#'+s.id+'" data-target="'+s.id+'">'
+    return '<a class="jt-tile'+(s.featured?' jt-tile-featured':'')+'" href="#'+s.id+'" data-target="'+s.id+'">'
       + '<span class="jt-tile-ic">'+s.icon+'</span>'
       + '<span class="jt-tile-label">'+esc(s.label)+'</span>'
       + badge + '</a>';
-  }).join("");
-  grid.querySelectorAll(".jt-tile").forEach(function(a){
+  }
+  document.getElementById("jt-home-grid-featured").innerHTML = SECTIONS.filter(function(s){ return s.featured; }).map(tileHtml).join("");
+  document.getElementById("jt-home-grid").innerHTML = SECTIONS.filter(function(s){ return !s.featured; }).map(tileHtml).join("");
+  document.querySelectorAll("#jt-home-grid-featured .jt-tile, #jt-home-grid .jt-tile").forEach(function(a){
     a.addEventListener("click", function(e){ e.preventDefault(); goToSection(a.getAttribute("data-target")); });
   });
 }
