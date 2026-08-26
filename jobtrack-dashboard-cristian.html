@@ -1682,22 +1682,34 @@ function renderWatchedSearches(){
       window.alert('Agregada a "Hoy".');
     });
   });
-  // "Guardar" abre el formulario de Pipeline pre-llenado con el cargo de la
-  // búsqueda — el link específico del aviso no se puede saber solo con la URL
-  // de resultados, así que el usuario lo pega él mismo ahí. Nace como
-  // cualquier oportunidad nueva ("Por postular"); el estatus se ajusta después
-  // directo en Pipeline.
+  // "Guardar" pasa la búsqueda a Pipeline de inmediato, sin pedir nada más —
+  // usa el link de resultados de la propia búsqueda como link provisorio
+  // (todo aviso en Pipeline necesita uno) y queda marcada "incompleta" porque
+  // falta la empresa/aviso específico; el usuario la edita cuando encuentre
+  // la vacante puntual.
   document.querySelectorAll('[data-mark-postule]').forEach(function(btn){
     btn.addEventListener("click", function(){
       var id = btn.getAttribute("data-mark-postule");
       var w = state.watchedSearches.find(function(x){ return x.id === id; });
       if(!w) return;
-      var oppForm = document.getElementById("jt-opp-form");
-      oppForm.style.display = "grid";
-      document.getElementById("jt-opp-cargo").value = w.cargo || "";
-      document.getElementById("sec-pipeline").scrollIntoView({behavior:"smooth"});
-      document.getElementById("jt-opp-link").focus();
-      window.alert('Completa el link del aviso para "' + w.cargo + '" y guarda — quedará en Pipeline, ajusta el estatus ahí.');
+      var cargo = w.cargo || "";
+      var newOpp = {
+        id: nextId("op", state.opportunities),
+        sector: "Sin especificar",
+        priority: "Media",
+        empresa: "Empresa por confirmar",
+        cargo: cargo || "Cargo por confirmar",
+        renta: "No especificada",
+        region: "",
+        status: "Por postular",
+        link: w.url,
+        careerUrl: null,
+        incompleta: true
+      };
+      state.opportunities.push(newOpp);
+      state.onboarding.opportunity = true;
+      populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderOnboarding(); persist();
+      window.alert('Guardado en Pipeline — "' + cargo + '" quedó en "Por postular". Edítala para agregar la empresa y el link del aviso específico cuando lo encuentres.');
     });
   });
   document.querySelectorAll('[data-check-watched-search]').forEach(function(btn){
