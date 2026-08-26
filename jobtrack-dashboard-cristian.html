@@ -73,16 +73,10 @@
   .jt-hint-detail{font-size:12px;color:var(--ink-soft);background:var(--paper-dim);border:1px solid var(--line);border-radius:var(--radius-ctrl);padding:7px 10px;margin-top:4px;max-width:440px;}
   .jt-dispatches{display:flex;flex-direction:column;gap:10px;}
   .jt-dispatch{background:var(--card-bg);border-left:4px solid var(--brick);padding:14px 18px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;border-radius:0 var(--radius-card) var(--radius-card) 0;box-shadow:0 1px 2px rgba(32,30,29,.14);}
-  .jt-dispatch.verify{border-left-color:var(--brick);}
-  .jt-dispatch.signal{border-left-color:var(--teal);}
   .jt-badge{font-family:var(--font-body);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:3px 10px;border:1px solid var(--brick);background:var(--brick);color:#fff;white-space:nowrap;border-radius:var(--radius-pill);}
-  .jt-badge.verify{background:transparent;border-color:var(--brick);color:var(--brick);}
-  .jt-badge.signal{background:var(--paper-dim);border-color:var(--line);color:var(--ink-soft);}
   .jt-dispatch .dateline{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
   .jt-dispatch .headline{font-family:var(--font-display);font-size:17px;font-weight:600;margin:0 0 3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   .jt-dispatch .meta{font-size:14px;color:var(--ink-soft);}
-  .jt-dispatch .li-help{font-size:13px;color:var(--ink-faint);margin-top:6px;padding:6px 8px;background:var(--paper-dim);border:1px dashed var(--line);}
-  .jt-dispatch .li-help b{color:var(--ink-soft);}
   .jt-dispatch-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
   .jt-copybtn{font-family:var(--font-mono);font-size:12px;background:transparent;color:var(--ink-faint);border:1px solid var(--line);padding:5px 10px;cursor:pointer;white-space:nowrap;border-radius:var(--radius-pill);}
   .jt-copybtn:hover{color:var(--ink);border-color:var(--ink-soft);}
@@ -135,10 +129,6 @@
   .jt-err{grid-column:1/-1;font-family:var(--font-mono);font-size:13px;color:var(--brick);display:none;}
   .jt-del{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;margin-left:8px;}
   .jt-del:hover{color:var(--brick);}
-  .jt-legend{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);margin-bottom:14px;display:flex;flex-direction:column;gap:5px;}
-  .jt-legend-item{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;}
-  .jt-legend-item b{white-space:nowrap;color:var(--ink-soft);}
-  .jt-legend b{color:var(--ink-soft);}
   .jt-followup{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border:1px solid var(--line);color:var(--ink-faint);margin-left:6px;border-radius:var(--radius-pill);}
   .jt-followup.due{border-color:var(--brick);color:var(--brick);}
   .jt-search{flex:1;min-width:160px;}
@@ -273,6 +263,13 @@
   .jt-portal-card:hover{border-color:var(--teal);}
   .jt-portal-card .name{font-weight:600;color:var(--ink);font-size:15px;}
   .jt-portal-card .note{font-size:13px;color:var(--ink-faint);margin-top:2px;}
+  .jt-home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:8px;}
+  .jt-tile{display:flex;flex-direction:column;gap:6px;background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 18px;text-decoration:none;color:var(--ink);box-shadow:0 1px 2px rgba(32,30,29,.14);transition:border-color .15s;}
+  .jt-tile:hover{border-color:var(--brick);}
+  .jt-tile .jt-tile-ic{font-size:22px;color:var(--brick);}
+  .jt-tile .jt-tile-label{font-family:var(--font-display);font-weight:700;font-size:15.5px;}
+  .jt-tile .jt-tile-badge{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);}
+  .jt-back-btn{margin-bottom:16px;}
   .jt-stat-callout{background:var(--paper-dim);border-left:4px solid var(--teal);border-radius:0 var(--radius-card) var(--radius-card) 0;padding:14px 18px;margin-bottom:16px;}
   .jt-stat-callout .num{font-family:var(--font-display);font-size:25px;font-weight:600;color:var(--teal-dark);}
   .jt-stat-callout .row{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
@@ -333,6 +330,7 @@
     .jt-search{min-width:0;}
     .jt-io-row{flex-direction:column;align-items:stretch;}
     .jt-stats{grid-template-columns:repeat(2,1fr);}
+    .jt-home-grid{grid-template-columns:1fr;}
     .jt-stats .jt-stat:last-child{grid-column:1/-1;}
     .jt-profile-head{flex-direction:column;align-items:stretch;gap:8px;}
     .jt-profile-head h2{word-break:break-word;}
@@ -380,7 +378,7 @@
 
   <main class="jt-main">
   <div class="jt-container">
-  <div class="jt-mast">
+  <div class="jt-mast" id="jt-mast-block">
     <div>
       <h1 id="jt-mast-name">JobTrack</h1>
       <div class="sub" id="jt-mast-sub">Completa "Mi perfil" para personalizar este encabezado con tu nombre</div>
@@ -398,18 +396,18 @@
     <a class="jt-onboarding-guide-link jt-guide-link" href="#sec-guia" data-target="sec-guia">Ver la guía completa →</a>
   </div>
 
+  <div class="jt-home" id="jt-home">
+    <div class="jt-home-grid" id="jt-home-grid"></div>
+  </div>
+  <button type="button" class="jt-btn-ghost jt-back-btn" id="jt-back-btn" style="display:none;">← Volver</button>
+
   <div class="jt-module">
 <div class="jt-ticker" id="sec-hoy"><div class="jt-ticker-inner" id="jt-ticker-text"></div></div>
 
   <div class="jt-stats" id="jt-stats"></div>
 
   <div class="jt-section-title">Hoy</div>
-  <div class="jt-section-sub">Tus oportunidades más urgentes de hoy</div>
-  <div class="jt-legend">
-    <div class="jt-legend-item"><b>🟤 Oferta verificada</b><span>aviso específico en portal de empleo, listo para postular</span></div>
-    <div class="jt-legend-item"><b>🟡 Verificar tú</b><span>portal correcto pero sin link al aviso puntual</span></div>
-    <div class="jt-legend-item"><b>🟢 Señal</b><span>noticia o movimiento ejecutivo — networking, no postular</span></div>
-  </div>
+  <div class="jt-section-sub">Tus pendientes de hoy — calculados desde tu Agenda, Búsquedas y Reuniones</div>
   <div class="jt-dispatches" id="jt-dispatches"></div>
 
   </div>
@@ -749,6 +747,105 @@ function regionOptionsHtml(selected){
   }).join("");
 }
 
+// Navegación por tarjetas: la app dejó de ser una sola página con scroll —
+// cada sección vive en su propio <div class="jt-module">, y "mostrar sección
+// X" es solo alternar display sobre esos módulos. El estado de "qué se ve"
+// es el hash de la URL (sin variable paralela ni router aparte), así recargar
+// o compartir un link con #sec-pipeline cae directo en esa sección.
+var SECTIONS = [
+  {id:"sec-hoy", icon:"▸", label:"Hoy"},
+  {id:"sec-busquedas", icon:"🔍", label:"Búsquedas de empleo"},
+  {id:"sec-perfil", icon:"◆", label:"Mi perfil"},
+  {id:"sec-pipeline", icon:"▤", label:"Agenda de postulaciones"},
+  {id:"sec-match", icon:"✓", label:"Match CV"},
+  {id:"sec-reuniones", icon:"☕", label:"Reuniones"},
+  {id:"sec-red", icon:"◍", label:"Mis contactos"},
+  {id:"sec-metricas", icon:"▦", label:"Métricas"},
+  {id:"sec-portales", icon:"⊞", label:"Portales"},
+  {id:"sec-guia", icon:"?", label:"Guía"}
+];
+var sectionModuleEls = {};
+var lastHoyTaskCount = 0;
+
+function initSectionViews(){
+  SECTIONS.forEach(function(s){
+    var anchor = document.getElementById(s.id);
+    sectionModuleEls[s.id] = anchor ? anchor.closest(".jt-module") : null;
+  });
+}
+
+function closeDrawerIfOpen(){
+  document.getElementById("jt-nav").classList.remove("open");
+  document.getElementById("jt-nav-backdrop").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function updateActiveNav(id){
+  document.querySelectorAll(".jt-nav a, .jt-tile").forEach(function(el){
+    el.classList.toggle("active", !!id && el.getAttribute("data-target") === id);
+  });
+}
+
+function showSection(id, anchorId){
+  if(!sectionModuleEls[id]) return;
+  document.getElementById("jt-home").style.display = "none";
+  document.getElementById("jt-mast-block").style.display = "none";
+  document.getElementById("jt-onboarding-card").style.display = "none";
+  document.getElementById("jt-back-btn").style.display = "inline-block";
+  SECTIONS.forEach(function(s){
+    if(sectionModuleEls[s.id]) sectionModuleEls[s.id].style.display = (s.id === id) ? "" : "none";
+  });
+  if(id === "sec-perfil") setProfileSectionExpanded(true);
+  updateActiveNav(id);
+  closeDrawerIfOpen();
+  window.scrollTo({top:0, behavior:"instant"});
+  if(location.hash !== "#" + id) location.hash = id;
+  if(anchorId){
+    requestAnimationFrame(function(){
+      var el = document.getElementById(anchorId);
+      if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  }
+}
+
+function showHome(){
+  document.getElementById("jt-back-btn").style.display = "none";
+  document.getElementById("jt-mast-block").style.display = "";
+  SECTIONS.forEach(function(s){
+    if(sectionModuleEls[s.id]) sectionModuleEls[s.id].style.display = "none";
+  });
+  document.getElementById("jt-home").style.display = "";
+  updateActiveNav(null);
+  closeDrawerIfOpen();
+  window.scrollTo({top:0, behavior:"instant"});
+  if(location.hash) history.replaceState(null, "", location.pathname + location.search);
+  renderOnboarding();
+}
+
+function goToSection(id, anchorId){ showSection(id, anchorId); }
+
+function syncViewFromHash(){
+  var id = location.hash.replace("#", "");
+  if(sectionModuleEls[id]) showSection(id);
+  else showHome();
+}
+
+function renderHome(){
+  var grid = document.getElementById("jt-home-grid");
+  grid.innerHTML = SECTIONS.map(function(s){
+    var badge = s.id === "sec-hoy" && lastHoyTaskCount > 0
+      ? '<div class="jt-tile-badge">'+lastHoyTaskCount+' pendiente'+(lastHoyTaskCount===1?'':'s')+'</div>'
+      : '';
+    return '<a class="jt-tile" href="#'+s.id+'" data-target="'+s.id+'">'
+      + '<span class="jt-tile-ic">'+s.icon+'</span>'
+      + '<span class="jt-tile-label">'+esc(s.label)+'</span>'
+      + badge + '</a>';
+  }).join("");
+  grid.querySelectorAll(".jt-tile").forEach(function(a){
+    a.addEventListener("click", function(e){ e.preventDefault(); goToSection(a.getAttribute("data-target")); });
+  });
+}
+
 // Cada usuario nuevo parte con el dashboard completamente vacío — sin
 // oportunidades, avisos ni contactos de ejemplo. Ya hubo un incidente real de
 // datos personales expuestos vía datos "de ejemplo" hardcodeados en este mismo
@@ -756,7 +853,6 @@ function regionOptionsHtml(selected){
 // a pasar es no sembrar ningún registro falso, solo texto de ayuda en los
 // formularios vacíos (ver "jt-empty" en cada sección).
 var seedOpportunities = [];
-var seedDispatches = [];
 var seedNetworking = [];
 var seedMeetings = [];
 
@@ -775,7 +871,7 @@ var seedProfile = {
   linkedinLastSync: null
 };
 
-var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", dismissedDispatchIds: [], meetings: seedMeetings, dispatches: JSON.parse(JSON.stringify(seedDispatches)), watchedPages: [], watchedSearches: [], onboarding: { profile: false, opportunity: false, contact: false, match: false, meeting: false }, onboardingDismissed: false };
+var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", meetings: seedMeetings, watchedPages: [], watchedSearches: [], onboarding: { profile: false, opportunity: false, contact: false, match: false, meeting: false }, onboardingDismissed: false };
 var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"", region:"" };
 var saveTimer = null;
 var editingOppId = null;
@@ -887,32 +983,21 @@ async function loadState(){
       state.networking = state.networking.filter(function(n){
         return LEAKED_CONTACT_PAIRS.indexOf(n.name + "|" + n.empresa) === -1;
       });
-      if(parsed.dispatches) state.dispatches = parsed.dispatches;
-      // Limpieza: la tarjeta "Búsqueda activada hoy" (type "signal") duplicaba
-      // información que ya se ve en la fila de "Búsquedas de empleo" y nunca fue
-      // accionable — se dejó de generar, y las que ya estaban guardadas se sacan
-      // acá para no dejarlas como ruido viejo en "Hoy".
-      state.dispatches = state.dispatches.filter(function(d){ return d.type !== "signal"; });
-      // Limpieza: un bug previo podía dejar varias tarjetas idénticas (mismo tipo +
-      // mismo titular) sin revisar para el mismo watch, apiladas en "Hoy" sin
-      // forma de descartarlas — se deja solo la más reciente de cada una.
-      (function(){
-        var seen = {};
-        for(var i = state.dispatches.length - 1; i >= 0; i--){
-          var d = state.dispatches[i];
-          if(d.type !== "verify" && d.type !== "signal") continue;
-          var key = d.type + "|" + d.headline;
-          if(seen[key]) state.dispatches.splice(i, 1);
-          else seen[key] = true;
-        }
-      })();
       if(parsed.watchedPages) state.watchedPages = parsed.watchedPages;
+      // Migración: páginas vigiladas guardadas antes de que "Hoy" pasara a
+      // calcularse en vivo no traen "lastReviewedAt" — se agrega en null para
+      // que computeHoyTasks() las trate como "cambio sin revisar" recién a
+      // partir del próximo cambio real detectado, no retroactivamente.
+      state.watchedPages.forEach(function(w){
+        if(w.lastReviewedAt === undefined) w.lastReviewedAt = null;
+      });
       if(parsed.watchedSearches) state.watchedSearches = parsed.watchedSearches;
       // Migración: búsquedas guardadas antes de sumar portales solo-link no traen
       // "monitored" — todas venían de ChileTrabajos o de una URL pegada a mano,
       // ambos casos vigilados de verdad hasta ahora, así que quedan en true. Tampoco
       // traían "cargo"/"portalLabel" por separado (solo el "label" combinado) —
-      // se reconstruyen para poder armar textos más claros en los avisos.
+      // se reconstruyen para poder armar textos más claros en los avisos. Tampoco
+      // traían "lastReviewedAt" (ver nota de watchedPages arriba).
       state.watchedSearches.forEach(function(w){
         if(w.monitored === undefined) w.monitored = true;
         if(!w.portalLabel){
@@ -922,6 +1007,7 @@ async function loadState(){
         if(!w.cargo){
           w.cargo = w.label && w.label.indexOf(" — ") !== -1 ? w.label.split(" — ")[0] : (w.label || "");
         }
+        if(w.lastReviewedAt === undefined) w.lastReviewedAt = null;
       });
       // Limpieza: antes de que "generateSearchesForCargos" evitara crear
       // combinaciones cargo+portal repetidas, se podían generar filas duplicadas
@@ -944,7 +1030,6 @@ async function loadState(){
       // CV actualizado el 17/08: se fuerza el perfil nuevo una vez, aunque haya uno viejo guardado.
       if(parsed.profileCvVersion === "2026-08-17-v3"){
         if(parsed.profile) state.profile = parsed.profile;
-        if(parsed.dismissedDispatchIds) state.dismissedDispatchIds = parsed.dismissedDispatchIds;
         if(parsed.meetings) state.meetings = parsed.meetings;
       }
       state.profileCvVersion = "2026-08-17-v3";
@@ -973,8 +1058,8 @@ function renderMasthead(){
 
 function renderTicker(){
   var enviadas = state.opportunities.filter(function(o){return o.status!=="Por postular";}).length;
-  var verificadas = state.dispatches.filter(function(d){return d.type==="verified";}).length;
-  var txt = "AGENDA ACTIVA — " + state.opportunities.length + " oportunidades mapeadas · " + enviadas + " en movimiento · " + verificadas + " avisos verificados listos para postular hoy — mantén el impulso";
+  var pendientes = computeHoyTasks().length;
+  var txt = "AGENDA ACTIVA — " + state.opportunities.length + " oportunidades mapeadas · " + enviadas + " en movimiento · " + pendientes + " pendientes en Hoy — mantén el impulso";
   document.getElementById("jt-ticker-text").innerHTML = '<span>'+esc(txt)+'</span><span>'+esc(txt)+'</span>';
 }
 
@@ -997,156 +1082,121 @@ function renderStats(){
   document.getElementById("jt-stats").innerHTML = html;
 }
 
-function findTrackedOpp(d){
-  return state.opportunities.find(function(o){ return o.link && d.link && o.link === d.link; });
+// "Hoy" ya no guarda avisos aparte (state.dispatches) — se calcula en cada
+// render a partir de lo que ya vive en Agenda de postulaciones, Búsquedas de
+// empleo y Reuniones, así nunca duplica lo que ya se ve en su sección de
+// origen. watchedSearches/watchedPages usan lastReviewedAt (por entrada) para
+// saber si un cambio ya se revisó, en vez de un registro de dispatch aparte.
+function computeHoyTasks(){
+  var tasks = [];
+
+  state.opportunities.forEach(function(o){
+    if(o.status === "Descartado") return;
+    if(isIncomplete(o)){
+      tasks.push({ id:"inc-"+o.id, kind:"incompleta", weight:3, dismissible:false,
+        headline:"Falta información en "+(o.empresa||"una oportunidad"),
+        meta:"Completa empresa, cargo o el link del aviso.",
+        targetSection:"sec-pipeline", targetAnchor:"opp-"+o.id });
+    }
+    if(o.fechaLimite && o.status!=="Oferta"){
+      var du = daysUntil(o.fechaLimite);
+      if(du!==null && du<0){
+        tasks.push({ id:"due-"+o.id, kind:"vencida", weight:1, dismissible:false,
+          headline:(o.empresa||"Oportunidad")+" — plazo vencido hace "+Math.abs(du)+"d",
+          meta:"Revisa si aún puedes postular o descártala.",
+          targetSection:"sec-pipeline", targetAnchor:"opp-"+o.id });
+      } else if(du!==null && du<=3){
+        tasks.push({ id:"soon-"+o.id, kind:"porvencer", weight:2, dismissible:false,
+          headline:(o.empresa||"Oportunidad")+" — vence en "+du+"d",
+          meta:"Postula pronto antes de que cierre.",
+          targetSection:"sec-pipeline", targetAnchor:"opp-"+o.id });
+      }
+    }
+    if(o.status!=="Por postular" && o.status!=="Oferta" && o.fechaContacto){
+      var d = daysSince(o.fechaContacto);
+      if(d!==null && d>=7){
+        tasks.push({ id:"fu-"+o.id, kind:"seguimiento", weight:4, dismissible:false,
+          headline:"Sin seguimiento con "+(o.empresa||"esta oportunidad")+" hace "+d+" días",
+          meta:"Considera escribir para retomar contacto.",
+          targetSection:"sec-pipeline", targetAnchor:"opp-"+o.id });
+      }
+    }
+  });
+
+  (state.watchedSearches||[]).forEach(function(w){
+    if(!w.lastChangedAt) return;
+    if(w.lastReviewedAt && w.lastReviewedAt >= w.lastChangedAt) return;
+    tasks.push({ id:"ws-"+w.id, kind:"watchedSearch", weight:1.5, dismissible:true,
+      watchKind:"watchedSearches", watchId:w.id, link:w.url,
+      headline:'Cambio en tu búsqueda de "'+(w.cargo||"")+'"'+(w.portalLabel?" en "+w.portalLabel:""),
+      meta:"Revisa si hay una vacante nueva.",
+      targetSection:"sec-busquedas", targetAnchor:"ws-"+w.id });
+  });
+
+  (state.watchedPages||[]).forEach(function(w){
+    if(!w.lastChangedAt) return;
+    if(w.lastReviewedAt && w.lastReviewedAt >= w.lastChangedAt) return;
+    var opp = state.opportunities.find(function(o){ return o.id===w.opportunityId; });
+    tasks.push({ id:"wp-"+w.id, kind:"watchedPage", weight:1.5, dismissible:true,
+      watchKind:"watchedPages", watchId:w.id, link:w.url,
+      headline:"Cambio en la página de empleos de "+(opp?opp.empresa:"una empresa que vigilas"),
+      meta:"Revisa si hay una vacante nueva antes de asumir que es relevante.",
+      targetSection:"sec-pipeline", targetAnchor: opp ? ("opp-"+opp.id) : null });
+  });
+
+  var now = new Date();
+  var thisMonthMeetings = state.meetings.filter(function(m){
+    var d = new Date(m.fecha);
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  }).length;
+  if(thisMonthMeetings === 0){
+    tasks.push({ id:"net-nudge", kind:"networking", weight:5, dismissible:false,
+      headline:"Sin reuniones registradas este mes",
+      meta:"Agenda un café o llamada — la red de contactos es el canal más efectivo.",
+      targetSection:"sec-reuniones" });
+  }
+
+  tasks.sort(function(a,b){ return a.weight-b.weight; });
+  return tasks;
 }
 
-function renderDispatches(){
-  var html = "";
-  var badgeLabel = {verified:"Oferta verificada", verify:"Verificar tú", signal:"Señal · no postular"};
-  state.dispatches.filter(function(d){ return state.dismissedDispatchIds.indexOf(d.id) === -1; }).forEach(function(d, idx){
-    var cls = d.type==="verified" ? "" : d.type;
-    var isLinkedIn = d.link.indexOf("linkedin.com") !== -1;
-    var liHelp = "";
-    if(isLinkedIn && d.liQuery){
-      liHelp = '<div class="li-help">En LinkedIn, busca <b>"'+esc(d.liQuery)+'"</b> y filtra ubicación <b>'+esc(d.liLocation)+'</b>. Se abre en pestaña nueva — esta app queda tal como la dejaste, solo cambia de pestaña para volver.</div>';
-    } else if(isLinkedIn){
-      liHelp = '<div class="li-help">Se abre en pestaña nueva — esta app queda tal como la dejaste, solo cambia de pestaña para volver.</div>';
-    }
-    var tracked = findTrackedOpp(d);
-    var actionsHtml = "";
-    // Toda tarjeta necesita una forma de sacarla de "Hoy" aunque no sea relevante
-    // (ej. un falso positivo de una página vigilada) — antes solo "signal" tenía
-    // cómo descartarse y el resto se quedaba pegado ahí para siempre.
-    var discardBtn = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Descartar</button>';
-    if(d.fromWatchedSearch){
-      // Esta tarjeta viene de una búsqueda vigilada, no de una vacante puntual —
-      // "Guardar"/"Ya postulé"/prioridad no aplican porque todavía no hay un
-      // aviso concreto al que postular, solo un resultado que cambió y hay que
-      // revisar. Se deja solo la acción real: ir a mirar, o descartar.
-      actionsHtml = discardBtn;
-    } else if(d.type !== "signal"){
-      var defaultPriority = d.type === "verified" ? "Alta" : "Media";
-      if(tracked && tracked.status !== "Por postular"){
-        actionsHtml = '<button class="jt-btn-mini applied" type="button" disabled>✓ Ya postulaste</button>' + discardBtn;
-      } else {
-        var priSelect = '<select class="jt-dispatch-priority" data-priority-for="'+d.id+'">'
-          + ["Alta","Media","Baja"].map(function(p){ return '<option value="'+p+'"'+(p===defaultPriority?' selected':'')+'>'+p+'</option>'; }).join("")
-          + '</select>';
-        var saveBtn = tracked
-          ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en tu agenda</span>'
-          : '<button class="jt-btn-mini" data-save-dispatch="'+d.id+'" type="button">Guardar</button>';
-        var applyBtn = '<button class="jt-btn-mini" data-mark-applied="'+d.id+'" type="button">Ya postulé</button>';
-        actionsHtml = priSelect + saveBtn + applyBtn + discardBtn;
-      }
-    } else {
-      var archiveBtn = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Archivar señal</button>';
-      var signalSaveBtn = tracked
-        ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en tu agenda</span>'
-        : '<button class="jt-btn-mini" data-save-dispatch="'+d.id+'" type="button">Guardar</button>';
-      actionsHtml = signalSaveBtn + archiveBtn;
-    }
-    html += '<div class="jt-dispatch '+cls+'">'
-      + '<div>'
-      + '<div class="dateline">'+esc(d.dateline)+'</div>'
-      + '<div class="headline">'+esc(d.headline)+' <span class="jt-badge '+cls+'">'+esc(badgeLabel[d.type])+'</span></div>'
-      + '<div class="meta">'+esc(d.meta)+'</div>'
-      + liHelp
-      + '</div>'
-      + '<div class="jt-dispatch-actions">'
-      + '<a class="link" href="'+d.link+'" target="_blank" rel="noopener">'+(d.type==="verified"?"Postular":(d.fromWatchedSearch?"Ver resultados":"Abrir"))+' ↗</a>'
-      + (isLinkedIn ? '<button class="jt-copybtn" data-copy="'+esc(d.link)+'" data-idx="'+idx+'" type="button">Copiar link</button>' : '')
-      + actionsHtml
-      + '</div>'
-      + '</div>';
-  });
+function markWatchReviewed(kind, id){
+  var list = state[kind] || [];
+  var w = list.find(function(x){ return x.id===id; });
+  if(w) w.lastReviewedAt = new Date().toISOString();
+}
+
+function renderHoy(){
+  var tasks = computeHoyTasks();
+  lastHoyTaskCount = tasks.length;
+  var badgeLabel = {incompleta:"Incompleta", vencida:"Vencida", porvencer:"Por vencer",
+    seguimiento:"Seguimiento atrasado", watchedSearch:"Búsqueda cambió", watchedPage:"Página cambió", networking:"Networking"};
+  var html = tasks.map(function(t){
+    var actions = "";
+    if(t.link) actions += '<a class="link" href="'+esc(t.link)+'" target="_blank" rel="noopener">Ver ↗</a>';
+    actions += '<button class="jt-btn-mini" data-hoy-goto="'+t.id+'" type="button">Revisar</button>';
+    if(t.dismissible) actions += '<button class="jt-btn-mini" data-hoy-dismiss="'+t.id+'" type="button">Descartar</button>';
+    return '<div class="jt-dispatch">'
+      + '<div><div class="headline">'+esc(t.headline)+' <span class="jt-badge">'+esc(badgeLabel[t.kind])+'</span></div>'
+      + '<div class="meta">'+esc(t.meta)+'</div></div>'
+      + '<div class="jt-dispatch-actions">'+actions+'</div></div>';
+  }).join("") || '<div class="jt-empty">Sin pendientes por ahora — vas al día.</div>';
   document.getElementById("jt-dispatches").innerHTML = html;
 
-  function getPriorityFor(dispatchId, fallback){
-    var sel = document.querySelector('[data-priority-for="'+dispatchId+'"]');
-    return sel ? sel.value : fallback;
-  }
-
-  function notasFromDispatch(d, actionLine){
-    return (d.meta ? d.meta + "\n\n" : "") + actionLine;
-  }
-
-  document.querySelectorAll('[data-mark-applied]').forEach(function(btn){
+  document.querySelectorAll('[data-hoy-goto]').forEach(function(btn){
     btn.addEventListener("click", function(){
-      var d = state.dispatches.find(function(x){ return x.id === btn.getAttribute("data-mark-applied"); });
-      if(!d) return;
-      var priority = getPriorityFor(d.id, d.type === "verified" ? "Alta" : "Media");
-      var tracked = findTrackedOpp(d);
-      if(tracked){
-        tracked.status = "Contactado";
-        tracked.priority = priority;
-        tracked.fechaContacto = new Date().toISOString();
-      } else {
-        state.opportunities.push({
-          id: nextId("op", state.opportunities),
-          sector: d.sector || "Sin sector",
-          priority: priority,
-          empresa: d.empresa || d.headline,
-          cargo: d.headline,
-          renta: "No especificada",
-          status: "Contactado",
-          fechaContacto: new Date().toISOString(),
-          link: d.link,
-          notas: notasFromDispatch(d, "Marcado como postulado desde Despachos del día.")
-        });
-      }
-      renderDispatches(); populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); persist();
+      var t = tasks.find(function(x){ return x.id===btn.getAttribute("data-hoy-goto"); });
+      if(!t) return;
+      if(t.watchId){ markWatchReviewed(t.watchKind, t.watchId); persist(); }
+      goToSection(t.targetSection, t.targetAnchor);
     });
   });
-
-  document.querySelectorAll('[data-save-dispatch]').forEach(function(btn){
+  document.querySelectorAll('[data-hoy-dismiss]').forEach(function(btn){
     btn.addEventListener("click", function(){
-      var d = state.dispatches.find(function(x){ return x.id === btn.getAttribute("data-save-dispatch"); });
-      if(!d) return;
-      var priority = getPriorityFor(d.id, d.type === "verified" ? "Alta" : "Media");
-      state.opportunities.push({
-        id: nextId("op", state.opportunities),
-        sector: d.sector || "Sin sector",
-        priority: priority,
-        empresa: d.empresa || d.headline,
-        cargo: d.headline,
-        renta: "No especificada",
-        status: "Por postular",
-        link: d.link,
-        notas: notasFromDispatch(d, "Guardado desde Despachos del día.")
-      });
-      renderDispatches(); populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); persist();
-    });
-  });
-
-  document.querySelectorAll('[data-archive-dispatch]').forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = btn.getAttribute("data-archive-dispatch");
-      if(state.dismissedDispatchIds.indexOf(id) === -1){
-        state.dismissedDispatchIds.push(id);
-      }
-      renderDispatches(); renderTicker(); persist();
-    });
-  });
-
-  document.querySelectorAll(".jt-copybtn").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var text = btn.getAttribute("data-copy");
-      var done = function(){
-        btn.textContent = "Copiado ✓";
-        btn.classList.add("copied");
-        setTimeout(function(){ btn.textContent = "Copiar link"; btn.classList.remove("copied"); }, 2000);
-      };
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(text).then(done).catch(function(){
-          btn.textContent = "No se pudo copiar";
-        });
-      } else {
-        var ta = document.createElement("textarea");
-        ta.value = text; document.body.appendChild(ta); ta.select();
-        try{ document.execCommand("copy"); done(); }catch(e){ btn.textContent = "No se pudo copiar"; }
-        document.body.removeChild(ta);
-      }
+      var t = tasks.find(function(x){ return x.id===btn.getAttribute("data-hoy-dismiss"); });
+      if(!t || !t.watchId) return;
+      markWatchReviewed(t.watchKind, t.watchId);
+      renderHoy(); renderHome(); persist();
     });
   });
 }
@@ -1199,7 +1249,7 @@ function renderBoard(){
         var contactOptions = '<option value="">Sin contacto vinculado</option>' + state.networking.map(function(n){
           return '<option value="'+n.id+'"'+(o.contactId===n.id?' selected':'')+'>'+esc(n.name)+' ('+esc(n.empresa)+')</option>';
         }).join("");
-        html += '<div class="jt-card"><div class="jt-edit-form">'
+        html += '<div class="jt-card" id="opp-'+o.id+'"><div class="jt-edit-form">'
           + '<input type="text" id="edit-empresa" value="'+esc(o.empresa)+'" placeholder="Empresa" />'
           + '<input type="text" id="edit-cargo" value="'+esc(o.cargo)+'" placeholder="Cargo" />'
           + '<input type="text" id="edit-sector" value="'+esc(o.sector)+'" placeholder="Sector" />'
@@ -1277,7 +1327,7 @@ function renderBoard(){
           + '<button class="jt-btn-mini" data-edit-id="'+o.id+'" type="button">Editar</button>'
           + '</div>';
       }
-      html += '<div class="jt-card">'
+      html += '<div class="jt-card" id="opp-'+o.id+'">'
         + '<button class="jt-card-del" data-id="'+o.id+'" data-kind="opp" data-empresa="'+esc(o.empresa)+'" type="button" aria-label="Eliminar oportunidad" title="Eliminar">✕</button>'
         + '<div class="co">'+esc(o.empresa)+followup+deadlineBadge+incompleteBadge+'</div>'
         + '<div class="role">'+esc(o.cargo)+'</div>'
@@ -1685,7 +1735,7 @@ function renderWatchedSearches(){
       : (changed
         ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
         : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario"));
-    return '<div class="jt-ws-row'+(changed?' changed':'')+'">'
+    return '<div class="jt-ws-row'+(changed?' changed':'')+'" id="ws-'+w.id+'">'
       + '<div><div class="jt-ws-label">'+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
       + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-mark-postule="'+w.id+'" type="button">Guardar</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
       + '</div>';
@@ -1708,20 +1758,7 @@ function renderWatchedSearches(){
       var id = btn.getAttribute("data-send-to-hoy");
       var w = state.watchedSearches.find(function(x){ return x.id === id; });
       if(!w) return;
-      if(!state.dispatches) state.dispatches = [];
-      state.dispatches = state.dispatches.filter(function(d){ return !(d.type === "verify" && d.sourceWatchId === w.id); });
-      state.dispatches.push({
-        id: "ws" + Date.now() + "-" + w.id,
-        type: "verify",
-        sourceWatchId: w.id,
-        fromWatchedSearch: true,
-        dateline: "Agregado por ti hoy",
-        headline: 'Revisar tu búsqueda de "' + w.cargo + '"' + (w.portalLabel ? " en " + w.portalLabel : ""),
-        empresa: w.cargo,
-        sector: "Sin sector",
-        meta: "La agregaste tú para revisarla hoy — entra y mira si hay algo nuevo.",
-        link: w.url
-      });
+      w.lastChangedAt = new Date().toISOString();
       await persist();
       renderAll();
       window.alert('Agregada a "Hoy".');
@@ -1753,7 +1790,8 @@ function renderWatchedSearches(){
       };
       state.opportunities.push(newOpp);
       state.onboarding.opportunity = true;
-      populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderOnboarding(); persist();
+      w.lastReviewedAt = new Date().toISOString(); // ya se actuó sobre este cambio, no debe seguir pendiente en Hoy
+      populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderOnboarding(); renderHoy(); renderHome(); persist();
       window.alert('Guardado en tu Agenda de postulaciones — "' + cargo + '" quedó en "Por postular". Edítala para agregar la empresa y el link del aviso específico cuando lo encuentres.');
     });
   });
@@ -2191,8 +2229,9 @@ function renderOnboarding(){
   var ob = state.onboarding || {};
   var doneCount = ONBOARDING_STEPS.filter(function(s){ return ob[s.key]; }).length;
   var allDone = doneCount === ONBOARDING_STEPS.length;
+  var inSection = document.getElementById("jt-back-btn").style.display !== "none";
   renderGuideProgress();
-  if(state.onboardingDismissed || allDone){
+  if(state.onboardingDismissed || allDone || inSection){
     card.style.display = "none";
     return;
   }
@@ -2207,10 +2246,7 @@ function renderOnboarding(){
   }).join("");
   document.querySelectorAll('[data-onboarding-target]').forEach(function(el){
     el.addEventListener("click", function(){
-      var targetId = el.getAttribute("data-onboarding-target");
-      if(targetId === "sec-perfil"){ setProfileSectionExpanded(true); }
-      var targetEl = document.getElementById(targetId);
-      if(targetEl) targetEl.scrollIntoView({behavior:"smooth", block:"start"});
+      goToSection(el.getAttribute("data-onboarding-target"));
     });
   });
 }
@@ -2218,9 +2254,9 @@ function renderOnboarding(){
 function renderAll(){
   renderEdition();
   renderMasthead();
-  renderTicker();
   renderStats();
-  renderDispatches();
+  renderHoy();
+  renderTicker();
   populateFilterSector();
   renderBoard();
   renderNetworking();
@@ -2229,6 +2265,7 @@ function renderAll(){
   renderWatchedSearches();
   renderMetrics();
   renderOnboarding();
+  renderHome();
 }
 
 document.getElementById("jt-onboarding-dismiss").addEventListener("click", function(){
@@ -2941,6 +2978,7 @@ function setProfileSectionExpanded(expanded){
 }
 
 function wireNav(){
+  initSectionViews();
   document.getElementById("jt-logout-btn").addEventListener("click", logout);
   var navEl = document.getElementById("jt-nav");
   var menuBtn = document.getElementById("jt-mobile-menu-btn");
@@ -2950,38 +2988,19 @@ function wireNav(){
     backdrop.classList.add("open");
     document.body.style.overflow = "hidden";
   }
-  function closeDrawer(){
-    navEl.classList.remove("open");
-    backdrop.classList.remove("open");
-    document.body.style.overflow = "";
-  }
   menuBtn.addEventListener("click", openDrawer);
-  backdrop.addEventListener("click", closeDrawer);
+  backdrop.addEventListener("click", closeDrawerIfOpen);
+  document.getElementById("jt-back-btn").addEventListener("click", showHome);
   document.getElementById("sec-perfil").addEventListener("click", function(){
     var expanded = document.getElementById("jt-profile-section-body").style.display !== "none";
     setProfileSectionExpanded(!expanded);
   });
-  var links = document.querySelectorAll('.jt-nav a');
-  links.forEach(function(link){
+  document.querySelectorAll('.jt-nav a').forEach(function(link){
     link.addEventListener('click', function(e){
       e.preventDefault();
-      closeDrawer();
-      if(link.getAttribute('data-target') === 'sec-perfil'){ setProfileSectionExpanded(true); }
-      var el = document.getElementById(link.getAttribute('data-target'));
-      if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+      goToSection(link.getAttribute('data-target'));
     });
   });
-  var sections = Array.prototype.map.call(links, function(l){ return document.getElementById(l.getAttribute('data-target')); }).filter(Boolean);
-  function onScroll(){
-    var pos = window.scrollY + 90;
-    var current = sections[0];
-    sections.forEach(function(s){ if(s.offsetTop <= pos) current = s; });
-    links.forEach(function(l){
-      l.classList.toggle('active', current && l.getAttribute('data-target') === current.id);
-    });
-  }
-  window.addEventListener('scroll', onScroll, {passive:true});
-  onScroll();
   document.addEventListener('click', function(e){
     var hint = e.target.closest('.jt-hint[title]');
     if(!hint) return;
@@ -2998,12 +3017,10 @@ function wireNav(){
   document.querySelectorAll('.jt-guide-link').forEach(function(link){
     link.addEventListener('click', function(e){
       e.preventDefault();
-      var target = link.getAttribute('data-target');
-      if(target === 'sec-perfil'){ setProfileSectionExpanded(true); }
-      var el = document.getElementById(target);
-      if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+      goToSection(link.getAttribute('data-target'));
     });
   });
+  window.addEventListener("hashchange", syncViewFromHash);
 }
 
 document.getElementById("jt-match-btn").addEventListener("click", runMatchAnalysis);
@@ -3013,7 +3030,16 @@ wireNav();
 wireIO();
 wireWatchedSearches();
 
-loadState().then(renderAll);
+// Antes de que loadState() resuelva (llamada de red) se arma la grilla y se
+// aplica el hash actual, para no mostrar por un instante las 10 secciones
+// apiladas mientras carga.
+renderHome();
+syncViewFromHash();
+
+loadState().then(function(){
+  renderAll();
+  syncViewFromHash();
+});
 
 })();
 </script>

@@ -129,28 +129,9 @@ export default async function handler(req, res) {
 
     watch.lastCheckedAt = now;
     watch.hash = newHash;
-    if (!Array.isArray(data.dispatches)) data.dispatches = [];
-    const cargo = watch.cargo || watch.label || "una búsqueda que vigilas";
-    const portalSuffix = watch.portalLabel ? ` en ${watch.portalLabel}` : "";
-    if (changed) {
-      watch.lastChangedAt = now;
-      data.dispatches = data.dispatches.filter((d) => !(d.type === "verify" && d.sourceWatchId === watch.id));
-      data.dispatches.push({
-        id: `ws${Date.now()}-${watch.id}`,
-        type: "verify",
-        sourceWatchId: watch.id,
-        fromWatchedSearch: true,
-        dateline: "Cambio detectado hoy",
-        headline: `Posible novedad en tu búsqueda de "${cargo}"${portalSuffix}`,
-        empresa: cargo,
-        sector: "Sin sector",
-        meta: "Detectamos un cambio en los resultados de esta búsqueda — revisa si hay una vacante nueva antes de asumir que es algo relevante.",
-        link: watch.url,
-      });
-    }
-    // isFirstCheck sin cambio: solo se guarda el hash de referencia — la fila ya
-    // visible en "Búsquedas de empleo" confirma que quedó activa, no hace falta
-    // duplicarlo con una tarjeta en "Hoy" que además nunca es accionable.
+    if (changed) watch.lastChangedAt = now;
+    // El dashboard calcula los pendientes de "Hoy" en vivo a partir de
+    // hash/lastCheckedAt/lastChangedAt — no hace falta empujar nada más acá.
 
     await writeState(user.id, accessToken, data);
     res.status(200).json({ checked: true, changed, isFirstCheck, lastCheckedAt: now });

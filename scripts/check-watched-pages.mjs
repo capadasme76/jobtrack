@@ -1,7 +1,9 @@
 // Chequeo diario de "páginas de empleos" vigiladas por los usuarios.
 // No extrae ni estructura vacantes: solo detecta si el contenido de una página
 // pública que el propio usuario eligió vigilar cambió desde el último chequeo,
-// y si cambió, deja un dispatch tipo "verificar tú" en su sección Hoy.
+// y actualiza hash/lastCheckedAt/lastChangedAt del watch — la sección Hoy del
+// dashboard calcula sus pendientes en vivo a partir de esos campos, no de un
+// registro empujado aquí.
 //
 // Corre como script de Node plano (sin dependencias) vía GitHub Actions —
 // ver .github/workflows/check-watched-pages.yml. Usa la service role key de
@@ -110,9 +112,6 @@ async function processRow(row) {
     return { checked: 0, changed: 0, skipped: 0, errors: 0, mutated: false };
   }
 
-  if (!Array.isArray(data.dispatches)) data.dispatches = [];
-  const opportunities = Array.isArray(data.opportunities) ? data.opportunities : [];
-
   let checked = 0, changed = 0, skipped = 0, errors = 0, mutated = false;
 
   for (const watch of watchedPages) {
@@ -142,25 +141,7 @@ async function processRow(row) {
       changed++;
       watch.hash = result.hash;
       watch.lastChangedAt = now;
-      const opp = opportunities.find((o) => o.id === watch.opportunityId);
-      const empresa = opp ? opp.empresa : "una empresa que vigilas";
-      const cargoSuffix = opp && opp.cargo ? ` — buscas: ${opp.cargo}` : "";
-      // Antes de avisar de nuevo, se saca cualquier aviso anterior de esta misma
-      // página que el usuario todavía no haya revisado — así nunca se acumulan
-      // varias tarjetas duplicadas del mismo watch en "Hoy".
-      data.dispatches = data.dispatches.filter((d) => !(d.type === "verify" && d.sourceWatchId === watch.opportunityId));
-      data.dispatches.push({
-        id: `wd${Date.now()}-${watch.opportunityId}`,
-        type: "verify",
-        sourceWatchId: watch.opportunityId,
-        dateline: "Cambio detectado hoy",
-        headline: `Posible novedad en la página de empleos de ${empresa}${cargoSuffix}`,
-        empresa,
-        sector: opp ? opp.sector : "Sin sector",
-        meta: "Detectamos un cambio en la página que vigilas — revisa si hay una vacante nueva antes de asumir que es algo relevante.",
-        link: watch.url,
-      });
-      console.log(`  CAMBIO ${watch.url} (${empresa})`);
+      console.log(`  CAMBIO ${watch.url}`);
     }
   }
 
@@ -182,9 +163,6 @@ async function processRow(row) {
     watch.lastCheckedAt = now;
     mutated = true;
 
-    const cargo = watch.cargo || watch.label || "una búsqueda que vigilas";
-    const portalSuffix = watch.portalLabel ? ` en ${watch.portalLabel}` : "";
-
     if (watch.hash === null || watch.hash === undefined) {
       // Solo se guarda el hash de referencia — la fila ya visible en "Búsquedas
       // de empleo" es suficiente confirmación de que quedó activa, no hace falta
@@ -197,20 +175,7 @@ async function processRow(row) {
       changed++;
       watch.hash = result.hash;
       watch.lastChangedAt = now;
-      data.dispatches = data.dispatches.filter((d) => !(d.type === "verify" && d.sourceWatchId === watch.id));
-      data.dispatches.push({
-        id: `ws${Date.now()}-${watch.id}`,
-        type: "verify",
-        sourceWatchId: watch.id,
-        fromWatchedSearch: true,
-        dateline: "Cambio detectado hoy",
-        headline: `Posible novedad en tu búsqueda de "${cargo}"${portalSuffix}`,
-        empresa: cargo,
-        sector: "Sin sector",
-        meta: "Detectamos un cambio en los resultados de esta búsqueda — revisa si hay una vacante nueva antes de asumir que es algo relevante.",
-        link: watch.url,
-      });
-      console.log(`  CAMBIO (búsqueda) ${watch.url} (${cargo})`);
+      console.log(`  CAMBIO (búsqueda) ${watch.url}`);
     }
   }
 
