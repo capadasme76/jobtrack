@@ -23,7 +23,7 @@ const EXTRACT_TOOL = {
       formacion: {
         type: "array",
         items: { type: "string" },
-        description: "Una entrada por estudio/título, cada una en el formato exacto 'Título | Institución | Período'."
+        description: "Una entrada por cada título, diplomado, postgrado, magíster, doctorado, certificación o curso relevante que aparezca en el CV — busca en todo el documento, no solo bajo un encabezado literal 'Educación' (puede estar bajo 'Formación académica', 'Estudios', 'Postgrados', 'Certificaciones', o mencionado suelto en el texto). Formato 'Título | Institución | Período' — si el período no aparece, usa 'Título | Institución' y omite esa parte en vez de descartar la entrada completa. Solo se deja vacío si de verdad no hay ninguna mención a formación en todo el CV."
       },
       linkedinUrl: { type: "string", description: "URL de LinkedIn si aparece en el CV, si no, string vacío." }
     },
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const truncated = cvText.slice(0, 15000);
+    const truncated = cvText.slice(0, 20000);
     const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: "user",
-            content: `Extrae los datos de perfil profesional de este CV. No inventes datos que no estén en el texto — si un campo no aparece, déjalo vacío o como lista vacía.\n\n---\n${truncated}\n---`,
+            content: `Extrae los datos de perfil profesional de este CV. No inventes datos que no estén en el texto — si un campo no aparece, déjalo vacío o como lista vacía. Presta especial atención a "formacion": revisa todo el documento buscando estudios, títulos, diplomados, postgrados o certificaciones, aunque no estén bajo un encabezado exacto llamado "Educación" — es un error común dejarla vacía cuando sí hay datos de formación en el texto, solo en otro formato.\n\n---\n${truncated}\n---`,
           },
         ],
       }),
