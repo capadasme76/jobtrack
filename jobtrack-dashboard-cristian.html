@@ -204,6 +204,8 @@
   .jt-ws-row.changed .jt-ws-status{color:var(--teal-dark,var(--teal));}
   .jt-chips{display:flex;flex-wrap:wrap;gap:6px;}
   .jt-chip{font-family:var(--font-mono);font-size:12px;padding:4px 11px;border:1px solid var(--line);color:var(--ink-soft);border-radius:var(--radius-pill);background:var(--paper-dim);}
+  .jt-chip-btn{cursor:pointer;}
+  .jt-chip-btn:hover{border-color:var(--brick);color:var(--brick);}
   .jt-explist{display:flex;flex-direction:column;gap:8px;}
   .jt-expitem{border-left:3px solid var(--teal);padding-left:12px;}
   .jt-expitem .h{font-weight:600;font-size:14.5px;}
@@ -425,6 +427,7 @@
     <input type="text" id="jt-ws-cargo" placeholder="Ej. Gerente de Comunicaciones, Jefe de Comunicaciones (separa con coma si son varios)" style="flex:1;min-width:200px;" />
     <button class="jt-addbtn" id="jt-ws-generate-btn" type="button">+ Generar búsquedas</button>
   </div>
+  <div id="jt-ws-recent-terms" class="jt-chips" style="display:none;margin-bottom:10px;"></div>
   <div class="jt-controls">
     <input type="text" id="jt-ws-manual-url" placeholder="O pega la URL de una búsqueda ya armada" style="flex:1;min-width:200px;" />
     <button class="jt-addbtn secondary" id="jt-ws-add-manual-btn" type="button">+ Agregar URL</button>
@@ -1626,11 +1629,54 @@ function slugifySearchTerm(text){
     .replace(/\s+/g, "-");
 }
 
+// Muestra los cargos que el usuario ya buscó antes como chips clicables, para
+// que no tenga que volver a escribirlos cada vez que quiera generar más
+// portales u otra tanda de búsquedas para el mismo cargo.
+function renderRecentTerms(){
+  var box = document.getElementById("jt-ws-recent-terms");
+  if(!box) return;
+  var seen = {};
+  var terms = [];
+  (state.watchedSearches || []).forEach(function(w){
+    if(!w.cargo) return;
+    var key = w.cargo.toLowerCase();
+    if(seen[key]) return;
+    seen[key] = true;
+    terms.push(w.cargo);
+  });
+  if(!terms.length){
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
+  box.style.display = "flex";
+  box.style.alignItems = "center";
+  box.innerHTML = '<span class="jt-hint" style="margin-right:2px;">Usados antes:</span>' + terms.map(function(t){
+    return '<button class="jt-chip jt-chip-btn" type="button" data-recent-term="'+esc(t)+'">'+esc(t)+'</button>';
+  }).join("");
+  box.querySelectorAll('[data-recent-term]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var term = btn.getAttribute("data-recent-term");
+      var input = document.getElementById("jt-ws-cargo");
+      var current = input.value.split(",").map(function(c){ return c.trim(); }).filter(Boolean);
+      if(current.map(function(c){ return c.toLowerCase(); }).indexOf(term.toLowerCase()) === -1){
+        current.push(term);
+      }
+      input.value = current.join(", ");
+      input.focus();
+    });
+  });
+}
+
 function renderWatchedSearches(){
   var cargoInput = document.getElementById("jt-ws-cargo");
-  if(cargoInput && !cargoInput.value && state.profile && state.profile.tituloProfesional){
+  // Solo precarga con el título real una vez que el perfil fue guardado de
+  // verdad (state.onboarding.profile) — si no, tituloProfesional todavía es
+  // el texto instructivo del seed ("Tu cargo o especialidad (ej. ...)").
+  if(cargoInput && !cargoInput.value && state.onboarding.profile && state.profile && state.profile.tituloProfesional){
     cargoInput.value = state.profile.tituloProfesional;
   }
+  renderRecentTerms();
   var list = state.watchedSearches || [];
   var html = list.map(function(w){
     var monitored = w.monitored !== false;
@@ -1897,7 +1943,7 @@ function wireWatchedSearches(){
     }
   });
   document.getElementById("jt-ws-suggest-btn").addEventListener("click", async function(){
-    var titulo = state.profile && state.profile.tituloProfesional ? state.profile.tituloProfesional.trim() : "";
+    var titulo = state.onboarding.profile && state.profile && state.profile.tituloProfesional ? state.profile.tituloProfesional.trim() : "";
     if(!titulo){ window.alert("Completa al menos el título profesional en \"Mi perfil\" antes de pedir sugerencias."); return; }
     var btn = this;
     btn.disabled = true;
