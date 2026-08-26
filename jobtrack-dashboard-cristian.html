@@ -369,7 +369,7 @@
     <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
     <a href="#sec-busquedas" data-target="sec-busquedas"><i class="jt-ic">🔍</i>Búsquedas de empleo</a>
     <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
-    <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Pipeline</a>
+    <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Agenda de postulaciones</a>
     <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
     <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">☕</i>Reuniones</a>
     <a href="#sec-red" data-target="sec-red"><i class="jt-ic">◍</i>Mis contactos</a>
@@ -447,7 +447,7 @@
   </div>
 
 <div class="jt-module">
-<div class="jt-section-title" id="sec-pipeline">Pipeline</div>
+<div class="jt-section-title" id="sec-pipeline">Agenda de postulaciones</div>
   <div class="jt-section-sub">Todas tus postulaciones organizadas por etapa</div>
   <div class="jt-controls">
     <button class="jt-addbtn" id="jt-toggle-opp-form" type="button">+ Agregar oportunidad</button>
@@ -500,7 +500,7 @@
     <button class="jt-addbtn secondary" id="jt-export-btn" type="button">⇩ Exportar a Excel</button>
     <button class="jt-addbtn secondary" id="jt-import-btn" type="button">⇧ Importar Excel</button>
     <input type="file" id="jt-import-file" accept=".xlsx,.xls" style="display:none;" />
-    <div class="jt-hint" title="Incluye 3 hojas: Perfil, Oportunidades y Networking. No reemplaza tu Excel de 7 pestañas.">Respaldo del pipeline <span class="jt-hint-ic">?</span></div>
+    <div class="jt-hint" title="Incluye 3 hojas: Perfil, Oportunidades y Networking. No reemplaza tu Excel de 7 pestañas.">Respaldo de la agenda de postulaciones <span class="jt-hint-ic">?</span></div>
   </div>
 
   </div>
@@ -569,7 +569,7 @@
   <div class="jt-controls">
     <input type="text" id="jt-net-search" class="jt-search" placeholder="Buscar por nombre o empresa..." />
   </div>
-  <div class="jt-hint" title="Exportar baja tus contactos actuales. Descargar plantilla baja un archivo en blanco para completar. Importar reemplaza toda tu lista por la del archivo — no toca tu pipeline." style="margin-bottom:10px;">Cómo funciona <span class="jt-hint-ic">?</span></div>
+  <div class="jt-hint" title="Exportar baja tus contactos actuales. Descargar plantilla baja un archivo en blanco para completar. Importar reemplaza toda tu lista por la del archivo — no toca tu agenda de postulaciones." style="margin-bottom:10px;">Cómo funciona <span class="jt-hint-ic">?</span></div>
   <div class="jt-form" id="jt-net-form" style="display:none;">
     <input type="text" id="jt-net-name" placeholder="Nombre" />
     <input type="text" id="jt-net-empresa" placeholder="Empresa / Org." />
@@ -681,10 +681,10 @@
       </div>
     </details>
     <details class="jt-guide-step" name="jt-guide-group">
-      <summary class="jt-guide-summary"><span class="jt-guide-num">4</span><span class="jt-guide-title">Agrega tus oportunidades al Pipeline</span></summary>
+      <summary class="jt-guide-summary"><span class="jt-guide-num">4</span><span class="jt-guide-title">Agrega tus oportunidades a tu Agenda de postulaciones</span></summary>
       <div class="jt-guide-body">
         <p>Cada vacante que te interesa se guarda como una tarjeta — solo el link es obligatorio. Arrástrala entre columnas (Por postular, Contactado, Entrevista, etc.) a medida que avanza el proceso.</p>
-        <a class="jt-btn-mini jt-guide-link" href="#sec-pipeline" data-target="sec-pipeline">Ir a Pipeline</a>
+        <a class="jt-btn-mini jt-guide-link" href="#sec-pipeline" data-target="sec-pipeline">Ir a Agenda de postulaciones</a>
       </div>
     </details>
     <details class="jt-guide-step" name="jt-guide-group">
@@ -975,7 +975,7 @@ function renderMasthead(){
 function renderTicker(){
   var enviadas = state.opportunities.filter(function(o){return o.status!=="Por postular";}).length;
   var verificadas = state.dispatches.filter(function(d){return d.type==="verified";}).length;
-  var txt = "PIPELINE ACTIVO — " + state.opportunities.length + " oportunidades mapeadas · " + enviadas + " en movimiento · " + verificadas + " avisos verificados listos para postular hoy — mantén el impulso";
+  var txt = "AGENDA ACTIVA — " + state.opportunities.length + " oportunidades mapeadas · " + enviadas + " en movimiento · " + verificadas + " avisos verificados listos para postular hoy — mantén el impulso";
   document.getElementById("jt-ticker-text").innerHTML = '<span>'+esc(txt)+'</span><span>'+esc(txt)+'</span>';
 }
 
@@ -1035,7 +1035,7 @@ function renderDispatches(){
           + ["Alta","Media","Baja"].map(function(p){ return '<option value="'+p+'"'+(p===defaultPriority?' selected':'')+'>'+p+'</option>'; }).join("")
           + '</select>';
         var saveBtn = tracked
-          ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en pipeline</span>'
+          ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en tu agenda</span>'
           : '<button class="jt-btn-mini" data-save-dispatch="'+d.id+'" type="button">Guardar</button>';
         var applyBtn = '<button class="jt-btn-mini" data-mark-applied="'+d.id+'" type="button">Ya postulé</button>';
         actionsHtml = priSelect + saveBtn + applyBtn + discardBtn;
@@ -1043,7 +1043,7 @@ function renderDispatches(){
     } else {
       var archiveBtn = '<button class="jt-btn-mini" data-archive-dispatch="'+d.id+'" type="button">Archivar señal</button>';
       var signalSaveBtn = tracked
-        ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en pipeline</span>'
+        ? '<span class="jt-io-note" style="margin:0;">📌 Guardado en tu agenda</span>'
         : '<button class="jt-btn-mini" data-save-dispatch="'+d.id+'" type="button">Guardar</button>';
       actionsHtml = signalSaveBtn + archiveBtn;
     }
@@ -1329,7 +1329,7 @@ function renderBoard(){
     btn.addEventListener("click", function(){
       var id = btn.getAttribute("data-id");
       var empresa = btn.getAttribute("data-empresa") || "esta oportunidad";
-      if(!window.confirm('¿Eliminar "'+empresa+'" del pipeline? Esta acción no se puede deshacer.')) return;
+      if(!window.confirm('¿Eliminar "'+empresa+'" de tu agenda de postulaciones? Esta acción no se puede deshacer.')) return;
       state.opportunities = state.opportunities.filter(function(o){ return o.id!==id; });
       removeWatchedPage(id);
       renderStats(); renderTicker(); populateFilterSector(); renderBoard(); renderMetrics(); persist();
@@ -1755,7 +1755,7 @@ function renderWatchedSearches(){
       state.opportunities.push(newOpp);
       state.onboarding.opportunity = true;
       populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderOnboarding(); persist();
-      window.alert('Guardado en Pipeline — "' + cargo + '" quedó en "Por postular". Edítala para agregar la empresa y el link del aviso específico cuando lo encuentres.');
+      window.alert('Guardado en tu Agenda de postulaciones — "' + cargo + '" quedó en "Por postular". Edítala para agregar la empresa y el link del aviso específico cuando lo encuentres.');
     });
   });
   document.querySelectorAll('[data-check-watched-search]').forEach(function(btn){
@@ -2447,7 +2447,7 @@ function downloadNetworkingTemplate(){
     ["Columna Region es opcional — una de las 16 regiones de Chile (ej. Metropolitana, Valparaíso, Biobío)."],
     ["Columna Relacion debe ser una de: Sin contacto, Conocido, Cercano, En proceso, Activo"],
     ["Borra la fila de ejemplo antes de subir el archivo."],
-    ["Al importar, esto reemplaza toda tu red de contactos actual — no toca tu pipeline de oportunidades."]
+    ["Al importar, esto reemplaza toda tu red de contactos actual — no toca tu agenda de postulaciones."]
   ]);
   noteWs['!cols'] = [{wch:80}];
   XLSX.utils.book_append_sheet(wb, noteWs, "Instrucciones");
@@ -2473,7 +2473,7 @@ function deleteAllContacts(){
     window.alert("No tienes contactos guardados todavía.");
     return;
   }
-  if(!window.confirm('¿Eliminar TODOS tus contactos ('+state.networking.length+')? Esta acción no se puede deshacer. Tu pipeline de oportunidades no se toca.')) return;
+  if(!window.confirm('¿Eliminar TODOS tus contactos ('+state.networking.length+')? Esta acción no se puede deshacer. Tu agenda de postulaciones no se toca.')) return;
   state.networking = [];
   renderStats(); renderNetworking(); renderMeetings(); persist();
 }
@@ -2492,7 +2492,7 @@ function importNetworkingOnly(file){
         window.alert('No encontré una hoja llamada "Networking" en ese archivo. Usa la plantilla descargable para asegurar el formato correcto.');
         return;
       }
-      if(!window.confirm("Esto reemplaza tu red de contactos actual por la del archivo. Tu pipeline de oportunidades no se toca. ¿Continuar?")) return;
+      if(!window.confirm("Esto reemplaza tu red de contactos actual por la del archivo. Tu agenda de postulaciones no se toca. ¿Continuar?")) return;
       var netRows = XLSX.utils.sheet_to_json(netSheet);
       state.networking = netRows.filter(function(r){ return r.Nombre; }).map(function(r, i){
         return {
