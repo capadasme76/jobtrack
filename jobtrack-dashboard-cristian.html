@@ -355,15 +355,15 @@
       </div>
     </div>
     <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
-    <a href="#sec-busquedas" data-target="sec-busquedas"><i class="jt-ic">🔍</i>Búsquedas de empleo</a>
+    <a href="#sec-busquedas" data-target="sec-busquedas"><i class="jt-ic">⌕</i>Búsquedas de empleo</a>
     <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
     <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Agenda de postulaciones</a>
     <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
-    <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">☕</i>Reuniones</a>
+    <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">❖</i>Reuniones</a>
     <a href="#sec-red" data-target="sec-red"><i class="jt-ic">◍</i>Mis contactos</a>
     <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic">▦</i>Métricas</a>
     <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic">⊞</i>Portales</a>
-    <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic">?</i>Guía</a>
+    <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic">ⓘ</i>Guía</a>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
   </nav>
 
@@ -378,6 +378,8 @@
   </div>
 
   <div class="jt-home" id="jt-home">
+    <div class="jt-ticker"><div class="jt-ticker-inner" id="jt-ticker-text"></div></div>
+    <div class="jt-stats" id="jt-stats"></div>
     <div class="jt-home-grid" id="jt-home-grid"></div>
   </div>
   <button type="button" class="jt-btn-ghost jt-back-btn" id="jt-back-btn" style="display:none;">← Volver</button>
@@ -395,11 +397,7 @@
   </div>
 
   <div class="jt-module">
-<div class="jt-ticker" id="sec-hoy"><div class="jt-ticker-inner" id="jt-ticker-text"></div></div>
-
-  <div class="jt-stats" id="jt-stats"></div>
-
-  <div class="jt-section-title">Hoy</div>
+  <div class="jt-section-title" id="sec-hoy">Hoy</div>
   <div class="jt-section-sub">Tus pendientes de hoy — calculados desde tu Agenda, Búsquedas y Reuniones</div>
   <div class="jt-dispatches" id="jt-dispatches"></div>
 
@@ -747,15 +745,15 @@ function regionOptionsHtml(selected){
 // o compartir un link con #sec-pipeline cae directo en esa sección.
 var SECTIONS = [
   {id:"sec-hoy", icon:"▸", label:"Hoy"},
-  {id:"sec-busquedas", icon:"🔍", label:"Búsquedas de empleo"},
+  {id:"sec-busquedas", icon:"⌕", label:"Búsquedas de empleo"},
   {id:"sec-perfil", icon:"◆", label:"Mi perfil"},
   {id:"sec-pipeline", icon:"▤", label:"Agenda de postulaciones"},
   {id:"sec-match", icon:"✓", label:"Match CV"},
-  {id:"sec-reuniones", icon:"☕", label:"Reuniones"},
+  {id:"sec-reuniones", icon:"❖", label:"Reuniones"},
   {id:"sec-red", icon:"◍", label:"Mis contactos"},
   {id:"sec-metricas", icon:"▦", label:"Métricas"},
   {id:"sec-portales", icon:"⊞", label:"Portales"},
-  {id:"sec-guia", icon:"?", label:"Guía"}
+  {id:"sec-guia", icon:"ⓘ", label:"Guía"}
 ];
 var sectionModuleEls = {};
 var lastHoyTaskCount = 0;
