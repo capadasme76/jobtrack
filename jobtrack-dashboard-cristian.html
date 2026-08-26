@@ -141,27 +141,17 @@
   .jt-edit-form textarea{grid-column:1/-1;}
   .jt-edit-actions{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end;margin-top:2px;}
   .jt-btn-mini{font-family:var(--font-mono);font-size:11.5px;background:transparent;color:var(--ink-soft);border:1px solid var(--line);padding:4px 10px;cursor:pointer;border-radius:var(--radius-pill);}
+  .jt-btn-mini:disabled{opacity:.4;cursor:default;}
   .jt-btn-mini:hover{color:var(--ink);border-color:var(--ink-soft);}
   .jt-btn-mini.primary{background:var(--teal-dark);color:#fff;border-color:var(--teal-dark);}
   .jt-btn-mini.applied{color:var(--teal-dark);border-color:var(--teal);background:var(--paper-dim);cursor:default;opacity:.85;}
   .jt-dispatch-priority{font-family:var(--font-mono);font-size:11.5px;padding:4px 6px;border-radius:var(--radius-ctrl);width:auto;}
   .jt-io-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
   .jt-io-note{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);width:100%;}
-  .jt-onboarding{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:16px;margin-bottom:16px;}
-  .jt-onboarding-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-  .jt-onboarding-head h3{font-family:var(--font-display);font-size:15px;font-weight:800;margin:0;}
-  .jt-onboarding-progress{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);}
-  .jt-onboarding-head .jt-btn-mini{margin-left:auto;}
-  .jt-onboarding-list{display:flex;flex-direction:column;gap:2px;}
-  .jt-onboarding-guide-link{display:block;text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);text-decoration:none;padding-top:10px;margin-top:6px;border-top:1px dashed var(--line);}
-  .jt-onboarding-guide-link:hover{color:var(--brick);}
-  .jt-onboarding-item{display:flex;align-items:flex-start;gap:10px;padding:8px 6px;cursor:pointer;border-radius:var(--radius-ctrl);}
-  .jt-onboarding-item:hover{background:var(--paper-dim);}
-  .jt-onboarding-check{flex-shrink:0;width:18px;height:18px;border:1.5px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--teal);margin-top:1px;}
-  .jt-onboarding-item.done .jt-onboarding-check{border-color:var(--teal);background:var(--teal);color:#fff;}
-  .jt-onboarding-item.done .jt-onboarding-label{color:var(--ink-faint);text-decoration:line-through;}
-  .jt-onboarding-label{font-size:13.5px;font-weight:600;}
-  .jt-onboarding-hint{font-size:12px;color:var(--ink-soft);margin-top:1px;}
+  .jt-wizard-bar{background:var(--brick-100);border:1px solid var(--brick);padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;}
+  .jt-wizard-step{font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--brick-800);}
+  .jt-wizard-hint{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .jt-wizard-actions{display:flex;gap:8px;flex-wrap:wrap;}
   .jt-guide-steps{display:flex;flex-direction:column;gap:10px;}
   .jt-guide-step{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:0;box-shadow:0 1px 2px rgba(32,30,29,.14);overflow:hidden;}
   .jt-guide-summary{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;list-style:none;}
@@ -169,9 +159,7 @@
   .jt-guide-summary::after{content:"▾";margin-left:auto;color:var(--ink-faint);font-size:12px;transition:transform .15s;flex-shrink:0;}
   .jt-guide-step[open] .jt-guide-summary::after{transform:rotate(180deg);}
   .jt-guide-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--brick);color:#fff;font-family:var(--font-mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
-  .jt-guide-step.done .jt-guide-num{background:var(--teal);}
   .jt-guide-title{font-family:var(--font-display);font-size:14.5px;font-weight:700;}
-  .jt-guide-step.done .jt-guide-title::after{content:" ✓";color:var(--teal-dark,var(--teal));font-weight:700;}
   .jt-guide-body{padding:0 16px 16px 54px;}
   .jt-guide-body p{font-size:13px;color:var(--ink-soft);margin:0 0 8px;line-height:1.45;}
   .jt-profile{background:var(--card-bg);border:1px solid var(--line);padding:24px;margin-bottom:6px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);}
@@ -331,6 +319,9 @@
     .jt-io-row{flex-direction:column;align-items:stretch;}
     .jt-stats{grid-template-columns:repeat(2,1fr);}
     .jt-home-grid{grid-template-columns:1fr;}
+    .jt-wizard-bar{flex-direction:column;align-items:stretch;}
+    .jt-wizard-actions{justify-content:stretch;}
+    .jt-wizard-actions button{flex:1;}
     .jt-stats .jt-stat:last-child{grid-column:1/-1;}
     .jt-profile-head{flex-direction:column;align-items:stretch;gap:8px;}
     .jt-profile-head h2{word-break:break-word;}
@@ -386,20 +377,22 @@
     <div class="jt-edition" id="jt-edition"></div>
   </div>
 
-  <div class="jt-onboarding" id="jt-onboarding-card" style="display:none;">
-    <div class="jt-onboarding-head">
-      <h3>Primeros pasos</h3>
-      <span class="jt-onboarding-progress" id="jt-onboarding-progress"></span>
-      <button class="jt-btn-mini" id="jt-onboarding-dismiss" type="button">Ocultar</button>
-    </div>
-    <div class="jt-onboarding-list" id="jt-onboarding-list"></div>
-    <a class="jt-onboarding-guide-link jt-guide-link" href="#sec-guia" data-target="sec-guia">Ver la guía completa →</a>
-  </div>
-
   <div class="jt-home" id="jt-home">
     <div class="jt-home-grid" id="jt-home-grid"></div>
   </div>
   <button type="button" class="jt-btn-ghost jt-back-btn" id="jt-back-btn" style="display:none;">← Volver</button>
+
+  <div class="jt-wizard-bar" id="jt-wizard-bar" style="display:none;">
+    <div>
+      <div class="jt-wizard-step" id="jt-wizard-step-label"></div>
+      <div class="jt-wizard-hint" id="jt-wizard-hint"></div>
+    </div>
+    <div class="jt-wizard-actions">
+      <button class="jt-btn-mini" id="jt-wizard-back" type="button">← Atrás</button>
+      <button class="jt-btn-mini" id="jt-wizard-skip" type="button">Saltar asistente</button>
+      <button class="jt-addbtn" id="jt-wizard-next" type="button">Siguiente →</button>
+    </div>
+  </div>
 
   <div class="jt-module">
 <div class="jt-ticker" id="sec-hoy"><div class="jt-ticker-inner" id="jt-ticker-text"></div></div>
@@ -790,8 +783,7 @@ function showSection(id, anchorId){
   if(!sectionModuleEls[id]) return;
   document.getElementById("jt-home").style.display = "none";
   document.getElementById("jt-mast-block").style.display = "none";
-  document.getElementById("jt-onboarding-card").style.display = "none";
-  document.getElementById("jt-back-btn").style.display = "inline-block";
+  document.getElementById("jt-back-btn").style.display = wizardActive ? "none" : "inline-block";
   SECTIONS.forEach(function(s){
     if(sectionModuleEls[s.id]) sectionModuleEls[s.id].style.display = (s.id === id) ? "" : "none";
   });
@@ -806,6 +798,75 @@ function showSection(id, anchorId){
       if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
     });
   }
+  updateWizardBar(id);
+}
+
+// Asistente de bienvenida: guía a una cuenta nueva por las 4 secciones
+// esenciales (perfil, búsquedas, agenda, match) usando la misma navegación
+// por tarjetas — no es una pantalla aparte, es goToSection() con una barra
+// de progreso pegada arriba. No bloquea: el usuario puede saltar o navegar
+// libremente a otra sección en cualquier momento; si lo hace, la barra
+// simplemente no aparece ahí, y vuelve a aparecer si regresa a uno de los 4.
+var WIZARD_STEPS = [
+  { key:"profile", title:"Completa tu perfil", hint:"Sube tu CV o escribe tus datos — el resto de la app los usa para todo.", target:"sec-perfil" },
+  { key:"searches", title:"Genera tus búsquedas", hint:"Escribe un cargo y armamos el link listo en cada portal.", target:"sec-busquedas" },
+  { key:"opportunity", title:"Agrega tu primera postulación", hint:"Pega el link de un aviso real al que quieras postular.", target:"sec-pipeline" },
+  { key:"match", title:"Prueba el Match CV", hint:"Pega una vacante y compara contra tu perfil.", target:"sec-match" }
+];
+var wizardActive = false;
+var wizardStepIndex = 0;
+
+function startWizard(){
+  wizardActive = true;
+  wizardStepIndex = 0;
+  renderAll();
+  goToSection(WIZARD_STEPS[0].target);
+}
+
+function finishWizard(){
+  wizardActive = false;
+  state.onboarding.wizardDone = true;
+  document.getElementById("jt-wizard-bar").style.display = "none";
+  renderAll();
+  persist();
+  showHome();
+}
+
+function advanceWizard(){
+  if(wizardStepIndex >= WIZARD_STEPS.length - 1){ finishWizard(); return; }
+  wizardStepIndex++;
+  goToSection(WIZARD_STEPS[wizardStepIndex].target);
+}
+
+function retreatWizard(){
+  if(wizardStepIndex <= 0) return;
+  wizardStepIndex--;
+  goToSection(WIZARD_STEPS[wizardStepIndex].target);
+}
+
+function updateWizardBar(sectionId){
+  var bar = document.getElementById("jt-wizard-bar");
+  if(!wizardActive){ bar.style.display = "none"; return; }
+  var idx = WIZARD_STEPS.findIndex(function(s){ return s.target === sectionId; });
+  if(idx === -1){ bar.style.display = "none"; return; }
+  wizardStepIndex = idx;
+  var step = WIZARD_STEPS[idx];
+  var done = !!state.onboarding[step.key];
+  document.getElementById("jt-wizard-step-label").textContent = "Paso " + (idx+1) + " de " + WIZARD_STEPS.length + " — " + step.title + (done ? " ✓" : "");
+  document.getElementById("jt-wizard-hint").textContent = step.hint;
+  document.getElementById("jt-wizard-back").disabled = idx === 0;
+  document.getElementById("jt-wizard-next").textContent = idx === WIZARD_STEPS.length - 1 ? "Finalizar" : "Siguiente →";
+  bar.style.display = "flex";
+  // Fricción extra: estos dos pasos requieren un clic para llegar al
+  // formulario real — el asistente lo hace por el usuario.
+  if(step.key === "profile"){
+    var editBtn = document.getElementById("jt-profile-edit-btn");
+    if(editBtn && document.getElementById("jt-profile-edit").style.display === "none") editBtn.click();
+  }
+  if(step.key === "opportunity"){
+    var toggleBtn = document.getElementById("jt-toggle-opp-form");
+    if(toggleBtn && document.getElementById("jt-opp-form").style.display === "none") toggleBtn.click();
+  }
 }
 
 function showHome(){
@@ -819,7 +880,7 @@ function showHome(){
   closeDrawerIfOpen();
   window.scrollTo({top:0, behavior:"instant"});
   if(location.hash) history.replaceState(null, "", location.pathname + location.search);
-  renderOnboarding();
+  updateWizardBar(null);
 }
 
 function goToSection(id, anchorId){ showSection(id, anchorId); }
@@ -871,7 +932,7 @@ var seedProfile = {
   linkedinLastSync: null
 };
 
-var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", meetings: seedMeetings, watchedPages: [], watchedSearches: [], onboarding: { profile: false, opportunity: false, contact: false, match: false, meeting: false }, onboardingDismissed: false };
+var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", meetings: seedMeetings, watchedPages: [], watchedSearches: [], onboarding: { profile: false, searches: false, opportunity: false, match: false, wizardDone: false } };
 var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"", region:"" };
 var saveTimer = null;
 var editingOppId = null;
@@ -1022,11 +1083,16 @@ async function loadState(){
           return true;
         });
       })();
-      // Checklist de primeros pasos: si la cuenta ya existía antes de esta función
-      // (no trae "onboarding" guardado), no se le muestra retroactivamente.
-      if(parsed.onboarding) state.onboarding = parsed.onboarding;
-      else state.onboardingDismissed = true;
-      if(parsed.onboardingDismissed !== undefined) state.onboardingDismissed = parsed.onboardingDismissed;
+      // Asistente de bienvenida: si la cuenta ya existía antes de este campo
+      // (trae onboarding guardado pero sin "wizardDone", o no trae onboarding
+      // en absoluto), se marca como ya completado — no se le muestra
+      // retroactivamente a alguien que ya usa la app.
+      if(parsed.onboarding){
+        state.onboarding = parsed.onboarding;
+        if(state.onboarding.wizardDone === undefined) state.onboarding.wizardDone = true;
+      } else {
+        state.onboarding.wizardDone = true;
+      }
       // CV actualizado el 17/08: se fuerza el perfil nuevo una vez, aunque haya uno viejo guardado.
       if(parsed.profileCvVersion === "2026-08-17-v3"){
         if(parsed.profile) state.profile = parsed.profile;
@@ -1791,7 +1857,7 @@ function renderWatchedSearches(){
       state.opportunities.push(newOpp);
       state.onboarding.opportunity = true;
       w.lastReviewedAt = new Date().toISOString(); // ya se actuó sobre este cambio, no debe seguir pendiente en Hoy
-      populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderOnboarding(); renderHoy(); renderHome(); persist();
+      populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderHoy(); renderHome(); persist();
       window.alert('Guardado en tu Agenda de postulaciones — "' + cargo + '" quedó en "Por postular". Edítala para agregar la empresa y el link del aviso específico cuando lo encuentres.');
     });
   });
@@ -1877,6 +1943,7 @@ async function generateSearchesForCargos(cargos){
       if(portal.monitored) monitoredIds.push(id);
     });
   });
+  if(created > 0) state.onboarding.searches = true;
   renderWatchedSearches();
   await persist();
   // Solo los portales "monitored" (hoy: ChileTrabajos) pasan por el chequeo
@@ -2083,7 +2150,7 @@ function wireForms(){
     document.getElementById("jt-opp-career-url").value = "";
     oppForm.style.display = "none";
     state.onboarding.opportunity = true;
-    populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderOnboarding(); persist();
+    populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderHome(); persist();
   });
 
   var netBtn = document.getElementById("jt-toggle-net-form");
@@ -2116,8 +2183,7 @@ function wireForms(){
     document.getElementById("jt-net-empresa").value = "";
     document.getElementById("jt-net-region").value = "";
     netForm.style.display = "none";
-    state.onboarding.contact = true;
-    renderNetworking(); renderMeetings(); renderStats(); renderOnboarding(); persist();
+    renderNetworking(); renderMeetings(); renderStats(); persist();
   });
 
   var meetingBtn = document.getElementById("jt-toggle-meeting-form");
@@ -2147,8 +2213,7 @@ function wireForms(){
     document.getElementById("jt-meeting-fecha").value = "";
     document.getElementById("jt-meeting-notas").value = "";
     meetingForm.style.display = "none";
-    state.onboarding.meeting = true;
-    renderMeetings(); renderNetworking(); renderOnboarding(); persist();
+    renderMeetings(); renderNetworking(); persist();
   });
 }
 
@@ -2204,53 +2269,6 @@ function renderMetrics(){
   }).join("");
 }
 
-var ONBOARDING_STEPS = [
-  { key: "profile", label: "Completa tu perfil", hint: "Así tus postulaciones y el Match CV usan tus datos reales, no los de ejemplo.", target: "sec-perfil" },
-  { key: "opportunity", label: "Agrega tu primera oportunidad", hint: "Pega el link de un aviso real al que quieras postular.", target: "sec-pipeline" },
-  { key: "contact", label: "Suma un contacto a tu red", hint: "Entre 60% y 85% de las pegas se consiguen por red de contactos, no postulando a ciegas.", target: "sec-red" },
-  { key: "match", label: "Prueba el Match CV", hint: "Compara tu perfil contra una vacante real en segundos.", target: "sec-match" },
-  { key: "meeting", label: "Registra tu primera reunión o café", hint: "Lleva el hilo de cada conversación 1:1 de tu búsqueda.", target: "sec-reuniones" }
-];
-
-function renderGuideProgress(){
-  var ob = state.onboarding || {};
-  var targetToKey = {};
-  ONBOARDING_STEPS.forEach(function(s){ targetToKey[s.target] = s.key; });
-  document.querySelectorAll(".jt-guide-step").forEach(function(step){
-    var link = step.querySelector(".jt-guide-link");
-    var key = link ? targetToKey[link.getAttribute("data-target")] : null;
-    if(!key) return;
-    step.classList.toggle("done", !!ob[key]);
-  });
-}
-
-function renderOnboarding(){
-  var card = document.getElementById("jt-onboarding-card");
-  var ob = state.onboarding || {};
-  var doneCount = ONBOARDING_STEPS.filter(function(s){ return ob[s.key]; }).length;
-  var allDone = doneCount === ONBOARDING_STEPS.length;
-  var inSection = document.getElementById("jt-back-btn").style.display !== "none";
-  renderGuideProgress();
-  if(state.onboardingDismissed || allDone || inSection){
-    card.style.display = "none";
-    return;
-  }
-  card.style.display = "block";
-  document.getElementById("jt-onboarding-progress").textContent = doneCount + "/" + ONBOARDING_STEPS.length;
-  document.getElementById("jt-onboarding-list").innerHTML = ONBOARDING_STEPS.map(function(s){
-    var done = !!ob[s.key];
-    return '<div class="jt-onboarding-item'+(done?' done':'')+'" data-onboarding-target="'+s.target+'">'
-      + '<span class="jt-onboarding-check">'+(done?'✓':'')+'</span>'
-      + '<div><div class="jt-onboarding-label">'+esc(s.label)+'</div><div class="jt-onboarding-hint">'+esc(s.hint)+'</div></div>'
-      + '</div>';
-  }).join("");
-  document.querySelectorAll('[data-onboarding-target]').forEach(function(el){
-    el.addEventListener("click", function(){
-      goToSection(el.getAttribute("data-onboarding-target"));
-    });
-  });
-}
-
 function renderAll(){
   renderEdition();
   renderMasthead();
@@ -2264,15 +2282,8 @@ function renderAll(){
   renderProfile();
   renderWatchedSearches();
   renderMetrics();
-  renderOnboarding();
   renderHome();
 }
-
-document.getElementById("jt-onboarding-dismiss").addEventListener("click", function(){
-  state.onboardingDismissed = true;
-  renderOnboarding();
-  persist();
-});
 
 document.getElementById("jt-filter-sector").addEventListener("change", function(e){
   filters.sector = e.target.value; renderBoard();
@@ -2641,7 +2652,6 @@ function runMatchAnalysis(){
   window.__lastMatchHits = hits;
   if(!state.onboarding.match){
     state.onboarding.match = true;
-    renderOnboarding();
     persist();
   }
 
@@ -2967,7 +2977,6 @@ function renderProfileEdit(){
     state.onboarding.profile = true;
     renderProfile();
     renderMasthead();
-    renderOnboarding();
     persist();
   });
 }
@@ -2991,6 +3000,9 @@ function wireNav(){
   menuBtn.addEventListener("click", openDrawer);
   backdrop.addEventListener("click", closeDrawerIfOpen);
   document.getElementById("jt-back-btn").addEventListener("click", showHome);
+  document.getElementById("jt-wizard-back").addEventListener("click", retreatWizard);
+  document.getElementById("jt-wizard-next").addEventListener("click", advanceWizard);
+  document.getElementById("jt-wizard-skip").addEventListener("click", finishWizard);
   document.getElementById("sec-perfil").addEventListener("click", function(){
     var expanded = document.getElementById("jt-profile-section-body").style.display !== "none";
     setProfileSectionExpanded(!expanded);
@@ -3037,8 +3049,12 @@ renderHome();
 syncViewFromHash();
 
 loadState().then(function(){
-  renderAll();
-  syncViewFromHash();
+  if(!state.onboarding.wizardDone){
+    startWizard();
+  } else {
+    renderAll();
+    syncViewFromHash();
+  }
 });
 
 })();
