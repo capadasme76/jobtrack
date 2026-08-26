@@ -45,7 +45,8 @@
   .jt-sidebar a.active{background:var(--brick-100);color:var(--brick-800);}
   .jt-sidebar-logout{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-ctrl);color:var(--ink-faint);background:none;border:none;text-align:left;font-family:var(--font-body);font-size:13.5px;font-weight:500;cursor:pointer;margin-top:auto;}
   .jt-sidebar-logout:hover{background:var(--paper-dim);color:var(--brick);}
-  .jt-ic{font-style:normal;width:18px;text-align:center;opacity:.85;flex-shrink:0;}
+  .jt-ic{font-style:normal;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;opacity:.85;flex-shrink:0;}
+  .jt-ic svg{width:100%;height:100%;}
   .jt-main{flex:1;min-width:0;}
   .jt-container{max-width:1120px;margin:0 auto;padding:32px 28px 64px;}
   .jt-module{background:var(--card-bg);border:1px solid var(--line);border-radius:18px;padding:28px;margin-bottom:28px;box-shadow:0 1px 2px rgba(32,30,29,.14);}
@@ -60,9 +61,10 @@
   @media (prefers-reduced-motion: reduce){ .jt-ticker-inner{animation:none;padding-left:12px;} }
   @keyframes jt-scroll{ from{transform:translateX(0);} to{transform:translateX(-100%);} }
   .jt-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px;}
-  .jt-stat{background:var(--card-bg);border:1px solid var(--line);padding:14px 16px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);}
-  .jt-stat .n{font-family:var(--font-display);font-size:25px;font-weight:600;line-height:1;}
-  .jt-stat .l{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-top:4px;}
+  .jt-stat{background:var(--card-bg);border:1px solid var(--line);padding:16px 18px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-stat .n{font-family:var(--font-display);font-size:32px;font-weight:800;line-height:1;}
+  .jt-stat .l{font-family:var(--font-body);font-size:11px;color:var(--brick);text-transform:uppercase;letter-spacing:.6px;margin-top:6px;font-weight:600;}
+  .jt-card-kicker{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--brick);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px;}
   .jt-section-title{font-family:var(--font-display);font-size:22px;font-weight:700;text-transform:none;letter-spacing:.2px;color:var(--ink);border-bottom:3px solid var(--brick);padding-bottom:6px;margin:32px 0 4px;}
   .jt-section-title.jt-collapsible-title{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
   .jt-section-toggle{font-family:var(--font-mono);font-size:14px;color:var(--ink-faint);}
@@ -98,6 +100,7 @@
   .jt-card .tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
   .jt-tag{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border:1px solid var(--line);color:var(--ink-soft);text-transform:uppercase;border-radius:var(--radius-pill);}
   .jt-tag.alta{border-color:var(--brick);color:var(--brick);}
+  .jt-tag-outline{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border:1px solid var(--brick);color:var(--brick);text-transform:uppercase;border-radius:var(--radius-pill);white-space:nowrap;}
   .jt-card select{width:100%;}
   .jt-net{display:flex;flex-direction:column;gap:0;}
   .jt-net-row{display:grid;grid-template-columns:1.2fr 1fr .9fr 55px 90px 105px 130px;gap:8px;padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;align-items:center;}
@@ -254,7 +257,8 @@
   .jt-home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:8px;}
   .jt-tile{display:flex;flex-direction:column;gap:6px;background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 18px;text-decoration:none;color:var(--ink);box-shadow:0 1px 2px rgba(32,30,29,.14);transition:border-color .15s;}
   .jt-tile:hover{border-color:var(--brick);}
-  .jt-tile .jt-tile-ic{font-size:22px;color:var(--brick);}
+  .jt-tile .jt-tile-ic{width:24px;height:24px;display:inline-flex;color:var(--brick);}
+  .jt-tile .jt-tile-ic svg{width:100%;height:100%;}
   .jt-tile .jt-tile-label{font-family:var(--font-display);font-weight:700;font-size:15.5px;}
   .jt-tile .jt-tile-badge{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);}
   .jt-back-btn{margin-bottom:16px;}
@@ -354,16 +358,16 @@
         <div class="jt-sidebar-user" id="jt-mast-name-side">Tu nombre aquí</div>
       </div>
     </div>
-    <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic">▸</i>Hoy</a>
-    <a href="#sec-busquedas" data-target="sec-busquedas"><i class="jt-ic">⌕</i>Búsquedas de empleo</a>
-    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic">◆</i>Mi perfil</a>
-    <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic">▤</i>Agenda de postulaciones</a>
-    <a href="#sec-match" data-target="sec-match"><i class="jt-ic">✓</i>Match CV</a>
-    <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic">❖</i>Reuniones</a>
-    <a href="#sec-red" data-target="sec-red"><i class="jt-ic">◍</i>Mis contactos</a>
-    <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic">▦</i>Métricas</a>
-    <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic">⊞</i>Portales</a>
-    <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic">ⓘ</i>Guía</a>
+    <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg></i>Hoy</a>
+    <a href="#sec-busquedas" data-target="sec-busquedas"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></i>Búsquedas de empleo</a>
+    <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path></svg></i>Mi perfil</a>
+    <a href="#sec-pipeline" data-target="sec-pipeline"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16"></rect><line x1="9" y1="4" x2="9" y2="20"></line><line x1="15" y1="4" x2="15" y2="20"></line></svg></i>Agenda de postulaciones</a>
+    <a href="#sec-match" data-target="sec-match"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></svg></i>Match CV</a>
+    <a href="#sec-reuniones" data-target="sec-reuniones"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg></i>Reuniones</a>
+    <a href="#sec-red" data-target="sec-red"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16 14c2.5 0 5 1.5 6 4"></path></svg></i>Mis contactos</a>
+    <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="21" x2="5" y2="12"></line><line x1="12" y1="21" x2="12" y2="7"></line><line x1="19" y1="21" x2="19" y2="15"></line><line x1="3" y1="21" x2="21" y2="21"></line></svg></i>Métricas</a>
+    <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-6-4-9s1.5-6.5 4-9z"></path></svg></i>Portales</a>
+    <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a2.9 2.9 0 0 1 5.6 1c0 2-2.9 2.5-2.9 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.5"></line></svg></i>Guía</a>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
   </nav>
 
@@ -743,17 +747,37 @@ function regionOptionsHtml(selected){
 // X" es solo alternar display sobre esos módulos. El estado de "qué se ve"
 // es el hash de la URL (sin variable paralela ni router aparte), así recargar
 // o compartir un link con #sec-pipeline cae directo en esa sección.
+// Íconos SVG estilo Lucide (stroke, currentColor) — mismo set que ya se usó en
+// el mockup de referencia ("Claude Design", diseño/Scope and pipeline
+// questions.zip), solo con el color de marca actual en vez del rojo original.
+// Búsquedas de empleo y Guía no existían en ese mockup; se diseñaron en el
+// mismo estilo (círculo + lupa / círculo + "i") para no desentonar.
+function svgIcon(inner){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>';
+}
+var SECTION_ICON_PATHS = {
+  "sec-hoy": '<rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect>',
+  "sec-busquedas": '<circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>',
+  "sec-perfil": '<circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path>',
+  "sec-pipeline": '<rect x="3" y="4" width="18" height="16"></rect><line x1="9" y1="4" x2="9" y2="20"></line><line x1="15" y1="4" x2="15" y2="20"></line>',
+  "sec-match": '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle>',
+  "sec-reuniones": '<rect x="3" y="5" width="18" height="16"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line>',
+  "sec-red": '<circle cx="9" cy="8" r="3"></circle><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16 14c2.5 0 5 1.5 6 4"></path>',
+  "sec-metricas": '<line x1="5" y1="21" x2="5" y2="12"></line><line x1="12" y1="21" x2="12" y2="7"></line><line x1="19" y1="21" x2="19" y2="15"></line><line x1="3" y1="21" x2="21" y2="21"></line>',
+  "sec-portales": '<circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-6-4-9s1.5-6.5 4-9z"></path>',
+  "sec-guia": '<circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a2.9 2.9 0 0 1 5.6 1c0 2-2.9 2.5-2.9 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.5"></line>'
+};
 var SECTIONS = [
-  {id:"sec-hoy", icon:"▸", label:"Hoy"},
-  {id:"sec-busquedas", icon:"⌕", label:"Búsquedas de empleo"},
-  {id:"sec-perfil", icon:"◆", label:"Mi perfil"},
-  {id:"sec-pipeline", icon:"▤", label:"Agenda de postulaciones"},
-  {id:"sec-match", icon:"✓", label:"Match CV"},
-  {id:"sec-reuniones", icon:"❖", label:"Reuniones"},
-  {id:"sec-red", icon:"◍", label:"Mis contactos"},
-  {id:"sec-metricas", icon:"▦", label:"Métricas"},
-  {id:"sec-portales", icon:"⊞", label:"Portales"},
-  {id:"sec-guia", icon:"ⓘ", label:"Guía"}
+  {id:"sec-hoy", icon:svgIcon(SECTION_ICON_PATHS["sec-hoy"]), label:"Hoy"},
+  {id:"sec-busquedas", icon:svgIcon(SECTION_ICON_PATHS["sec-busquedas"]), label:"Búsquedas de empleo"},
+  {id:"sec-perfil", icon:svgIcon(SECTION_ICON_PATHS["sec-perfil"]), label:"Mi perfil"},
+  {id:"sec-pipeline", icon:svgIcon(SECTION_ICON_PATHS["sec-pipeline"]), label:"Agenda de postulaciones"},
+  {id:"sec-match", icon:svgIcon(SECTION_ICON_PATHS["sec-match"]), label:"Match CV"},
+  {id:"sec-reuniones", icon:svgIcon(SECTION_ICON_PATHS["sec-reuniones"]), label:"Reuniones"},
+  {id:"sec-red", icon:svgIcon(SECTION_ICON_PATHS["sec-red"]), label:"Mis contactos"},
+  {id:"sec-metricas", icon:svgIcon(SECTION_ICON_PATHS["sec-metricas"]), label:"Métricas"},
+  {id:"sec-portales", icon:svgIcon(SECTION_ICON_PATHS["sec-portales"]), label:"Portales"},
+  {id:"sec-guia", icon:svgIcon(SECTION_ICON_PATHS["sec-guia"]), label:"Guía"}
 ];
 var sectionModuleEls = {};
 var lastHoyTaskCount = 0;
