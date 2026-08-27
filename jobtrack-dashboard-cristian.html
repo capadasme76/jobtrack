@@ -6,6 +6,11 @@
 <title>JobTrack</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#7C5CFC">
 </head>
 <body>
 <style>
@@ -37,8 +42,8 @@
   .jt-mobile-topbar{display:none;}
   .jt-nav-backdrop{display:none;}
   .jt-sidebar-brand{display:flex;align-items:center;gap:10px;padding:4px 10px 20px;}
-  .jt-sidebar-logo{width:34px;height:34px;border-radius:0;background:var(--brick);color:#fff;font-family:var(--font-display);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .jt-sidebar-title{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink);}
+  .jt-logo-dot{display:inline-block;width:0.33em;height:0.33em;background:var(--brick);margin-left:0.12em;vertical-align:-0.06em;}
   .jt-sidebar-user{font-size:11px;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
   .jt-sidebar a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-ctrl);color:var(--ink-soft);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .12s,color .12s;}
   .jt-sidebar a:hover{background:var(--paper-dim);color:var(--ink);}
@@ -350,17 +355,15 @@
   <div class="jt-mobile-topbar" id="jt-mobile-topbar">
     <button type="button" class="jt-mobile-menu-btn" id="jt-mobile-menu-btn" aria-label="Abrir menú">☰</button>
     <div class="jt-mobile-topbar-brand">
-      <div class="jt-sidebar-logo">JT</div>
-      <div class="jt-sidebar-title">JobTrack</div>
+      <div class="jt-sidebar-title">JobTrack<span class="jt-logo-dot"></span></div>
     </div>
   </div>
   <div class="jt-nav-backdrop" id="jt-nav-backdrop"></div>
 
   <nav class="jt-sidebar jt-nav" id="jt-nav">
     <div class="jt-sidebar-brand">
-      <div class="jt-sidebar-logo">JT</div>
       <div>
-        <div class="jt-sidebar-title">JobTrack</div>
+        <div class="jt-sidebar-title">JobTrack<span class="jt-logo-dot"></span></div>
         <div class="jt-sidebar-user" id="jt-mast-name-side">Tu nombre aquí</div>
       </div>
     </div>
