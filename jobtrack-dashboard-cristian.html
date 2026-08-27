@@ -33,7 +33,7 @@
   *{box-sizing:border-box;}
   .jt-root{font-family:var(--font-body);color:var(--ink);background:var(--paper);padding:0;}
   .jt-app{display:flex;min-height:100vh;align-items:flex-start;}
-  .jt-sidebar{width:236px;flex-shrink:0;background:var(--card-bg);border-right:1px solid var(--line);padding:22px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+  .jt-sidebar{width:236px;flex-shrink:0;background:var(--card-bg);border-right:1px solid var(--line);padding:22px 14px;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
   .jt-mobile-topbar{display:none;}
   .jt-nav-backdrop{display:none;}
   .jt-sidebar-brand{display:flex;align-items:center;gap:10px;padding:4px 10px 20px;}
@@ -43,7 +43,7 @@
   .jt-sidebar a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-ctrl);color:var(--ink-soft);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .12s,color .12s;}
   .jt-sidebar a:hover{background:var(--paper-dim);color:var(--ink);}
   .jt-sidebar a.active{background:var(--brick-100);color:var(--brick-800);}
-  .jt-sidebar-logout{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-ctrl);color:var(--ink-faint);background:none;border:none;text-align:left;font-family:var(--font-body);font-size:13.5px;font-weight:500;cursor:pointer;margin-top:auto;}
+  .jt-sidebar-logout{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-ctrl);color:var(--ink-soft);background:none;border:none;text-align:left;font-family:var(--font-body);font-size:13.5px;font-weight:500;cursor:pointer;margin-top:auto;flex-shrink:0;}
   .jt-sidebar-logout:hover{background:var(--paper-dim);color:var(--brick);}
   .jt-ic{font-style:normal;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;opacity:.85;flex-shrink:0;}
   .jt-ic svg{width:100%;height:100%;}
@@ -303,7 +303,7 @@
     .jt-mobile-topbar-brand .jt-sidebar-title{font-size:15px;}
     .jt-nav-backdrop.open{display:block;position:fixed;inset:0;background:rgba(23,22,20,.4);z-index:39;}
     .jt-sidebar{
-      position:fixed;top:0;left:0;width:82vw;max-width:300px;height:100vh;
+      position:fixed;top:0;left:0;width:82vw;max-width:300px;height:100vh;height:100dvh;
       flex-direction:column;overflow-y:auto;overflow-x:hidden;
       border-right:1px solid var(--line);border-bottom:none;padding:18px 14px;
       transform:translateX(-100%);transition:transform .22s ease;z-index:40;
@@ -961,7 +961,7 @@ var seedProfile = {
   experiencia:["Cargo de ejemplo | Empresa de ejemplo | 2020–Presente, Santiago | Breve descripción de tus responsabilidades y logros en este rol."],
   formacion:["Título de ejemplo | Institución de ejemplo | 2015–2019"],
   cartaBase:"Postulo al cargo de [CARGO] en [EMPRESA] porque... — este es un ejemplo de carta base, reemplázala con la tuya. Se usa como punto de partida para generar cartas ajustadas a cada vacante desde Match CV.",
-  quickAnswers:["Expectativa de renta | Completa tu rango esperado.", "Disponibilidad para iniciar | Ej. Inmediata.", "Modalidad de trabajo | Ej. Presencial, híbrido o remoto.", "¿Por qué te interesa este cargo? | Tu motivación para el tipo de rol que buscas.", "Resumen en una línea | Una frase que te describa profesionalmente.", "¿Por qué dejar tu actual actividad? | Completa si aplica."],
+  quickAnswers:["Expectativa de renta | Completa tu rango esperado.", "Disponibilidad para iniciar | Ej. Inmediata.", "Modalidad de trabajo | Ej. Presencial, híbrido o remoto."],
   linkedinUrl:"",
   linkedinHeadline:"Así se ve tu titular de LinkedIn — reemplázalo con el tuyo.",
   linkedinAbout:"Así se ve el extracto de tu LinkedIn — reemplázalo con el tuyo.",
@@ -2089,6 +2089,13 @@ function wireWatchedSearches(){
     btn.disabled = true;
     var originalLabel = btn.textContent;
     btn.textContent = "Pensando…";
+    // Timeout explícito del lado del cliente: sin esto, si la IA se demora
+    // más de lo normal (o el request queda colgado en el camino), el botón
+    // se queda en "Pensando…" indefinidamente sin ningún aviso — un tester
+    // reportó justo eso ("se quedó pensando y nunca me dio las
+    // recomendaciones"). Con el timeout, a los 20s se corta y se avisa.
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function(){ controller.abort(); }, 20000);
     try{
       var sessionRes = await supabase.auth.getSession();
       var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
@@ -2096,14 +2103,20 @@ function wireWatchedSearches(){
       var res = await fetch("/api/suggest-search-terms", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-        body: JSON.stringify({ tituloProfesional: titulo, resumen: state.profile.resumen, habilidades: state.profile.habilidades })
+        body: JSON.stringify({ tituloProfesional: titulo, resumen: state.profile.resumen, habilidades: state.profile.habilidades }),
+        signal: controller.signal
       });
       var data = await res.json();
       if(!res.ok){ window.alert(data.error || "No se pudo generar sugerencias."); return; }
       renderSuggestedTerms(data.terms || []);
     } catch(e){
-      window.alert("No se pudo generar sugerencias — intenta de nuevo.");
+      if(e.name === "AbortError"){
+        window.alert("La sugerencia está tomando más de lo normal — intenta de nuevo en un momento.");
+      } else {
+        window.alert("No se pudo generar sugerencias — intenta de nuevo.");
+      }
     } finally {
+      clearTimeout(timeoutId);
       btn.disabled = false;
       btn.textContent = originalLabel;
     }
@@ -2945,9 +2958,34 @@ async function extractCvAndFillForm(file){
   }
 }
 
+// Los campos de "Mi perfil" parten con texto instructivo de ejemplo (ej. "Tu
+// cargo o especialidad (ej. Gerente de Marketing)") guardado como si fuera
+// contenido real — útil para que la vista de solo lectura no se vea vacía,
+// pero en el formulario de edición obligaba a borrar ese texto a mano antes
+// de poder escribir el propio (un tester lo reportó explícitamente: "sería
+// más eficiente que el texto se borrara automáticamente apenas lo pinche").
+// seedField() detecta cuando el valor actual todavía es el de ejemplo (el
+// usuario nunca lo tocó) y en ese caso lo muestra como placeholder nativo
+// —gris, se borra solo al escribir— en vez de como texto editable; apenas el
+// usuario guarda algo propio, deja de coincidir con el seed y se muestra
+// normal.
+function seedField(current, seedVal){
+  var matches = current === seedVal;
+  return { val: matches ? "" : esc(current), ph: matches ? ' placeholder="'+esc(seedVal)+'"' : "" };
+}
 function renderProfileEdit(){
   var p = state.profile;
   var edit = document.getElementById("jt-profile-edit");
+  var fNombre = seedField(p.nombre||"", seedProfile.nombre);
+  var fTitulo = seedField(p.tituloProfesional||"", seedProfile.tituloProfesional);
+  var fResumen = seedField(p.resumen||"", seedProfile.resumen);
+  var fHabilidades = seedField(p.habilidades.join(", "), seedProfile.habilidades.join(", "));
+  var fExperiencia = seedField(p.experiencia.join("\n"), seedProfile.experiencia.join("\n"));
+  var fFormacion = seedField(p.formacion.join("\n"), seedProfile.formacion.join("\n"));
+  var fQuickAnswers = seedField(p.quickAnswers.join("\n"), seedProfile.quickAnswers.join("\n"));
+  var fLiHeadline = seedField(p.linkedinHeadline||"", seedProfile.linkedinHeadline);
+  var fLiAbout = seedField(p.linkedinAbout||"", seedProfile.linkedinAbout);
+  var fCarta = seedField(p.cartaBase||"", seedProfile.cartaBase);
   edit.innerHTML =
     '<div class="jt-profile-head"><h2>Editando perfil</h2></div>'
     + '<div class="jt-pblock" style="background:var(--paper-dim);"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">¿Tienes tu CV a mano?</h3>'
@@ -2955,18 +2993,23 @@ function renderProfileEdit(){
     + '<input type="file" id="pe-cv-file" accept=".pdf,.docx" />'
     + '<div id="pe-cv-status" style="margin-top:8px;font-size:12.5px;display:none;"></div>'
     + '</div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Tu nombre</h3><input class="wide" type="text" id="pe-nombre" value="'+esc(p.nombre||"")+'" /></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Título profesional (aparece en el encabezado)</h3><input class="wide" type="text" id="pe-titulo" value="'+esc(p.tituloProfesional||"")+'" /></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Resumen profesional</h3><textarea class="wide" id="pe-resumen">'+esc(p.resumen)+'</textarea></div>'
-    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Habilidades (separadas por coma)</h3><button class="jt-btn-mini" data-add-line="pe-habilidades" data-mode="comma" data-template="Nueva habilidad" type="button">+ Agregar</button></div><input class="wide" type="text" id="pe-habilidades" value="'+esc(p.habilidades.join(", "))+'" /></div>'
-    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Experiencia (una por línea: Cargo | Empresa | Período | Descripción)</h3><button class="jt-btn-mini" data-add-line="pe-experiencia" data-template="Cargo | Empresa | Período | Descripción breve" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-experiencia">'+esc(p.experiencia.join("\n"))+'</textarea></div>'
-    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Formación (una por línea: Título | Institución | Período)</h3><button class="jt-btn-mini" data-add-line="pe-formacion" data-template="Título | Institución | Período" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-formacion">'+esc(p.formacion.join("\n"))+'</textarea></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Respuestas rápidas (una por línea: Pregunta | Respuesta)</h3><textarea class="wide mono" id="pe-quickanswers">'+esc(p.quickAnswers.join("\n"))+'</textarea></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — URL</h3><input class="wide" type="text" id="pe-li-url" value="'+esc(p.linkedinUrl)+'" /></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — Titular</h3><input class="wide" type="text" id="pe-li-headline" value="'+esc(p.linkedinHeadline)+'" /></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — Extracto / Acerca de</h3><textarea class="wide" id="pe-li-about" style="min-height:120px;">'+esc(p.linkedinAbout)+'</textarea>'
-    + '<label style="font-size:11px;display:flex;align-items:center;gap:6px;margin-top:6px;"><input type="checkbox" id="pe-li-sync" /> Marcar como recién sincronizado con LinkedIn (hoy)</label></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Carta de presentación base</h3><textarea class="wide" id="pe-carta" style="min-height:160px;">'+esc(p.cartaBase)+'</textarea></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Tu nombre</h3><input class="wide" type="text" id="pe-nombre" value="'+fNombre.val+'"'+fNombre.ph+' /></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Título profesional (aparece en el encabezado)</h3><input class="wide" type="text" id="pe-titulo" value="'+fTitulo.val+'"'+fTitulo.ph+' /></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Resumen profesional</h3><textarea class="wide" id="pe-resumen"'+fResumen.ph+'>'+fResumen.val+'</textarea></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Habilidades (separadas por coma)</h3><button class="jt-btn-mini" data-add-line="pe-habilidades" data-mode="comma" data-template="Nueva habilidad" type="button">+ Agregar</button></div><input class="wide" type="text" id="pe-habilidades" value="'+fHabilidades.val+'"'+fHabilidades.ph+' /></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Experiencia (una por línea: Cargo | Empresa | Período | Descripción)</h3><button class="jt-btn-mini" data-add-line="pe-experiencia" data-template="Cargo | Empresa | Período | Descripción breve" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-experiencia"'+fExperiencia.ph+'>'+fExperiencia.val+'</textarea></div>'
+    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Formación (una por línea: Título | Institución | Período)</h3><button class="jt-btn-mini" data-add-line="pe-formacion" data-template="Título | Institución | Período" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-formacion"'+fFormacion.ph+'>'+fFormacion.val+'</textarea></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Respuestas rápidas (una por línea: Pregunta | Respuesta)</h3><textarea class="wide mono" id="pe-quickanswers"'+fQuickAnswers.ph+'>'+fQuickAnswers.val+'</textarea></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn</h3>'
+    + '<p class="jt-hint" style="margin:0 0 8px;">No sincronizamos tu LinkedIn automáticamente — copia y pega tu titular y tu extracto desde ahí, así Match CV y tus cartas también los usan.</p>'
+    + '<label style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:2px;">URL de tu perfil</label>'
+    + '<input class="wide" type="text" id="pe-li-url" value="'+esc(p.linkedinUrl)+'" placeholder="https://linkedin.com/in/tu-usuario" style="margin-bottom:10px;" />'
+    + '<label style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:2px;">Titular profesional (el texto bajo tu nombre en LinkedIn)</label>'
+    + '<input class="wide" type="text" id="pe-li-headline" value="'+fLiHeadline.val+'"'+fLiHeadline.ph+' style="margin-bottom:10px;" />'
+    + '<label style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:2px;">Extracto / "Acerca de"</label>'
+    + '<textarea class="wide" id="pe-li-about" style="min-height:120px;"'+fLiAbout.ph+'>'+fLiAbout.val+'</textarea>'
+    + '<label style="font-size:11px;display:flex;align-items:center;gap:6px;margin-top:6px;"><input type="checkbox" id="pe-li-sync" /> Marcar como recién copiado desde LinkedIn (hoy)</label></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Carta de presentación base</h3><textarea class="wide" id="pe-carta" style="min-height:160px;"'+fCarta.ph+'>'+fCarta.val+'</textarea></div>'
     + '<div class="jt-edit-actions"><button class="jt-btn-mini" id="pe-cancel" type="button">Cancelar</button><button class="jt-btn-mini primary" id="pe-save" type="button">Guardar perfil</button></div>';
 
   document.getElementById("pe-cv-file").addEventListener("change", function(e){
