@@ -2770,7 +2770,7 @@ function renderProfile(){
   }).join("");
 
   view.innerHTML =
-    '<div class="jt-profile-head"><h2>'+esc(p.nombre||"Tu nombre aquí")+'</h2><span><a class="jt-btn-mini" href="'+esc(p.linkedinUrl)+'" target="_blank" rel="noopener" style="text-decoration:none;">🔗 LinkedIn</a> <button class="jt-btn-mini" id="jt-copy-all-btn" type="button">📋 Copiar todo</button> <button class="jt-btn-mini" id="jt-profile-word-btn" type="button">⇩ Word</button> <button class="jt-btn-mini" id="jt-profile-reset-btn" type="button">Restablecer</button> <button class="jt-btn-mini" id="jt-profile-edit-btn" type="button">Editar</button></span></div>'
+    '<div class="jt-profile-head"><h2>'+esc(p.nombre||"Tu nombre aquí")+'</h2><span><a class="jt-btn-mini" href="'+esc(p.linkedinUrl)+'" target="_blank" rel="noopener" style="text-decoration:none;">🔗 LinkedIn</a> <button class="jt-btn-mini" id="jt-copy-all-btn" type="button">📋 Copiar todo</button> <button class="jt-btn-mini" id="jt-profile-word-btn" type="button">⇩ Word</button> <button class="jt-btn-mini" id="jt-profile-reset-btn" type="button">Restablecer</button> <button class="jt-btn-mini primary" id="jt-profile-upload-cv-btn" type="button">⇧ Sube tu CV</button> <button class="jt-btn-mini" id="jt-profile-edit-btn" type="button">Editar</button></span></div>'
     + '<div class="jt-profile-grid">'
     + '<div class="jt-profile-main">'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Resumen profesional</h3><button class="jt-copybtn" id="copy-resumen" type="button">Copiar</button></div><p>'+esc(p.resumen)+'</p></div>'
@@ -2807,6 +2807,17 @@ function renderProfile(){
     view.style.display = "none";
     edit.style.display = "block";
     renderProfileEdit();
+  });
+  // Un tester reportó que "Editar" no deja claro que ahí está la subida de
+  // CV — este botón es el mismo flujo (abre el formulario de edición, que
+  // es donde vive el input de archivo) pero además dispara el selector de
+  // archivo nativo de una vez, para quien solo quiere subir su CV.
+  document.getElementById("jt-profile-upload-cv-btn").addEventListener("click", function(){
+    view.style.display = "none";
+    edit.style.display = "block";
+    renderProfileEdit();
+    var cvInput = document.getElementById("pe-cv-file");
+    if(cvInput) cvInput.click();
   });
   document.getElementById("jt-profile-reset-btn").addEventListener("click", function(){
     if(!window.confirm("Esto reemplaza tu perfil actual (nombre, resumen, habilidades, experiencia, formación, carta base) por los datos de ejemplo del dashboard. ¿Continuar?")) return;
