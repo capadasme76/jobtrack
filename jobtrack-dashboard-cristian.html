@@ -962,10 +962,7 @@ var seedProfile = {
   formacion:["Título de ejemplo | Institución de ejemplo | 2015–2019"],
   cartaBase:"Postulo al cargo de [CARGO] en [EMPRESA] porque... — este es un ejemplo de carta base, reemplázala con la tuya. Se usa como punto de partida para generar cartas ajustadas a cada vacante desde Match CV.",
   quickAnswers:["Expectativa de renta | Completa tu rango esperado.", "Disponibilidad para iniciar | Ej. Inmediata.", "Modalidad de trabajo | Ej. Presencial, híbrido o remoto."],
-  linkedinUrl:"",
-  linkedinHeadline:"Así se ve tu titular de LinkedIn — reemplázalo con el tuyo.",
-  linkedinAbout:"Así se ve el extracto de tu LinkedIn — reemplázalo con el tuyo.",
-  linkedinLastSync: null
+  linkedinUrl:""
 };
 
 var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", meetings: seedMeetings, watchedPages: [], watchedSearches: [], onboarding: { profile: false, searches: false, opportunity: false, match: false, wizardDone: false } };
@@ -2784,15 +2781,9 @@ function renderProfile(){
     + '<div class="jt-profile-side">'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Habilidades</h3><button class="jt-copybtn" id="copy-habilidades" type="button">Copiar</button></div><div class="jt-chips">'+chips+'</div></div>'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Respuestas rápidas</h3></div><div class="jt-qa-list">'+qaItems+'</div></div>'
-    + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>LinkedIn</h3><button class="jt-copybtn" id="copy-li-headline" type="button">Copiar titular</button></div><p style="font-size:12.5px;">'+esc(p.linkedinHeadline)+'</p>'
-    + '<div class="jt-pblock-head" style="margin-top:10px;"><span></span><button class="jt-copybtn" id="copy-li-about" type="button">Copiar extracto</button></div><p style="white-space:pre-wrap;font-size:12.5px;">'+esc(p.linkedinAbout)+'</p>'
-    + (p.linkedinLastSync ? '<div class="jt-hint" title="Última sincronización manual" style="margin-top:6px;">Sincronizado el '+esc(new Date(p.linkedinLastSync).toLocaleDateString("es-CL"))+'</div>' : '<div class="jt-hint" title="Usa Editar perfil cuando actualices tu LinkedIn real" style="margin-top:6px;">Sin sincronizar <span class="jt-hint-ic">?</span></div>')
-    + '</div>'
     + '</div>'
     + '</div>';
 
-  document.getElementById("copy-li-headline").addEventListener("click", function(){ copyText(p.linkedinHeadline, this); });
-  document.getElementById("copy-li-about").addEventListener("click", function(){ copyText(p.linkedinAbout, this); });
   document.getElementById("jt-copy-all-btn").addEventListener("click", function(){
     var expText = p.experiencia.map(function(line){
       var e = parseExpLine(line, ["cargo","empresa","periodo","desc"]);
@@ -2983,8 +2974,6 @@ function renderProfileEdit(){
   var fExperiencia = seedField(p.experiencia.join("\n"), seedProfile.experiencia.join("\n"));
   var fFormacion = seedField(p.formacion.join("\n"), seedProfile.formacion.join("\n"));
   var fQuickAnswers = seedField(p.quickAnswers.join("\n"), seedProfile.quickAnswers.join("\n"));
-  var fLiHeadline = seedField(p.linkedinHeadline||"", seedProfile.linkedinHeadline);
-  var fLiAbout = seedField(p.linkedinAbout||"", seedProfile.linkedinAbout);
   var fCarta = seedField(p.cartaBase||"", seedProfile.cartaBase);
   edit.innerHTML =
     '<div class="jt-profile-head"><h2>Editando perfil</h2></div>'
@@ -3000,15 +2989,8 @@ function renderProfileEdit(){
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Experiencia (una por línea: Cargo | Empresa | Período | Descripción)</h3><button class="jt-btn-mini" data-add-line="pe-experiencia" data-template="Cargo | Empresa | Período | Descripción breve" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-experiencia"'+fExperiencia.ph+'>'+fExperiencia.val+'</textarea></div>'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Formación (una por línea: Título | Institución | Período)</h3><button class="jt-btn-mini" data-add-line="pe-formacion" data-template="Título | Institución | Período" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-formacion"'+fFormacion.ph+'>'+fFormacion.val+'</textarea></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Respuestas rápidas (una por línea: Pregunta | Respuesta)</h3><textarea class="wide mono" id="pe-quickanswers"'+fQuickAnswers.ph+'>'+fQuickAnswers.val+'</textarea></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn</h3>'
-    + '<p class="jt-hint" style="margin:0 0 8px;">No sincronizamos tu LinkedIn automáticamente — copia y pega tu titular y tu extracto desde ahí, así Match CV y tus cartas también los usan.</p>'
-    + '<label style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:2px;">URL de tu perfil</label>'
-    + '<input class="wide" type="text" id="pe-li-url" value="'+esc(p.linkedinUrl)+'" placeholder="https://linkedin.com/in/tu-usuario" style="margin-bottom:10px;" />'
-    + '<label style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:2px;">Titular profesional (el texto bajo tu nombre en LinkedIn)</label>'
-    + '<input class="wide" type="text" id="pe-li-headline" value="'+fLiHeadline.val+'"'+fLiHeadline.ph+' style="margin-bottom:10px;" />'
-    + '<label style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:2px;">Extracto / "Acerca de"</label>'
-    + '<textarea class="wide" id="pe-li-about" style="min-height:120px;"'+fLiAbout.ph+'>'+fLiAbout.val+'</textarea>'
-    + '<label style="font-size:11px;display:flex;align-items:center;gap:6px;margin-top:6px;"><input type="checkbox" id="pe-li-sync" /> Marcar como recién copiado desde LinkedIn (hoy)</label></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — URL de tu perfil</h3>'
+    + '<input class="wide" type="text" id="pe-li-url" value="'+esc(p.linkedinUrl)+'" placeholder="https://linkedin.com/in/tu-usuario" /></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Carta de presentación base</h3><textarea class="wide" id="pe-carta" style="min-height:160px;"'+fCarta.ph+'>'+fCarta.val+'</textarea></div>'
     + '<div class="jt-edit-actions"><button class="jt-btn-mini" id="pe-cancel" type="button">Cancelar</button><button class="jt-btn-mini primary" id="pe-save" type="button">Guardar perfil</button></div>';
 
@@ -3045,11 +3027,6 @@ function renderProfileEdit(){
     p.formacion = document.getElementById("pe-formacion").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
     p.quickAnswers = document.getElementById("pe-quickanswers").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
     p.linkedinUrl = document.getElementById("pe-li-url").value.trim() || p.linkedinUrl;
-    p.linkedinHeadline = document.getElementById("pe-li-headline").value.trim();
-    p.linkedinAbout = document.getElementById("pe-li-about").value.trim();
-    if(document.getElementById("pe-li-sync").checked){
-      p.linkedinLastSync = new Date().toISOString();
-    }
     p.cartaBase = document.getElementById("pe-carta").value.trim();
     document.getElementById("jt-profile-edit").style.display = "none";
     document.getElementById("jt-profile-view").style.display = "block";
