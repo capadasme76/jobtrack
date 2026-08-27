@@ -7,6 +7,30 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://jobtrack.cl/guias/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobtrack.cl/guias/plantilla-seguimiento-postulaciones.html</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobtrack.cl/guias/adaptar-cv-a-vacante.html</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobtrack.cl/guias/busqueda-empleo-confidencial.html</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://jobtrack.cl/terminos.html</loc>
     <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
