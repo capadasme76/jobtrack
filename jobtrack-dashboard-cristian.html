@@ -1348,14 +1348,24 @@ function renderBoard(){
         var contactOptions = '<option value="">Sin contacto vinculado</option>' + state.networking.map(function(n){
           return '<option value="'+n.id+'"'+(o.contactId===n.id?' selected':'')+'>'+esc(n.name)+' ('+esc(n.empresa)+')</option>';
         }).join("");
+        // Las oportunidades incompletas (solo con link) guardan textos de
+        // relleno ("Empresa por confirmar", etc.) como valor real — igual que
+        // pasaba en Mi perfil, mostrarlos como texto editable obligaba a
+        // borrarlos a mano. seedField() los muestra como placeholder mientras
+        // sigan siendo ese texto de relleno; al guardar sin tocarlos, el
+        // mismo fallback de siempre se re-aplica (línea de "Guardar" más abajo).
+        var fEmpresa = seedField(o.empresa, "Empresa por confirmar");
+        var fCargo = seedField(o.cargo, "Cargo por confirmar");
+        var fSector = seedField(o.sector, "Sin especificar");
+        var fRenta = seedField(o.renta, "No especificada");
         html += '<div class="jt-card" id="opp-'+o.id+'"><div class="jt-edit-form">'
-          + '<input type="text" id="edit-empresa" value="'+esc(o.empresa)+'" placeholder="Empresa" />'
-          + '<input type="text" id="edit-cargo" value="'+esc(o.cargo)+'" placeholder="Cargo" />'
-          + '<input type="text" id="edit-sector" value="'+esc(o.sector)+'" placeholder="Sector" />'
+          + '<input type="text" id="edit-empresa" value="'+fEmpresa.val+'"'+(fEmpresa.ph || ' placeholder="Empresa"')+' />'
+          + '<input type="text" id="edit-cargo" value="'+fCargo.val+'"'+(fCargo.ph || ' placeholder="Cargo"')+' />'
+          + '<input type="text" id="edit-sector" value="'+fSector.val+'"'+(fSector.ph || ' placeholder="Sector"')+' />'
           + '<select id="edit-priority">'
           + ["Alta","Media","Baja"].map(function(p){ return '<option value="'+p+'"'+(p===o.priority?' selected':'')+'>'+p+'</option>'; }).join("")
           + '</select>'
-          + '<input type="text" id="edit-renta" value="'+esc(o.renta)+'" placeholder="Renta" />'
+          + '<input type="text" id="edit-renta" value="'+fRenta.val+'"'+(fRenta.ph || ' placeholder="Renta"')+' />'
           + '<select id="edit-region">'+regionOptionsHtml(o.region||"")+'</select>'
           + '<input type="text" id="edit-link" value="'+esc(o.link||"")+'" placeholder="Link del aviso — para postular" style="grid-column:1/-1;" />'
           + '<input type="text" id="edit-career-url" value="'+esc(o.careerUrl||"")+'" placeholder="Página general de empleos de la empresa (opcional, distinta al link de arriba — la vigilamos por cambios)" style="grid-column:1/-1;" />'
