@@ -1233,7 +1233,7 @@ async function startSidebarCheckout(btn){
       headers: { "Authorization": "Bearer " + (token || "") }
     });
     var data = await res.json();
-    if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
+    if(!res.ok || !data.redirectUrl) throw new Error((data.error || "No se pudo iniciar el pago.") + (data.debug ? "\n\n" + data.debug : ""));
     location.href = data.redirectUrl;
   }catch(e){
     window.alert("No se pudo iniciar el pago: " + e.message);
@@ -1256,7 +1256,7 @@ async function startCheckout(){
       headers: { "Authorization": "Bearer " + (token || "") }
     });
     var data = await res.json();
-    if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
+    if(!res.ok || !data.redirectUrl) throw new Error((data.error || "No se pudo iniciar el pago.") + (data.debug ? "\n\n" + data.debug : ""));
     location.href = data.redirectUrl;
   }catch(e){
     errEl.textContent = "No se pudo iniciar el pago. Intenta de nuevo en un momento.";
