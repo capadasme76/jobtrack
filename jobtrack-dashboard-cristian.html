@@ -3188,7 +3188,7 @@ async function extractCvAndFillForm(file){
 
   if(!cvText || cvText.trim().length < 30){
     statusEl.style.color = "var(--brick)";
-    statusEl.textContent = "No encontramos texto suficiente en ese archivo.";
+    statusEl.textContent = "No encontramos texto suficiente en ese archivo — suele pasar si el PDF viene de un escaneo/imagen o de una plantilla de diseño (Canva, Figma) que no incrusta texto real. Prueba exportándolo como Word (.docx) desde el mismo programa, o completa los campos de abajo a mano.";
     return;
   }
 
