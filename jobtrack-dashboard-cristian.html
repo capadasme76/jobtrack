@@ -3361,6 +3361,25 @@ renderHome();
 syncViewFromHash();
 
 loadState().then(function(){
+  // Gancho temporal para probar el cobro real de Flow en una cuenta que ya
+  // está habilitada (grandfathered/trial) y por eso nunca ve el paywall.
+  // Se borra apenas se confirme que el flujo de pago funciona de punta a
+  // punta. Visitar ?testcheckout=1 dispara el mismo POST a
+  // /api/create-checkout que usa el botón "Suscribirse" del paywall.
+  if(new URLSearchParams(location.search).get("testcheckout") === "1"){
+    supabase.auth.getSession().then(function(sessionRes){
+      var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+      if(!token){ window.alert("No hay sesión activa."); return; }
+      fetch("/api/create-checkout", { method:"POST", headers:{ "Authorization":"Bearer "+token } })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if(data.redirectUrl) location.href = data.redirectUrl;
+          else window.alert("Error: " + (data.error || "sin redirectUrl"));
+        })
+        .catch(function(e){ window.alert("Error: " + e.message); });
+    });
+    return;
+  }
   var pagoParam = new URLSearchParams(location.search).get("pago");
   if(pagoParam){
     history.replaceState(null, "", location.pathname + location.hash);
