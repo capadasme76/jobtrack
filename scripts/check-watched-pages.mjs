@@ -56,6 +56,21 @@ function hashText(text) {
   return createHash("sha256").update(text).digest("hex");
 }
 
+// ChileTrabajos repite menú, categorías, pie de página y anuncios idénticos
+// en TODAS sus páginas de resultados, sin importar la búsqueda — hashear la
+// página completa hacía que un cambio de ese contenido compartido (ej. un
+// anuncio nuevo) apareciera como "cambio" en todas las búsquedas vigiladas a
+// la vez, aunque ninguna vacante nueva hubiera aparecido (confirmado: casi
+// el 100% de las búsquedas se marcaban "cambiadas" en cada corrida). Se aísla
+// solo el bloque de resultados, delimitado por comentarios que el propio HTML
+// de Chiletrabajos usa para marcar el loop de vacantes, antes de normalizar.
+function extractChileTrabajosResults(html) {
+  const start = html.indexOf("AQUI VA LOOP");
+  const end = html.indexOf("<!-- publicidad -->", start);
+  if (start === -1 || end === -1) return html; // estructura cambió: fallback seguro a la página completa
+  return html.slice(start, end);
+}
+
 async function fetchAllStateRows() {
   const url = `${SUPABASE_URL}/rest/v1/jobtrack_state?select=user_id,data`;
   const res = await fetch(url, {
@@ -157,7 +172,8 @@ async function checkOnePage(url) {
     });
     if (!res.ok) return { ok: false, reason: `HTTP ${res.status}` };
     const html = await res.text();
-    return { ok: true, hash: hashText(normalizeHtml(html)) };
+    const relevant = url.toLowerCase().includes("chiletrabajos.cl") ? extractChileTrabajosResults(html) : html;
+    return { ok: true, hash: hashText(normalizeHtml(relevant)) };
   } catch (e) {
     return { ok: false, reason: e.message || String(e) };
   } finally {
