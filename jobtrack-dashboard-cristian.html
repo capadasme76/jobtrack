@@ -415,6 +415,7 @@
     <a href="#sec-metricas" data-target="sec-metricas"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="21" x2="5" y2="12"></line><line x1="12" y1="21" x2="12" y2="7"></line><line x1="19" y1="21" x2="19" y2="15"></line><line x1="3" y1="21" x2="21" y2="21"></line></svg></i>Métricas</a>
     <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-6-4-9s1.5-6.5 4-9z"></path></svg></i>Portales</a>
     <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a2.9 2.9 0 0 1 5.6 1c0 2-2.9 2.5-2.9 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.5"></line></svg></i>Guía</a>
+    <button type="button" class="jt-sidebar-logout" id="jt-subscribe-link"><i class="jt-ic">★</i>Contratar tu plan</button>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
   </nav>
 
@@ -1209,6 +1210,28 @@ function computeEntitlement(sub){
     case "canceled": return !!sub.current_period_end && new Date(sub.current_period_end) > now;
     case "expired": return false;
     default: return true;
+  }
+}
+
+async function startSidebarCheckout(){
+  var btn = document.getElementById("jt-subscribe-link");
+  var original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Redirigiendo...";
+  try{
+    var sessionRes = await supabase.auth.getSession();
+    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+    var res = await fetch("/api/create-checkout", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + (token || "") }
+    });
+    var data = await res.json();
+    if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
+    location.href = data.redirectUrl;
+  }catch(e){
+    window.alert("No se pudo iniciar el pago: " + e.message);
+    btn.disabled = false;
+    btn.textContent = original;
   }
 }
 
@@ -3291,6 +3314,7 @@ function setProfileSectionExpanded(expanded){
 function wireNav(){
   initSectionViews();
   document.getElementById("jt-logout-btn").addEventListener("click", logout);
+  document.getElementById("jt-subscribe-link").addEventListener("click", startSidebarCheckout);
   document.getElementById("jt-paywall-subscribe-btn").addEventListener("click", startCheckout);
   document.getElementById("jt-paywall-logout-btn").addEventListener("click", logout);
   document.getElementById("jt-paywall-refresh-btn").addEventListener("click", function(){
