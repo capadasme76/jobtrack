@@ -1233,7 +1233,7 @@ async function startSidebarCheckout(btn){
       headers: { "Authorization": "Bearer " + (token || "") }
     });
     var data = await res.json();
-    if(!res.ok || !data.redirectUrl) throw new Error((data.error || "No se pudo iniciar el pago.") + (data.debug ? "\n\n" + data.debug : ""));
+    if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
     location.href = data.redirectUrl;
   }catch(e){
     window.alert("No se pudo iniciar el pago: " + e.message);
@@ -1256,7 +1256,7 @@ async function startCheckout(){
       headers: { "Authorization": "Bearer " + (token || "") }
     });
     var data = await res.json();
-    if(!res.ok || !data.redirectUrl) throw new Error((data.error || "No se pudo iniciar el pago.") + (data.debug ? "\n\n" + data.debug : ""));
+    if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
     location.href = data.redirectUrl;
   }catch(e){
     errEl.textContent = "No se pudo iniciar el pago. Intenta de nuevo en un momento.";
@@ -3392,34 +3392,6 @@ renderHome();
 syncViewFromHash();
 
 loadState().then(function(){
-  // Gancho temporal para probar el cobro real de Flow en una cuenta que ya
-  // está habilitada (grandfathered/trial) y por eso nunca ve el paywall.
-  // Se borra apenas se confirme que el flujo de pago funciona de punta a
-  // punta. Visitar ?testcheckout=1 dispara el mismo POST a
-  // /api/create-checkout que usa el botón "Suscribirse" del paywall.
-  if(new URLSearchParams(location.search).get("testcheckout") === "1"){
-    var statusBox = document.createElement("div");
-    statusBox.style.cssText = "position:fixed;inset:0;background:#fff;z-index:999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:18px;padding:24px;text-align:center;";
-    statusBox.textContent = "Paso 1: obteniendo tu sesión...";
-    document.body.appendChild(statusBox);
-    supabase.auth.getSession().then(function(sessionRes){
-      var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
-      if(!token){ statusBox.textContent = "Error: no hay sesión activa. Cierra sesión y vuelve a entrar."; return; }
-      statusBox.textContent = "Paso 2: pidiendo el link de pago a Flow...";
-      fetch("/api/create-checkout", { method:"POST", headers:{ "Authorization":"Bearer "+token } })
-        .then(function(r){ return r.json().then(function(data){ return {status:r.status, data:data}; }); })
-        .then(function(result){
-          if(result.data.redirectUrl){
-            statusBox.textContent = "Paso 3: redirigiendo a Flow...";
-            location.href = result.data.redirectUrl;
-          } else {
-            statusBox.textContent = "Error del servidor (HTTP "+result.status+"): " + (result.data.error || JSON.stringify(result.data));
-          }
-        })
-        .catch(function(e){ statusBox.textContent = "Error de red: " + e.message; });
-    }).catch(function(e){ statusBox.textContent = "Error al obtener sesión: " + e.message; });
-    return;
-  }
   var pagoParam = new URLSearchParams(location.search).get("pago");
   if(pagoParam){
     history.replaceState(null, "", location.pathname + location.hash);

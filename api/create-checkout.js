@@ -90,6 +90,6 @@ export default async function handler(req, res) {
     res.status(200).json({ redirectUrl: `${register.url}?token=${register.token}` });
   } catch (e) {
     console.error("create-checkout error:", e);
-    res.status(500).json({ error: "No se pudo iniciar el registro de pago. Intenta de nuevo.", debug: String(e && e.stack || e) });
+    res.status(500).json({ error: "No se pudo iniciar el registro de pago. Intenta de nuevo." });
   }
 }
