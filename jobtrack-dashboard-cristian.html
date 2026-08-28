@@ -160,6 +160,16 @@
   .jt-wizard-step{font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--brick-800);}
   .jt-wizard-hint{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
   .jt-wizard-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .jt-paywall-overlay{display:none;position:fixed;inset:0;background:rgba(23,22,20,.55);z-index:100;align-items:center;justify-content:center;padding:20px;}
+  .jt-paywall-card{background:var(--paper);border:1px solid var(--line);max-width:420px;width:100%;padding:32px 28px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+  .jt-paywall-logo{font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--ink);margin-bottom:18px;}
+  .jt-paywall-card h2{font-family:var(--font-display);font-size:22px;font-weight:700;margin:0 0 10px;color:var(--ink);}
+  .jt-paywall-card p{font-size:14px;color:var(--ink-soft);margin:0 0 18px;line-height:1.5;}
+  .jt-paywall-price{font-family:var(--font-display);font-size:28px;font-weight:800;color:var(--brick);margin-bottom:22px;}
+  .jt-paywall-price span{display:block;font-family:var(--font-body);font-size:12px;font-weight:500;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+  .jt-paywall-card .jt-addbtn{width:100%;padding:12px;font-size:14.5px;margin-bottom:10px;}
+  .jt-paywall-card .jt-btn-mini{width:100%;padding:9px;margin-bottom:8px;}
+  .jt-paywall-error{font-size:12.5px;color:#B3261E;margin-top:10px;display:none;}
   .jt-guide-steps{display:flex;flex-direction:column;gap:10px;}
   .jt-guide-step{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:0;box-shadow:0 1px 2px rgba(32,30,29,.14);overflow:hidden;}
   .jt-guide-summary{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;list-style:none;}
@@ -350,6 +360,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <div class="jt-root">
+
+<div class="jt-paywall-overlay" id="jt-paywall-overlay">
+  <div class="jt-paywall-card">
+    <div class="jt-paywall-logo">JobTrack<span class="jt-logo-dot"></span></div>
+    <h2 id="jt-paywall-title">Tu prueba gratuita terminó</h2>
+    <p id="jt-paywall-msg">Para seguir usando JobTrack, activa tu suscripción.</p>
+    <div class="jt-paywall-price">$14.000 CLP<span>cada 3 meses</span></div>
+    <button class="jt-addbtn" id="jt-paywall-subscribe-btn" type="button">Suscribirse</button>
+    <button class="jt-btn-mini" id="jt-paywall-refresh-btn" type="button" style="display:none;">Ya pagué, revisar de nuevo</button>
+    <button class="jt-btn-mini" id="jt-paywall-logout-btn" type="button">Cerrar sesión</button>
+    <div class="jt-paywall-error" id="jt-paywall-error"></div>
+  </div>
+</div>
+
 <div class="jt-app">
 
   <div class="jt-mobile-topbar" id="jt-mobile-topbar">
@@ -1142,6 +1166,106 @@ async function loadState(){
 async function logout(){
   await supabase.auth.signOut();
   location.href = "index.html";
+}
+
+// Espeja la lógica de is_entitled() (Fase D.1, supabase-schema-subscriptions.sql)
+// para decidir en el cliente si mostrar la app o el paywall. El paywall "duro"
+// real vive en la política RLS de jobtrack_state — esto es solo la experiencia
+// visible, no la protección de datos en sí.
+function computeEntitlement(sub){
+  if(!sub) return true; // sin fila = fail-open, ver nota en la Sección 4 del SQL
+  var now = new Date();
+  switch(sub.status){
+    case "grandfathered": return true;
+    case "trial": return !!sub.trial_ends_at && new Date(sub.trial_ends_at) > now;
+    case "active": return !!sub.current_period_end && new Date(sub.current_period_end) > now;
+    case "past_due":
+      if(!sub.current_period_end) return false;
+      var graceEnd = new Date(sub.current_period_end);
+      graceEnd.setDate(graceEnd.getDate() + 3);
+      return graceEnd > now;
+    case "canceled": return !!sub.current_period_end && new Date(sub.current_period_end) > now;
+    case "expired": return false;
+    default: return true;
+  }
+}
+
+async function startCheckout(){
+  var btn = document.getElementById("jt-paywall-subscribe-btn");
+  var errEl = document.getElementById("jt-paywall-error");
+  errEl.style.display = "none";
+  btn.disabled = true;
+  btn.textContent = "Redirigiendo...";
+  try{
+    var sessionRes = await supabase.auth.getSession();
+    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+    var res = await fetch("/api/create-checkout", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + (token || "") }
+    });
+    var data = await res.json();
+    if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
+    location.href = data.redirectUrl;
+  }catch(e){
+    errEl.textContent = "No se pudo iniciar el pago. Intenta de nuevo en un momento.";
+    errEl.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Suscribirse";
+  }
+}
+
+function showPaywall(sub, pagoParam){
+  var title = document.getElementById("jt-paywall-title");
+  var msg = document.getElementById("jt-paywall-msg");
+  var refreshBtn = document.getElementById("jt-paywall-refresh-btn");
+  var status = sub ? sub.status : null;
+  refreshBtn.style.display = "none";
+  if(pagoParam === "listo"){
+    title.textContent = "¡Tarjeta registrada!";
+    msg.textContent = "Estamos confirmando tu pago, puede tomar unos minutos. Si ya pasó un rato, revisa de nuevo.";
+    refreshBtn.style.display = "block";
+  } else if(pagoParam === "fallido"){
+    title.textContent = "No se pudo registrar tu tarjeta";
+    msg.textContent = "Intenta de nuevo o usa otro método de pago.";
+  } else if(pagoParam === "error"){
+    title.textContent = "Hubo un problema técnico";
+    msg.textContent = "Intenta de nuevo. Si el problema sigue, escríbenos a hola@jobtrack.cl.";
+  } else if(status === "past_due"){
+    title.textContent = "Tu último cobro no se pudo procesar";
+    msg.textContent = "Actualiza tu método de pago para seguir usando JobTrack.";
+  } else if(status === "canceled" || status === "expired"){
+    title.textContent = "Tu suscripción no está activa";
+    msg.textContent = "Suscríbete para seguir usando JobTrack.";
+  } else {
+    title.textContent = "Tu prueba gratuita terminó";
+    msg.textContent = "Para seguir usando JobTrack, activa tu suscripción.";
+  }
+  document.getElementById("jt-paywall-overlay").style.display = "flex";
+}
+
+function hidePaywall(){
+  document.getElementById("jt-paywall-overlay").style.display = "none";
+}
+
+async function checkSubscriptionAndGate(pagoParam){
+  try{
+    var { data: sub } = await supabase
+      .from("subscriptions")
+      .select("status,trial_ends_at,current_period_end")
+      .eq("user_id", currentUserId)
+      .maybeSingle();
+    var entitled = computeEntitlement(sub);
+    if(entitled){
+      hidePaywall();
+      return true;
+    }
+    showPaywall(sub, pagoParam);
+    return false;
+  }catch(e){
+    // Fail-open ante un error de red/consulta: no bloqueamos por un problema nuestro.
+    hidePaywall();
+    return true;
+  }
 }
 
 function renderEdition(){
@@ -3069,6 +3193,16 @@ function setProfileSectionExpanded(expanded){
 function wireNav(){
   initSectionViews();
   document.getElementById("jt-logout-btn").addEventListener("click", logout);
+  document.getElementById("jt-paywall-subscribe-btn").addEventListener("click", startCheckout);
+  document.getElementById("jt-paywall-logout-btn").addEventListener("click", logout);
+  document.getElementById("jt-paywall-refresh-btn").addEventListener("click", function(){
+    checkSubscriptionAndGate(new URLSearchParams(location.search).get("pago")).then(function(entitled){
+      if(entitled){
+        renderAll();
+        syncViewFromHash();
+      }
+    });
+  });
   var navEl = document.getElementById("jt-nav");
   var menuBtn = document.getElementById("jt-mobile-menu-btn");
   var backdrop = document.getElementById("jt-nav-backdrop");
@@ -3129,12 +3263,19 @@ renderHome();
 syncViewFromHash();
 
 loadState().then(function(){
-  if(!state.onboarding.wizardDone){
-    startWizard();
-  } else {
-    renderAll();
-    syncViewFromHash();
+  var pagoParam = new URLSearchParams(location.search).get("pago");
+  if(pagoParam){
+    history.replaceState(null, "", location.pathname + location.hash);
   }
+  checkSubscriptionAndGate(pagoParam).then(function(entitled){
+    if(!entitled) return;
+    if(!state.onboarding.wizardDone){
+      startWizard();
+    } else {
+      renderAll();
+      syncViewFromHash();
+    }
+  });
 });
 
 })();
