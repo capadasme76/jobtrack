@@ -240,6 +240,14 @@
   .jt-match-chip{font-family:var(--font-mono);font-size:12px;padding:3px 9px;border-radius:var(--radius-pill);}
   .jt-match-chip.hit{background:var(--teal);color:#fff;}
   .jt-match-chip.miss{background:var(--paper-dim);border:1px solid var(--brick);color:var(--brick-dark);}
+  .jt-match-reco{padding:12px 16px;border-radius:var(--radius-ctrl);margin-bottom:12px;font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .jt-match-reco .txt{font-family:var(--font-body);font-weight:400;font-size:13px;color:var(--ink-soft);}
+  .jt-match-reco.good{background:#E3F5EF;border:1px solid var(--teal);color:var(--teal-dark);}
+  .jt-match-reco.mid{background:var(--brick-100);border:1px solid var(--brick);color:var(--brick-800);}
+  .jt-match-reco.low{background:var(--paper-dim);border:1px solid var(--ink-faint);color:var(--ink-soft);}
+  .jt-match-riesgos{background:var(--paper-dim);border-left:4px solid var(--brick);padding:12px 16px;margin:14px 0;border-radius:0 var(--radius-ctrl) var(--radius-ctrl) 0;}
+  .jt-match-riesgos h4{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px;}
+  .jt-match-riesgos p{font-size:13px;color:var(--ink-soft);margin:0 0 8px;}
 
   /* Tasks */
   .jt-tasks{margin-top:6px;}
@@ -547,6 +555,10 @@
       <div class="row"><span class="lbl">✓ Una carta de presentación generada para esa vacante específica</span></div>
     </div>
     <textarea id="jt-match-input" placeholder="Pega aquí la descripción completa de la vacante..."></textarea>
+    <div style="margin-top:10px;">
+      <label for="jt-match-opp-select" style="font-size:12px;color:var(--ink-soft);display:block;margin-bottom:4px;">Vincular a una oportunidad de tu agenda (opcional)</label>
+      <select id="jt-match-opp-select"><option value="">Sin vincular</option></select>
+    </div>
     <div style="margin-top:10px;"><button class="jt-btn-primary" id="jt-match-btn" type="button">Analizar match</button></div>
     <div class="jt-match-result" id="jt-match-result"></div>
   </div>
@@ -1465,6 +1477,18 @@ function populateFilterSector(){
   }).join("");
 }
 
+function populateMatchOppSelect(){
+  var sel = document.getElementById("jt-match-opp-select");
+  if(!sel) return;
+  var current = sel.value;
+  var html = '<option value="">Sin vincular</option>';
+  state.opportunities.forEach(function(o){
+    html += '<option value="'+esc(o.id)+'">'+esc(o.empresa)+' — '+esc(o.cargo)+'</option>';
+  });
+  sel.innerHTML = html;
+  if(state.opportunities.some(function(o){ return o.id === current; })) sel.value = current;
+}
+
 function renderBoard(){
   var cols = STATUSES;
   var filtered = state.opportunities.filter(function(o){
@@ -1593,7 +1617,7 @@ function renderBoard(){
         + '<button class="jt-card-del" data-id="'+o.id+'" data-kind="opp" data-empresa="'+esc(o.empresa)+'" type="button" aria-label="Eliminar oportunidad" title="Eliminar">✕</button>'
         + '<div class="co">'+esc(o.empresa)+followup+deadlineBadge+incompleteBadge+'</div>'
         + '<div class="role">'+esc(o.cargo)+'</div>'
-        + '<div class="tags"><span class="jt-tag'+tagCls+'">'+esc(o.priority)+'</span>'+(o.region?'<span class="jt-tag">'+esc(o.region)+'</span>':'')+'</div>'
+        + '<div class="tags"><span class="jt-tag'+tagCls+'">'+esc(o.priority)+'</span>'+(o.region?'<span class="jt-tag">'+esc(o.region)+'</span>':'')+(o.matchScore!=null?'<span class="jt-tag-outline" title="Resultado de Match CV">Match '+o.matchScore+'% · '+esc(o.matchRecommendation||"")+'</span>':'')+'</div>'
         + '<select data-id="'+o.id+'" class="jt-status-select">'
         + STATUSES.map(function(s){ return '<option value="'+esc(s)+'"'+(s===o.status?' selected':'')+'>'+esc(s)+'</option>'; }).join("")
         + '</select>'
@@ -2497,6 +2521,7 @@ function renderAll(){
   renderHoy();
   renderTicker();
   populateFilterSector();
+  populateMatchOppSelect();
   renderBoard();
   renderNetworking();
   renderMeetings();
@@ -2853,13 +2878,44 @@ function runMatchAnalysis(){
   var misses = candidates.filter(function(term){ return normProfile.indexOf(normalizeText(term)) === -1; });
   var score = Math.round((hits.length / candidates.length) * 100);
 
+  // Cuántas veces aparece cada término faltante en el aviso — un término que
+  // se repite varias veces probablemente importa más que uno mencionado una
+  // sola vez, así que se usa para priorizar qué "riesgos" mostrar primero.
+  function countOccurrences(term){
+    var norm = normalizeText(term);
+    var count = 0, idx = 0;
+    while((idx = normJD.indexOf(norm, idx)) !== -1){ count++; idx += norm.length; }
+    return count;
+  }
+  var missesRanked = misses.slice().sort(function(a,b){ return countOccurrences(b) - countOccurrences(a); });
+  var topRiesgos = missesRanked.filter(function(t){ return countOccurrences(t) >= 2; }).slice(0, 5);
+
+  var reco = score >= 70
+    ? { label:"Postular", cls:"good", text:"Buena cobertura de lo que pide el aviso — vale la pena postular." }
+    : score >= 40
+    ? { label:"Postular con ajustes", cls:"mid", text:"Cobertura parcial — ajusta tu CV o carta para destacar lo que sí cubres antes de postular." }
+    : { label:"Baja prioridad", cls:"low", text:"Cobertura baja frente a lo que pide el aviso — revisa si realmente calza con tu perfil antes de invertir tiempo en postular." };
+
+  var oppSelect = document.getElementById("jt-match-opp-select");
+  var linkedOpp = oppSelect && oppSelect.value ? state.opportunities.find(function(o){ return o.id === oppSelect.value; }) : null;
+  if(linkedOpp){
+    linkedOpp.matchScore = score;
+    linkedOpp.matchRecommendation = reco.label;
+    linkedOpp.matchDate = new Date().toISOString();
+    persist();
+    renderBoard();
+  }
+
   var barColor = score >= 70 ? "var(--teal)" : score >= 40 ? "var(--brick)" : "var(--ink-faint)";
   var html = '<div class="jt-match-score"><div><div class="num">'+score+'%</div><div class="lbl">Cobertura</div></div><div class="jt-match-bar"><div class="jt-match-bar-fill" style="width:'+score+'%;background:'+barColor+';"></div></div></div>'
+    + '<div class="jt-match-reco '+reco.cls+'">'+esc(reco.label)+'<span class="txt">'+esc(reco.text)+'</span></div>'
     + '<div class="jt-io-note" style="margin-bottom:14px;">Comparación por palabras clave de tu perfil contra el aviso — no es una evaluación real de qué tan buen candidato eres para el cargo.</div>'
+    + (linkedOpp ? '<div class="jt-io-note" style="margin-bottom:14px;">Vinculado a <strong>'+esc(linkedOpp.empresa)+' — '+esc(linkedOpp.cargo)+'</strong> — vas a ver este resultado en su tarjeta de la Agenda.</div>' : '')
     + '<div class="jt-match-cols">'
-    + '<div><h4>Ya cubres ('+hits.length+')</h4><div class="jt-match-chips">'+(hits.map(function(w){ return '<span class="jt-match-chip hit">'+esc(w)+'</span>'; }).join("") || '<span class="jt-io-note">Sin coincidencias</span>')+'</div></div>'
-    + '<div><h4>Te faltan ('+misses.length+')</h4><div class="jt-match-chips">'+(misses.map(function(w){ return '<span class="jt-match-chip miss">'+esc(w)+'</span>'; }).join("") || '<span class="jt-io-note">Ninguna — buena cobertura</span>')+'</div></div>'
+    + '<div><h4>Fortalezas — ya cubres ('+hits.length+')</h4><div class="jt-match-chips">'+(hits.map(function(w){ return '<span class="jt-match-chip hit">'+esc(w)+'</span>'; }).join("") || '<span class="jt-io-note">Sin coincidencias</span>')+'</div></div>'
+    + '<div><h4>Brechas — te faltan ('+misses.length+')</h4><div class="jt-match-chips">'+(misses.map(function(w){ return '<span class="jt-match-chip miss">'+esc(w)+'</span>'; }).join("") || '<span class="jt-io-note">Ninguna — buena cobertura</span>')+'</div></div>'
     + '</div>'
+    + (topRiesgos.length ? '<div class="jt-match-riesgos"><h4>Riesgos a considerar</h4><p>Estos términos se repiten varias veces en el aviso y no aparecen en tu perfil — si de verdad los manejas, agrégalos a tu CV o carta:</p><div class="jt-match-chips">'+topRiesgos.map(function(w){ return '<span class="jt-match-chip miss">'+esc(w)+'</span>'; }).join("")+'</div></div>' : '')
     + '<div class="jt-tailor-box">'
     + '<p class="jt-lead">Borrador ajustado a esta vacante — revísalo antes de enviar.</p>'
     + '<div class="jt-tailor-inputs"><input type="text" id="jt-tailor-cargo" placeholder="Cargo (ej. Gerente de Comunicaciones)" /><input type="text" id="jt-tailor-empresa" placeholder="Empresa" /></div>'
