@@ -10,6 +10,7 @@
 // Supabase para leer/escribir jobtrack_state directo por su API REST.
 
 import { createHash } from "node:crypto";
+import { sendEmail } from "./send-email.mjs";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -86,6 +87,66 @@ async function writeStateRow(userId, data) {
   }
 }
 
+// Las alertas por email son una función de pago (ver plan Fase D) — incluso
+// para cuentas grandfathered, que siguen gratis para el dashboard tal como
+// está hoy, pero no heredan gratis cada función nueva de pago. El aviso
+// dentro de la app (en "Hoy") sigue siendo gratis para todos, esto es
+// adicional solo para quien paga.
+const EMAIL_ENTITLED_STATUSES = new Set(["active", "past_due"]);
+
+async function getSubscriptionStatus(userId) {
+  const url = `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}&select=status`;
+  const res = await fetch(url, {
+    headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+  });
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows[0] ? rows[0].status : null;
+}
+
+async function getUserEmail(userId) {
+  const url = `${SUPABASE_URL}/auth/v1/admin/users/${encodeURIComponent(userId)}`;
+  const res = await fetch(url, {
+    headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+  });
+  if (!res.ok) return null;
+  const user = await res.json();
+  return user.email || null;
+}
+
+// Label/cargo/empresa vienen de texto que el propio usuario escribió en su
+// perfil o agenda — se escapan igual antes de meterlos en el HTML del correo,
+// para que un "<" o "&" typeado no rompa el formato del mensaje.
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function changeAlertHtml(changedItems) {
+  const items = changedItems
+    .map((item) => `<li><strong>${escapeHtml(item.label)}</strong> — <a href="${escapeHtml(item.url)}">ver la página</a></li>`)
+    .join("");
+  return `<p>Detectamos cambios en lo que estás vigilando en JobTrack:</p><ul>${items}</ul><p>Entra a <a href="https://jobtrack.cl/jobtrack-dashboard-cristian.html">tu cuenta</a> para revisarlo — lo vas a encontrar también en la sección "Hoy".</p>`;
+}
+
+async function notifyChanges(userId, changedItems) {
+  if (changedItems.length === 0) return;
+  try {
+    const status = await getSubscriptionStatus(userId);
+    if (!EMAIL_ENTITLED_STATUSES.has(status)) return;
+    const email = await getUserEmail(userId);
+    if (!email) return;
+    await sendEmail({
+      to: email,
+      subject: changedItems.length === 1 ? `Cambio detectado: ${changedItems[0].label}` : `${changedItems.length} cambios detectados en tus búsquedas`,
+      html: changeAlertHtml(changedItems),
+    });
+    console.log(`  Correo enviado a ${email} (${changedItems.length} cambio(s))`);
+  } catch (e) {
+    // Un correo que falla no debe tumbar el chequeo del resto de las cuentas.
+    console.log(`  ERROR enviando correo para ${userId} — ${e.message || e}`);
+  }
+}
+
 async function checkOnePage(url) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -108,11 +169,13 @@ async function processRow(row) {
   const data = row.data || {};
   const watchedPages = Array.isArray(data.watchedPages) ? data.watchedPages : [];
   const watchedSearches = Array.isArray(data.watchedSearches) ? data.watchedSearches : [];
+  const opportunities = Array.isArray(data.opportunities) ? data.opportunities : [];
   if (watchedPages.length === 0 && watchedSearches.length === 0) {
-    return { checked: 0, changed: 0, skipped: 0, errors: 0, mutated: false };
+    return { checked: 0, changed: 0, skipped: 0, errors: 0, mutated: false, changedItems: [] };
   }
 
   let checked = 0, changed = 0, skipped = 0, errors = 0, mutated = false;
+  const changedItems = [];
 
   for (const watch of watchedPages) {
     if (!watch.url) { skipped++; continue; }
@@ -142,6 +205,8 @@ async function processRow(row) {
       watch.hash = result.hash;
       watch.lastChangedAt = now;
       console.log(`  CAMBIO ${watch.url}`);
+      const opp = opportunities.find((o) => o.id === watch.opportunityId);
+      changedItems.push({ label: opp ? `Página de empleos — ${opp.empresa}` : "Página de empleos vigilada", url: watch.url });
     }
   }
 
@@ -176,10 +241,11 @@ async function processRow(row) {
       watch.hash = result.hash;
       watch.lastChangedAt = now;
       console.log(`  CAMBIO (búsqueda) ${watch.url}`);
+      changedItems.push({ label: `Búsqueda "${watch.cargo || ""}"${watch.portalLabel ? " en " + watch.portalLabel : ""}`, url: watch.url });
     }
   }
 
-  return { checked, changed, skipped, errors, mutated };
+  return { checked, changed, skipped, errors, mutated, changedItems };
 }
 
 async function main() {
@@ -197,6 +263,7 @@ async function main() {
     if (result.mutated) {
       await writeStateRow(row.user_id, row.data);
     }
+    await notifyChanges(row.user_id, result.changedItems);
   }
 
   console.log(
