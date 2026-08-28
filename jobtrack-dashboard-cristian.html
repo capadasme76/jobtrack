@@ -97,7 +97,8 @@
   .jt-col-empty{min-height:0;padding-bottom:10px;opacity:.7;}
   .jt-col-empty h3{margin-bottom:0;}
   .jt-col h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0 0 8px;display:flex;justify-content:space-between;position:sticky;top:0;background:var(--paper-dim);padding-top:2px;z-index:2;}
-  .jt-card{background:var(--card-bg);border:1px solid var(--line);padding:12px 30px 12px 14px;margin-bottom:10px;font-size:14px;border-radius:var(--radius-ctrl);box-shadow:0 1px 2px rgba(32,30,29,.14);position:relative;}
+  .jt-card{background:var(--card-bg);border:1px solid var(--line);padding:12px 30px 12px 14px;margin-bottom:10px;font-size:14px;border-radius:var(--radius-ctrl);box-shadow:0 1px 2px rgba(32,30,29,.14);position:relative;cursor:pointer;transition:box-shadow .12s;}
+  .jt-card:hover{box-shadow:0 2px 8px rgba(32,30,29,.2);}
   .jt-card .co{font-family:var(--font-display);font-weight:600;font-size:15.5px;}
   .jt-card-del{position:absolute;top:8px;right:8px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--ink-faint);font-size:13px;line-height:1;cursor:pointer;border-radius:50%;}
   .jt-card-del:hover{color:var(--brick);background:var(--paper-dim);}
@@ -120,6 +121,11 @@
   .jt-net-row .jt-btn-mini{padding:3px 6px;font-size:11px;}
   .jt-net-row .name{font-weight:600;}
   .jt-empty{font-family:var(--font-mono);font-size:13px;color:var(--ink-faint);padding:10px 0;}
+  .jt-hoy-primary{background:var(--brick-100);border:1px solid var(--brick);border-left:4px solid var(--brick);padding:20px 22px;border-radius:0 var(--radius-card) var(--radius-card) 0;margin-bottom:18px;}
+  .jt-hoy-primary-headline{font-family:var(--font-display);font-size:21px;font-weight:700;margin:0 0 6px;color:var(--ink);display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .jt-hoy-primary-meta{font-size:14.5px;color:var(--ink-soft);margin-bottom:14px;}
+  .jt-hoy-primary-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .jt-hoy-rest-label{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin:4px 0 8px;}
   .jt-save{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);text-align:right;margin-top:6px;min-height:14px;}
   .jt-addbtn{font-family:var(--font-body);font-weight:600;font-size:13.5px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:9px 16px;cursor:pointer;border-radius:var(--radius-pill);box-shadow:0 1px 2px rgba(32,30,29,.14);transition:transform .1s,box-shadow .1s;}
   .jt-addbtn:hover{transform:translateY(-1px);box-shadow:0 1px 2px rgba(32,30,29,.14);}
@@ -1397,17 +1403,37 @@ function renderHoy(){
   lastHoyTaskCount = tasks.length;
   var badgeLabel = {incompleta:"Incompleta", vencida:"Vencida", porvencer:"Por vencer",
     seguimiento:"Seguimiento atrasado", watchedSearch:"Búsqueda cambió", watchedPage:"Página cambió", networking:"Networking"};
-  var html = tasks.map(function(t){
+
+  function taskActions(t){
     var actions = "";
     if(t.link) actions += '<a class="link" href="'+esc(t.link)+'" target="_blank" rel="noopener">Ver ↗</a>';
     actions += '<button class="jt-btn-mini" data-hoy-goto="'+t.id+'" type="button">Revisar</button>';
     if(t.dismissible) actions += '<button class="jt-btn-mini" data-hoy-dismiss="'+t.id+'" type="button">Descartar</button>';
+    return actions;
+  }
+
+  // El primer pendiente (ya viene ordenado por urgencia desde computeHoyTasks)
+  // se destaca como "tu próxima acción" — el resto queda en la lista normal.
+  var primary = tasks[0];
+  var rest = tasks.slice(1);
+
+  var primaryHtml = primary
+    ? '<div class="jt-hoy-primary">'
+      + '<div class="jt-card-kicker">Tu próxima acción</div>'
+      + '<div class="jt-hoy-primary-headline">'+esc(primary.headline)+' <span class="jt-badge">'+esc(badgeLabel[primary.kind])+'</span></div>'
+      + '<div class="jt-hoy-primary-meta">'+esc(primary.meta)+'</div>'
+      + '<div class="jt-hoy-primary-actions">'+taskActions(primary)+'</div></div>'
+    : '<div class="jt-empty">Sin pendientes por ahora — vas al día.</div>';
+
+  var restHtml = rest.map(function(t){
     return '<div class="jt-dispatch">'
       + '<div><div class="headline">'+esc(t.headline)+' <span class="jt-badge">'+esc(badgeLabel[t.kind])+'</span></div>'
       + '<div class="meta">'+esc(t.meta)+'</div></div>'
-      + '<div class="jt-dispatch-actions">'+actions+'</div></div>';
-  }).join("") || '<div class="jt-empty">Sin pendientes por ahora — vas al día.</div>';
-  document.getElementById("jt-dispatches").innerHTML = html;
+      + '<div class="jt-dispatch-actions">'+taskActions(t)+'</div></div>';
+  }).join("");
+
+  document.getElementById("jt-dispatches").innerHTML = primaryHtml
+    + (rest.length ? '<div class="jt-hoy-rest-label">Otras pendientes ('+rest.length+')</div>' + restHtml : "");
 
   document.querySelectorAll('[data-hoy-goto]').forEach(function(btn){
     btn.addEventListener("click", function(){
@@ -1579,6 +1605,18 @@ function renderBoard(){
   });
   document.getElementById("jt-board").innerHTML = html;
 
+  // Tarjeta completa clickeable para expandir/contraer (no solo el botón
+  // "Ver más") — se ignoran los clics sobre controles propios de la tarjeta
+  // (borrar, estado, links, tareas, editar) para no interferir con ellos.
+  document.querySelectorAll('.jt-card').forEach(function(card){
+    card.addEventListener("click", function(e){
+      if(e.target.closest('button, select, a, input, textarea')) return;
+      var id = card.id.replace("opp-", "");
+      var idx = expandedCardIds.indexOf(id);
+      if(idx === -1) expandedCardIds.push(id); else expandedCardIds.splice(idx, 1);
+      renderBoard();
+    });
+  });
   document.querySelectorAll('[data-toggle-card]').forEach(function(btn){
     btn.addEventListener("click", function(){
       var id = btn.getAttribute("data-toggle-card");
