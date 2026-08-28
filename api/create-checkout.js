@@ -49,14 +49,6 @@ async function setFlowCustomerId(userId, customerId) {
   if (!res.ok) throw new Error(`No se pudo guardar flow_customer_id (${res.status}): ${await res.text()}`);
 }
 
-function findBadChar(s) {
-  if (!s) return null;
-  for (let i = 0; i < s.length; i++) {
-    if (s.charCodeAt(i) > 255) return { index: i, code: s.charCodeAt(i), char: s[i] };
-  }
-  return null;
-}
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Método no permitido." });
@@ -65,16 +57,6 @@ export default async function handler(req, res) {
 
   const authHeader = req.headers["authorization"] || "";
   const accessToken = authHeader.replace(/^Bearer\s+/i, "");
-
-  if (req.query && req.query.diag === "1") {
-    res.status(200).json({
-      serviceRoleKey: { length: SERVICE_ROLE_KEY ? SERVICE_ROLE_KEY.length : 0, badChar: findBadChar(SERVICE_ROLE_KEY) },
-      anonKey: { length: SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.length : 0, badChar: findBadChar(SUPABASE_ANON_KEY) },
-      accessToken: { length: accessToken.length, badChar: findBadChar(accessToken) },
-      supabaseUrl: SUPABASE_URL,
-    });
-    return;
-  }
   const user = await verifySupabaseUser(accessToken);
   if (!user || !user.id) {
     res.status(401).json({ error: "No autorizado. Inicia sesión e intenta de nuevo." });
@@ -108,9 +90,6 @@ export default async function handler(req, res) {
     res.status(200).json({ redirectUrl: `${register.url}?token=${register.token}` });
   } catch (e) {
     console.error("create-checkout error:", e);
-    // DEBUG temporal: se expone el detalle del error en la respuesta para
-    // diagnosticar más rápido sin depender de revisar los Logs de Vercel a
-    // mano — se revierte apenas se resuelva el problema real.
-    res.status(500).json({ error: "No se pudo iniciar el registro de pago. Intenta de nuevo.", debug: String(e && e.stack || e) });
+    res.status(500).json({ error: "No se pudo iniciar el registro de pago. Intenta de nuevo." });
   }
 }
