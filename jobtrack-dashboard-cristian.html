@@ -1010,7 +1010,7 @@ var seedProfile = {
   linkedinUrl:""
 };
 
-var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", meetings: seedMeetings, watchedPages: [], watchedSearches: [], onboarding: { profile: false, searches: false, opportunity: false, match: false, wizardDone: false } };
+var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", meetings: seedMeetings, watchedPages: [], watchedSearches: [], onboarding: { profile: false, searches: false, opportunity: false, match: false, wizardDone: false, welcomeEmailSent: false } };
 var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"", region:"" };
 var saveTimer = null;
 var editingOppId = null;
@@ -1167,9 +1167,13 @@ async function loadState(){
       // retroactivamente a alguien que ya usa la app.
       if(parsed.onboarding){
         state.onboarding = parsed.onboarding;
-        if(state.onboarding.wizardDone === undefined) state.onboarding.wizardDone = true;
+        if(state.onboarding.wizardDone === undefined){
+          state.onboarding.wizardDone = true;
+          state.onboarding.welcomeEmailSent = true; // cuenta preexistente — no le llega el correo retroactivamente
+        }
       } else {
         state.onboarding.wizardDone = true;
+        state.onboarding.welcomeEmailSent = true;
       }
       // CV actualizado el 17/08: se fuerza el perfil nuevo una vez, aunque haya uno viejo guardado.
       if(parsed.profileCvVersion === "2026-08-17-v3"){
@@ -3364,6 +3368,15 @@ loadState().then(function(){
   checkSubscriptionAndGate(pagoParam).then(function(entitled){
     if(!entitled) return;
     if(!state.onboarding.wizardDone){
+      if(!state.onboarding.welcomeEmailSent){
+        state.onboarding.welcomeEmailSent = true;
+        persist();
+        supabase.auth.getSession().then(function(sessionRes){
+          var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+          if(!token) return;
+          fetch("/api/send-welcome-email", { method:"POST", headers:{ "Authorization":"Bearer "+token } }).catch(function(){});
+        });
+      }
       startWizard();
     } else {
       renderAll();
