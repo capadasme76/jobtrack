@@ -11,3 +11,4 @@ files/
 files.zip
 .claude/
 .vercel
+scripts/.env.flow.local
