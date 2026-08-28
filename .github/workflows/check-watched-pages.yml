@@ -2,7 +2,7 @@ name: Check watched job pages
 
 on:
   schedule:
-    - cron: "0 13 * * *" # ~10am Chile (UTC-3), ajusta si cambia el horario de verano
+    - cron: "0 11 * * *" # ~8am Chile (UTC-3), ajusta si cambia el horario de verano
   workflow_dispatch: {}
 
 jobs:
