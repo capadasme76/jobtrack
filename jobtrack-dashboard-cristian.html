@@ -1004,7 +1004,7 @@ function renderHome(){
       + badge + '</a>';
   }
   var subscribeTileHtml = '<button type="button" class="jt-tile jt-tile-featured" id="jt-home-subscribe-tile">'
-    + '<span class="jt-tile-ic">★</span>'
+    + '<span class="jt-tile-ic">'+svgIcon('<rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line>')+'</span>'
     + '<span class="jt-tile-label">Contratar tu plan</span></button>';
   document.getElementById("jt-home-grid-featured").innerHTML = SECTIONS.filter(function(s){ return s.featured; }).map(tileHtml).join("") + subscribeTileHtml;
   document.getElementById("jt-home-grid").innerHTML = SECTIONS.filter(function(s){ return !s.featured; }).map(tileHtml).join("");
