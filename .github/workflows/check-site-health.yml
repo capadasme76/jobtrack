@@ -1,0 +1,19 @@
+name: Check site health
+
+on:
+  schedule:
+    - cron: "*/30 * * * *" # cada 30 minutos
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run health check
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/check-site-health.mjs
