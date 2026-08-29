@@ -179,6 +179,10 @@
   .jt-paywall-card .jt-addbtn{width:100%;padding:12px;font-size:14.5px;margin-bottom:10px;}
   .jt-paywall-card .jt-btn-mini{width:100%;padding:9px;margin-bottom:8px;}
   .jt-paywall-error{font-size:12.5px;color:#B3261E;margin-top:10px;display:none;}
+  .jt-paywall-transfer{background:var(--paper-dim);border-radius:var(--radius-ctrl);padding:14px;margin-top:10px;text-align:left;}
+  .jt-paywall-transfer p{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;}
+  .jt-paywall-transfer-data{font-size:12.5px;line-height:1.7;margin-bottom:10px;}
+  .jt-paywall-transfer-data strong{color:var(--ink);}
   .jt-guide-steps{display:flex;flex-direction:column;gap:10px;}
   .jt-guide-step{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:0;box-shadow:0 1px 2px rgba(32,30,29,.14);overflow:hidden;}
   .jt-guide-summary{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;list-style:none;}
@@ -386,6 +390,20 @@
     <div class="jt-paywall-price">$14.000 CLP<span>cada 3 meses</span></div>
     <button class="jt-addbtn" id="jt-paywall-subscribe-btn" type="button">Suscribirse</button>
     <button class="jt-btn-mini" id="jt-paywall-refresh-btn" type="button" style="display:none;">Ya pagué, revisar de nuevo</button>
+    <button class="jt-btn-mini" id="jt-paywall-transfer-toggle" type="button">¿Prefieres pagar por transferencia?</button>
+    <div class="jt-paywall-transfer" id="jt-paywall-transfer-details" style="display:none;">
+      <p>Transfiere el monto y envíanos tu comprobante — activamos tu cuenta en menos de 24 horas.</p>
+      <div class="jt-paywall-transfer-data">
+        <div><strong>Nombre:</strong> COMUNICACIONES VC SpA</div>
+        <div><strong>RUT:</strong> 77.988.526-7</div>
+        <div><strong>Banco:</strong> Banco de Chile</div>
+        <div><strong>Tipo de cuenta:</strong> Cuenta Corriente</div>
+        <div><strong>N° cuenta:</strong> 00-998-09572-09</div>
+        <div><strong>Monto:</strong> $14.000 CLP</div>
+        <div><strong>Enviar comprobante a:</strong> <a href="mailto:hola@jobtrack.cl">hola@jobtrack.cl</a></div>
+      </div>
+      <p class="jt-io-note">Incluye el correo con el que entras a JobTrack en el comprobante o el asunto del email, para activar la cuenta correcta.</p>
+    </div>
     <button class="jt-btn-mini" id="jt-paywall-logout-btn" type="button">Cerrar sesión</button>
     <div class="jt-paywall-error" id="jt-paywall-error"></div>
   </div>
@@ -3323,6 +3341,10 @@ function wireNav(){
   document.getElementById("jt-logout-btn").addEventListener("click", logout);
   document.getElementById("jt-subscribe-link").addEventListener("click", function(){ startSidebarCheckout(document.getElementById("jt-subscribe-link")); });
   document.getElementById("jt-paywall-subscribe-btn").addEventListener("click", startCheckout);
+  document.getElementById("jt-paywall-transfer-toggle").addEventListener("click", function(){
+    var el = document.getElementById("jt-paywall-transfer-details");
+    el.style.display = el.style.display === "none" ? "block" : "none";
+  });
   document.getElementById("jt-paywall-logout-btn").addEventListener("click", logout);
   document.getElementById("jt-paywall-refresh-btn").addEventListener("click", function(){
     checkSubscriptionAndGate(new URLSearchParams(location.search).get("pago")).then(function(entitled){
