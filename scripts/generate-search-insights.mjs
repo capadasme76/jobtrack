@@ -48,19 +48,56 @@ function linkedinPostText(ranking, totalUsersWithSearches) {
   return `📊 Los cargos más buscados esta semana en la comunidad JobTrack:\n\n${list}\n\nDato agregado y anónimo, entre ${totalUsersWithSearches} personas usando búsquedas vigiladas en la plataforma.\n\n¿Tu cargo está en la lista? Cuéntanos en los comentarios cómo va tu búsqueda 👇\n\n#JobTrack #BúsquedaLaboral #Empleo #Chile`;
 }
 
+// Plantilla con la identidad visual de JobTrack (violeta #7C5CFC, layout
+// limpio) — se aplica sola cada semana, no requiere trabajo manual de diseño.
 function reportHtml(ranking, totalSearches, totalUsersWithSearches, linkedinText) {
+  const maxCount = ranking.length ? ranking[0].count : 1;
   const rows = ranking
-    .map((r, i) => `<tr><td>${i + 1}</td><td>${escapeHtml(r.cargo)}</td><td>${r.count}</td></tr>`)
+    .map((r, i) => {
+      const pct = Math.max(8, Math.round((r.count / maxCount) * 100));
+      return `
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid #EAE9E9;font-family:Helvetica,Arial,sans-serif;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="28" style="font-family:Helvetica,Arial,sans-serif;font-weight:700;color:#7C5CFC;font-size:14px;">${i + 1}</td>
+              <td style="font-family:Helvetica,Arial,sans-serif;font-size:14.5px;color:#201E1D;">
+                ${escapeHtml(toTitleCase(r.cargo))}
+                <div style="background:#EAE9E9;height:6px;border-radius:3px;margin-top:5px;max-width:340px;">
+                  <div style="background:#7C5CFC;height:6px;border-radius:3px;width:${pct}%;"></div>
+                </div>
+              </td>
+              <td width="40" align="right" style="font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#605D5D;">${r.count}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>`;
+    })
     .join("");
+
   return `
-    <p><strong>Texto listo para LinkedIn</strong> (cópialo y publícalo si te parece bien):</p>
-    <pre style="white-space:pre-wrap;background:#f4f4f4;padding:12px;border-radius:6px;font-family:inherit;">${escapeHtml(linkedinText)}</pre>
-    <p>Reporte semanal de cargos más buscados — ${totalSearches} búsquedas vigiladas activas, entre ${totalUsersWithSearches} cuentas.</p>
-    <table border="1" cellpadding="6" cellspacing="0">
-      <tr><th>#</th><th>Cargo</th><th>Menciones</th></tr>
-      ${rows}
+  <div style="background:#F3F2F2;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #D7D3D3;">
+      <tr><td style="padding:24px 28px;border-bottom:3px solid #7C5CFC;">
+        <span style="font-family:Helvetica,Arial,sans-serif;font-weight:800;font-size:19px;color:#201E1D;">JobTrack<span style="color:#7C5CFC;">.</span></span>
+      </td></tr>
+      <tr><td style="padding:28px;">
+        <h1 style="font-family:Helvetica,Arial,sans-serif;font-size:20px;margin:0 0 4px;color:#201E1D;">📊 Cargos más buscados esta semana</h1>
+        <p style="font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#605D5D;margin:0 0 22px;">${totalSearches} búsquedas vigiladas activas, entre ${totalUsersWithSearches} cuentas.</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+        <p style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#9B9797;margin:20px 0 0;">Dato agregado y anónimo — no identifica usuarios individuales.</p>
+      </td></tr>
+      <tr><td style="padding:0 28px 28px;">
+        <div style="background:#F0EBFF;border:1px solid #7C5CFC;padding:16px;">
+          <p style="font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:13px;color:#3D2A99;margin:0 0 10px;">Texto listo para LinkedIn</p>
+          <pre style="white-space:pre-wrap;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#201E1D;margin:0;line-height:1.5;">${escapeHtml(linkedinText)}</pre>
+        </div>
+      </td></tr>
+      <tr><td style="padding:16px 28px;background:#F3F2F2;">
+        <p style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#9B9797;margin:0;">JobTrack — jobtrack.cl</p>
+      </td></tr>
     </table>
-    <p>Dato agregado y anónimo — no identifica usuarios individuales.</p>
+  </div>
   `;
 }
 
