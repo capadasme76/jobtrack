@@ -76,6 +76,7 @@ function reportHtml(ranking, totalSearches, totalUsersWithSearches, linkedinText
     .join("");
 
   return `
+  <meta charset="utf-8">
   <div style="background:#F3F2F2;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #D7D3D3;">
       <tr><td style="padding:24px 28px;border-bottom:3px solid #7C5CFC;">
