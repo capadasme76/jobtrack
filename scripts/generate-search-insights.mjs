@@ -10,9 +10,7 @@ import { sendEmail } from "./send-email.mjs";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-// Prueba temporal a 2 direcciones — volver a "capadasme@gmail.com" solo
-// después de confirmar el envío de prueba.
-const REPORT_TO = ["frubio16@gmail.com", "capadasme@gmail.com"];
+const REPORT_TO = "capadasme@gmail.com";
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error("Faltan SUPABASE_URL y/o SUPABASE_SERVICE_ROLE_KEY en el entorno.");
