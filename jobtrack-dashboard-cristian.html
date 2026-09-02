@@ -2,6 +2,16 @@
 <html lang="es">
 <head>
 <script src="/analytics.js"></script>
+<!-- Google Ads — etiqueta base. El ID (AW-...) es público por diseño, va
+     directo en el código de cualquier sitio que quiera medir sus campañas;
+     no es un secreto. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18425349731"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18425349731');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JobTrack</title>
@@ -3580,6 +3590,18 @@ loadState().then(function(){
           if(!token) return;
           fetch("/api/send-welcome-email", { method:"POST", headers:{ "Authorization":"Bearer "+token } }).catch(function(){});
         });
+        // Conversión de Google Ads ("Registro") — mismo punto que ya marca
+        // "esta es una cuenta nueva de verdad" (no cada login), evita medir
+        // de más. typeof gtag === "function" por si un bloqueador de
+        // anuncios impidió que cargara la etiqueta — no debe romper el
+        // resto del onboarding si eso pasa.
+        if(typeof gtag === "function"){
+          gtag('event', 'conversion', {
+            'send_to': 'AW-18425349731/Eb8LCL6r7ewcEOOM8tFE',
+            'value': 1.0,
+            'currency': 'CLP'
+          });
+        }
       }
       startWizard();
     } else {
