@@ -18,6 +18,7 @@
 
 import { SUPABASE_URL } from "../supabase-config.js";
 import { flowGet } from "./_flow-client.js";
+import { sendEmail } from "../scripts/send-email.mjs";
 
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -46,6 +47,36 @@ async function findUserIdByEmail(email) {
     if (users.length < perPage) return null; // última página, no se encontró
   }
   return null;
+}
+
+async function getCurrentStatus(userId) {
+  const url = `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}&select=status`;
+  const res = await fetch(url, {
+    headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+  });
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows[0] ? rows[0].status : null;
+}
+
+async function getUserEmail(userId) {
+  const url = `${SUPABASE_URL}/auth/v1/admin/users/${encodeURIComponent(userId)}`;
+  const res = await fetch(url, {
+    headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+  });
+  if (!res.ok) return null;
+  const user = await res.json();
+  return user.email || null;
+}
+
+function paidWelcomeEmailHtml(periodEndText) {
+  return `
+    <p>¡Tu plan de JobTrack ya está activo!</p>
+    <p>Confirmamos tu pago — ahora tienes acceso completo, incluyendo el resumen diario personalizado por correo con tus avisos y métricas.</p>
+    <p>Tu suscripción se renueva automáticamente cada 3 meses (próximo cobro: ${periodEndText}). Puedes desactivar la renovación automática cuando quieras desde tu cuenta, sin perder el acceso que ya pagaste.</p>
+    <p>Cualquier duda, responde este correo o escríbenos a hola@jobtrack.cl.</p>
+    <p>Gracias por confiar en JobTrack,<br/>El equipo de JobTrack</p>
+  `;
 }
 
 async function updateSubscriptionStatus(userId, status, currentPeriodEnd) {
@@ -86,9 +117,28 @@ export default async function handler(req, res) {
     }
 
     if (payment.status === PAID) {
+      const previousStatus = await getCurrentStatus(userId);
       const periodEnd = new Date();
       periodEnd.setMonth(periodEnd.getMonth() + 3); // cada 3 meses, mismo intervalo del Plan.
       await updateSubscriptionStatus(userId, "active", periodEnd.toISOString());
+
+      // Solo la primera vez que la cuenta pasa a "active" — no en cada
+      // renovación trimestral, que también pasa por este mismo camino.
+      if (previousStatus !== "active") {
+        try {
+          const email = await getUserEmail(userId);
+          if (email) {
+            await sendEmail({
+              to: email,
+              subject: "¡Tu plan de JobTrack ya está activo!",
+              html: paidWelcomeEmailHtml(periodEnd.toLocaleDateString("es-CL")),
+            });
+          }
+        } catch (e) {
+          // Un correo que falla no debe tumbar la confirmación del pago en sí.
+          console.error("flow-payment-webhook: no se pudo enviar el correo de bienvenida al plan pagado:", e);
+        }
+      }
     } else if (payment.status === REJECTED) {
       // past_due entra en su ventana de gracia de 3 días vía is_entitled()
       // (Fase D.1) — no se corta el acceso al tiro por un cobro fallido.

@@ -54,6 +54,9 @@
   .jt-sidebar-subscribe:hover{background:var(--brick-dark);border-color:var(--brick-dark);}
   .jt-sidebar-subscribe:disabled{opacity:.6;cursor:default;}
   .jt-sidebar-logout:hover{background:var(--paper-dim);color:var(--brick);}
+  .jt-sidebar-footlink{background:none;border:none;color:var(--ink-faint);font-family:var(--font-body);font-size:11.5px;text-decoration:underline;text-align:left;cursor:pointer;padding:6px 12px 0;flex-shrink:0;}
+  .jt-sidebar-footlink:hover{color:var(--brick);}
+  .jt-sidebar-note{font-size:11px;color:var(--ink-faint);padding:6px 12px 0;flex-shrink:0;}
   .jt-ic{font-style:normal;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;opacity:.85;flex-shrink:0;}
   .jt-ic svg{width:100%;height:100%;}
   .jt-main{flex:1;min-width:0;}
@@ -216,6 +219,10 @@
   .jt-ws-label{font-size:13.5px;font-weight:600;}
   .jt-ws-status{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:2px;}
   .jt-ws-row.changed .jt-ws-status{color:var(--teal-dark,var(--teal));}
+  .jt-ws-summary{font-size:13px;color:var(--ink-soft);background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:8px 12px;margin-bottom:10px;}
+  .jt-ws-day-heading{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;color:var(--ink-faint);margin:14px 0 2px;}
+  .jt-ws-day-heading:first-of-type{margin-top:0;}
+  .jt-ws-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brick);margin-right:6px;vertical-align:middle;}
   .jt-chips{display:flex;flex-wrap:wrap;gap:6px;}
   .jt-chip{font-family:var(--font-mono);font-size:12px;padding:4px 11px;border:1px solid var(--line);color:var(--ink-soft);border-radius:var(--radius-pill);background:var(--paper-dim);}
   .jt-chip-btn{cursor:pointer;}
@@ -442,6 +449,8 @@
     <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-6-4-9s1.5-6.5 4-9z"></path></svg></i>Portales</a>
     <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a2.9 2.9 0 0 1 5.6 1c0 2-2.9 2.5-2.9 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.5"></line></svg></i>Guía</a>
     <button type="button" class="jt-sidebar-subscribe" id="jt-subscribe-link">Contratar tu plan</button>
+    <div id="jt-canceled-note" class="jt-sidebar-note" style="display:none;"></div>
+    <button type="button" class="jt-sidebar-footlink" id="jt-cancel-subscription-link" style="display:none;">Cancelar suscripción</button>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
   </nav>
 
@@ -1008,15 +1017,23 @@ function renderHome(){
       + '<span class="jt-tile-label">'+esc(s.label)+'</span>'
       + badge + '</a>';
   }
-  var subscribeTileHtml = '<button type="button" class="jt-tile jt-tile-featured" id="jt-home-subscribe-tile">'
+  // renderHome() se llama muchas veces durante la sesión (cada renderAll());
+  // si la cuenta ya está pagando de verdad, la tarjeta ni se agrega, en vez
+  // de agregarla y ocultarla después — así no reaparece sola la próxima vez
+  // que algo dispare un renderHome().
+  var alreadyPaying = currentSubscription && (currentSubscription.status === "active" || currentSubscription.status === "past_due");
+  var subscribeTileHtml = alreadyPaying ? "" : (
+    '<button type="button" class="jt-tile jt-tile-featured" id="jt-home-subscribe-tile">'
     + '<span class="jt-tile-ic">'+svgIcon('<rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line>')+'</span>'
-    + '<span class="jt-tile-label">Contratar tu plan</span></button>';
+    + '<span class="jt-tile-label">Contratar tu plan</span></button>'
+  );
   document.getElementById("jt-home-grid-featured").innerHTML = SECTIONS.filter(function(s){ return s.featured; }).map(tileHtml).join("") + subscribeTileHtml;
   document.getElementById("jt-home-grid").innerHTML = SECTIONS.filter(function(s){ return !s.featured; }).map(tileHtml).join("");
   document.querySelectorAll("#jt-home-grid-featured .jt-tile[data-target], #jt-home-grid .jt-tile").forEach(function(a){
     a.addEventListener("click", function(e){ e.preventDefault(); goToSection(a.getAttribute("data-target")); });
   });
-  document.getElementById("jt-home-subscribe-tile").addEventListener("click", function(){ startSidebarCheckout(document.getElementById("jt-home-subscribe-tile")); });
+  var homeSubscribeBtn = document.getElementById("jt-home-subscribe-tile");
+  if(homeSubscribeBtn) homeSubscribeBtn.addEventListener("click", function(){ startSidebarCheckout(homeSubscribeBtn); });
 }
 
 // Cada usuario nuevo parte con el dashboard completamente vacío — sin
@@ -1179,6 +1196,11 @@ async function loadState(){
           w.cargo = w.label && w.label.indexOf(" — ") !== -1 ? w.label.split(" — ")[0] : (w.label || "");
         }
         if(w.lastReviewedAt === undefined) w.lastReviewedAt = null;
+        // Migración: búsquedas guardadas antes de agrupar la lista por día no
+        // traen "createdAt" — se dejan en null a propósito (no se inventa una
+        // fecha) y el agrupador las muestra juntas al final, en "Búsquedas
+        // anteriores", en vez de fingir que se sabe cuándo se crearon.
+        if(w.createdAt === undefined) w.createdAt = null;
       });
       // Limpieza: antes de que "generateSearchesForCargos" evitara crear
       // combinaciones cargo+portal repetidas, se podían generar filas duplicadas
@@ -1266,6 +1288,38 @@ async function startSidebarCheckout(btn){
   }
 }
 
+// El usuario puede decidir no renovar en cualquier momento — cancela la
+// renovación automática en Flow, pero no le corta el acceso al tiro: sigue
+// pudiendo usar JobTrack hasta el final del período que ya pagó (se lo
+// aclara en la confirmación con la fecha real, no en abstracto).
+async function startCancelSubscription(){
+  var btn = document.getElementById("jt-cancel-subscription-link");
+  var untilText = currentSubscription && currentSubscription.current_period_end
+    ? " Vas a seguir teniendo acceso hasta el " + new Date(currentSubscription.current_period_end).toLocaleDateString("es-CL") + "."
+    : "";
+  if(!window.confirm("¿Cancelar la renovación automática de tu plan?" + untilText + " No se te va a volver a cobrar.")) return;
+  var original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Cancelando...";
+  try{
+    var sessionRes = await supabase.auth.getSession();
+    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+    var res = await fetch("/api/cancel-subscription", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + (token || "") }
+    });
+    var data = await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error || ("Error " + res.status));
+    window.alert("Listo — tu suscripción no se va a renovar." + untilText);
+    checkSubscriptionAndGate(null);
+  }catch(e){
+    window.alert("No se pudo cancelar: " + e.message + "\n\nEscríbenos a hola@jobtrack.cl si el problema sigue.");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
 async function startCheckout(){
   var btn = document.getElementById("jt-paywall-subscribe-btn");
   var errEl = document.getElementById("jt-paywall-error");
@@ -1323,13 +1377,20 @@ function hidePaywall(){
   document.getElementById("jt-paywall-overlay").style.display = "none";
 }
 
+// Estado de suscripción ya resuelto, para no repetir la consulta cada vez
+// que algo (el botón de "Contratar tu plan", el link de cancelar) necesita
+// saber si la cuenta ya está pagando.
+var currentSubscription = null;
+
 async function checkSubscriptionAndGate(pagoParam){
   try{
     var { data: sub } = await supabase
       .from("subscriptions")
-      .select("status,trial_ends_at,current_period_end")
+      .select("status,trial_ends_at,current_period_end,flow_subscription_id")
       .eq("user_id", currentUserId)
       .maybeSingle();
+    currentSubscription = sub;
+    updateSubscribeButtonVisibility(sub);
     var entitled = computeEntitlement(sub);
     if(entitled){
       hidePaywall();
@@ -1342,6 +1403,30 @@ async function checkSubscriptionAndGate(pagoParam){
     hidePaywall();
     return true;
   }
+}
+
+// El botón "Contratar tu plan" (sidebar + tarjeta destacada en Home) y el
+// link de cancelar solo tienen sentido según si la cuenta ya está pagando
+// de verdad — antes se mostraban siempre, sin importar el estado. La
+// tarjeta de Home la decide renderHome() mismo (lee currentSubscription
+// directo) — se le pide reconstruirse acá para que quede al día apenas se
+// sepa/cambie el estado, sin esperar al próximo renderAll() que la toque.
+function updateSubscribeButtonVisibility(sub){
+  var status = sub ? sub.status : null;
+  var isPaying = status === "active" || status === "past_due";
+  var isCanceledButActive = status === "canceled" && sub.current_period_end && new Date(sub.current_period_end) > new Date();
+  var sidebarBtn = document.getElementById("jt-subscribe-link");
+  var cancelLink = document.getElementById("jt-cancel-subscription-link");
+  var canceledNote = document.getElementById("jt-canceled-note");
+  if(sidebarBtn) sidebarBtn.style.display = isPaying ? "none" : "";
+  if(cancelLink) cancelLink.style.display = isPaying ? "block" : "none";
+  if(canceledNote){
+    canceledNote.style.display = isCanceledButActive ? "block" : "none";
+    if(isCanceledButActive){
+      canceledNote.textContent = "Tu plan no se renovará — acceso hasta el " + new Date(sub.current_period_end).toLocaleDateString("es-CL");
+    }
+  }
+  if(document.getElementById("jt-home-grid-featured")) renderHome();
 }
 
 function renderEdition(){
@@ -2128,6 +2213,22 @@ function renderRecentTerms(){
   });
 }
 
+// Agrupa la lista de búsquedas por el día en que se crearon, más reciente
+// primero — antes se mostraban todas seguidas en una lista que solo crecía,
+// sin ninguna forma de ubicarse. Las que no traen fecha (creadas antes de
+// que este campo existiera, ver migración en loadState()) quedan todas
+// juntas al final, en su propio grupo.
+function watchedSearchDayLabel(createdAt){
+  if(!createdAt) return "Búsquedas anteriores";
+  var d = new Date(createdAt);
+  var now = new Date();
+  var startOfDay = function(x){ return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(); };
+  var diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
+  if(diffDays === 0) return "Hoy";
+  if(diffDays === 1) return "Ayer";
+  return d.toLocaleDateString("es-CL", { day:"numeric", month:"long", year:"numeric" });
+}
+
 function renderWatchedSearches(){
   var cargoInput = document.getElementById("jt-ws-cargo");
   // Solo precarga con el título real una vez que el perfil fue guardado de
@@ -2137,21 +2238,50 @@ function renderWatchedSearches(){
     cargoInput.value = state.profile.tituloProfesional;
   }
   renderRecentTerms();
-  var list = state.watchedSearches || [];
-  var html = list.map(function(w){
+  var list = (state.watchedSearches || []).slice().sort(function(a,b){
+    if(!a.createdAt && !b.createdAt) return 0;
+    if(!a.createdAt) return 1; // sin fecha conocida siempre al final
+    if(!b.createdAt) return -1;
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+  var unreviewedCount = list.filter(function(w){ return !w.lastReviewedAt; }).length;
+  var summaryHtml = list.length === 0 ? "" :
+    '<div class="jt-ws-summary">'+(unreviewedCount > 0
+      ? 'Tienes <strong>'+unreviewedCount+'</strong> búsqueda'+(unreviewedCount===1?'':'s')+' sin revisar.'
+      : 'Ya revisaste todas tus búsquedas — al día ✓')+'</div>';
+
+  var groupsHtml = "";
+  var lastLabel = null;
+  list.forEach(function(w){
+    var dayLabel = watchedSearchDayLabel(w.createdAt);
+    if(dayLabel !== lastLabel){
+      groupsHtml += '<div class="jt-ws-day-heading">'+esc(dayLabel)+'</div>';
+      lastLabel = dayLabel;
+    }
     var monitored = w.monitored !== false;
     var changed = !!w.lastChangedAt;
+    var unreviewed = !w.lastReviewedAt;
     var statusText = !monitored
       ? "Link listo — ábrelo cuando quieras, no lo vigilamos automáticamente"
       : (changed
         ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
         : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario"));
-    return '<div class="jt-ws-row'+(changed?' changed':'')+'" id="ws-'+w.id+'">'
-      + '<div><div class="jt-ws-label">'+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
-      + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-mark-postule="'+w.id+'" type="button">Guardar</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
+    groupsHtml += '<div class="jt-ws-row'+(changed?' changed':'')+'" id="ws-'+w.id+'">'
+      + '<div><div class="jt-ws-label">'+(unreviewed?'<span class="jt-ws-dot" title="Sin revisar"></span>':'')+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
+      + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" data-mark-reviewed="'+w.id+'" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-mark-postule="'+w.id+'" type="button">Guardar</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
       + '</div>';
-  }).join("") || '<div class="jt-empty">Sin búsquedas generadas todavía.</div>';
+  });
+  var html = summaryHtml + (groupsHtml || '<div class="jt-empty">Sin búsquedas generadas todavía.</div>');
   document.getElementById("jt-watched-searches-list").innerHTML = html;
+  document.querySelectorAll('[data-mark-reviewed]').forEach(function(link){
+    link.addEventListener("click", function(){
+      var w = state.watchedSearches.find(function(x){ return x.id === link.getAttribute("data-mark-reviewed"); });
+      if(w && !w.lastReviewedAt){ w.lastReviewedAt = new Date().toISOString(); persist(); }
+      // No se vuelve a renderizar la lista al tiro (perdería el foco del link
+      // recién abierto en otra pestaña) — el punto de "sin revisar" se
+      // actualiza solo la próxima vez que se renderice esta sección.
+    });
+  });
   document.querySelectorAll('[data-del-watched-search]').forEach(function(btn){
     btn.addEventListener("click", function(){
       var id = btn.getAttribute("data-del-watched-search");
@@ -2281,6 +2411,8 @@ async function generateSearchesForCargos(cargos){
         hash: null,
         lastCheckedAt: null,
         lastChangedAt: null,
+        lastReviewedAt: null,
+        createdAt: new Date().toISOString(),
         source: "auto",
         monitored: portal.monitored
       });
@@ -2448,6 +2580,8 @@ function wireWatchedSearches(){
       hash: null,
       lastCheckedAt: null,
       lastChangedAt: null,
+      lastReviewedAt: null,
+      createdAt: new Date().toISOString(),
       source: "manual"
     });
     document.getElementById("jt-ws-manual-url").value = "";
@@ -3401,6 +3535,7 @@ function wireNav(){
   initSectionViews();
   document.getElementById("jt-logout-btn").addEventListener("click", logout);
   document.getElementById("jt-subscribe-link").addEventListener("click", function(){ startSidebarCheckout(document.getElementById("jt-subscribe-link")); });
+  document.getElementById("jt-cancel-subscription-link").addEventListener("click", startCancelSubscription);
   document.getElementById("jt-paywall-subscribe-btn").addEventListener("click", startCheckout);
   document.getElementById("jt-paywall-transfer-toggle").addEventListener("click", function(){
     var el = document.getElementById("jt-paywall-transfer-details");
