@@ -285,7 +285,12 @@ function digestHtml({ metrics, newListings, changedItems, cargoGroups }) {
 async function sendDailyDigest(userId, data, changedItems, newListings, opts = {}) {
   const opportunities = Array.isArray(data.opportunities) ? data.opportunities : [];
   const watchedSearches = Array.isArray(data.watchedSearches) ? data.watchedSearches : [];
-  if (opportunities.length === 0 && watchedSearches.length === 0) return; // nada que contarle
+  if (opportunities.length === 0 && watchedSearches.length === 0) {
+    if (opts.bypassEntitlement) {
+      console.log(`  Esa cuenta no tiene postulaciones ni búsquedas vigiladas todavía — no hay nada que mandarle por correo.`);
+    }
+    return; // nada que contarle
+  }
 
   try {
     if (!opts.bypassEntitlement) {
