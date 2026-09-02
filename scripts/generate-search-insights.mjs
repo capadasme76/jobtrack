@@ -10,7 +10,14 @@ import { sendEmail } from "./send-email.mjs";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const REPORT_TO = "capadasme@gmail.com";
+// Modo prueba, disparado a mano desde GitHub Actions (workflow_dispatch,
+// input "test_to"): si viene con uno o más correos (separados por coma), el
+// reporte de esa corrida se manda solo ahí en vez de a REPORT_TO — no toca
+// la lista real ni requiere editar este archivo para cada prueba.
+const TEST_REPORT_TO = process.env.TEST_REPORT_TO
+  ? process.env.TEST_REPORT_TO.split(",").map((s) => s.trim()).filter(Boolean)
+  : null;
+const REPORT_TO = TEST_REPORT_TO || "capadasme@gmail.com";
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error("Faltan SUPABASE_URL y/o SUPABASE_SERVICE_ROLE_KEY en el entorno.");

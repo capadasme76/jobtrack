@@ -25,6 +25,11 @@ import { sendEmail } from "./send-email.mjs";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Modo prueba, disparado a mano desde GitHub Actions (workflow_dispatch, input
+// "test_email"): si viene con un correo, el resumen diario de ESE día se
+// manda solo a esa cuenta (con su data real, sin importar su estado de
+// suscripción) y a nadie más — no toca la corrida normal ni a otras cuentas.
+const TEST_DIGEST_EMAIL = process.env.TEST_DIGEST_EMAIL || null;
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error("Faltan SUPABASE_URL y/o SUPABASE_SERVICE_ROLE_KEY en el entorno.");
@@ -138,6 +143,19 @@ async function getUserEmail(userId) {
   if (!res.ok) return null;
   const user = await res.json();
   return user.email || null;
+}
+
+// Solo para el modo prueba (TEST_DIGEST_EMAIL) — resuelve un correo a su
+// user_id para encontrar la fila correspondiente en jobtrack_state.
+async function getUserIdByEmail(email) {
+  const url = `${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;
+  const res = await fetch(url, {
+    headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+  });
+  if (!res.ok) return null;
+  const body = await res.json();
+  const users = Array.isArray(body) ? body : Array.isArray(body.users) ? body.users : [];
+  return users[0] ? users[0].id : null;
 }
 
 // Label/cargo/empresa vienen de texto que el propio usuario escribió en su
@@ -264,14 +282,16 @@ function digestHtml({ metrics, newListings, changedItems, cargoGroups }) {
   `;
 }
 
-async function sendDailyDigest(userId, data, changedItems, newListings) {
+async function sendDailyDigest(userId, data, changedItems, newListings, opts = {}) {
   const opportunities = Array.isArray(data.opportunities) ? data.opportunities : [];
   const watchedSearches = Array.isArray(data.watchedSearches) ? data.watchedSearches : [];
   if (opportunities.length === 0 && watchedSearches.length === 0) return; // nada que contarle
 
   try {
-    const status = await getSubscriptionStatus(userId);
-    if (!EMAIL_ENTITLED_STATUSES.has(status)) return;
+    if (!opts.bypassEntitlement) {
+      const status = await getSubscriptionStatus(userId);
+      if (!EMAIL_ENTITLED_STATUSES.has(status)) return;
+    }
     const email = await getUserEmail(userId);
     if (!email) return;
 
@@ -468,6 +488,7 @@ async function main() {
   console.log(`Filas en jobtrack_state: ${rows.length}`);
 
   let totals = { checked: 0, changed: 0, skipped: 0, errors: 0 };
+  const resultsByUser = new Map();
 
   for (const row of rows) {
     const result = await processRow(row);
@@ -478,7 +499,28 @@ async function main() {
     if (result.mutated) {
       await writeStateRow(row.user_id, row.data);
     }
-    await sendDailyDigest(row.user_id, row.data, result.changedItems, result.newListings);
+    resultsByUser.set(row.user_id, result);
+    if (!TEST_DIGEST_EMAIL) {
+      await sendDailyDigest(row.user_id, row.data, result.changedItems, result.newListings);
+    }
+  }
+
+  if (TEST_DIGEST_EMAIL) {
+    console.log(`Modo prueba: el resumen diario se manda solo a ${TEST_DIGEST_EMAIL}, a nadie más.`);
+    const userId = await getUserIdByEmail(TEST_DIGEST_EMAIL);
+    if (!userId) {
+      console.log(`  No existe ninguna cuenta JobTrack con ese correo.`);
+    } else {
+      const row = rows.find((r) => r.user_id === userId);
+      const result = row ? resultsByUser.get(userId) : null;
+      await sendDailyDigest(
+        userId,
+        row ? row.data : {},
+        result ? result.changedItems : [],
+        result ? result.newListings : [],
+        { bypassEntitlement: true }
+      );
+    }
   }
 
   console.log(

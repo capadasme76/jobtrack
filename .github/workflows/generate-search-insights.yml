@@ -3,7 +3,11 @@ name: Generate search insights
 on:
   schedule:
     - cron: "0 12 * * 1" # lunes ~9am Chile (UTC-3)
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      test_to:
+        description: "Solo para pruebas: si lo llenas (uno o más correos separados por coma), el reporte de esta corrida se manda SOLO ahí en vez de a la lista real."
+        required: false
 
 jobs:
   generate:
@@ -18,4 +22,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TEST_REPORT_TO: ${{ github.event.inputs.test_to }}
         run: node scripts/generate-search-insights.mjs
