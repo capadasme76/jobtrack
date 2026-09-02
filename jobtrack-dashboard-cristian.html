@@ -158,6 +158,10 @@
   .jt-edit-form input,.jt-edit-form select{font-size:13.5px;width:100%;min-width:0;box-sizing:border-box;}
   .jt-edit-form textarea{grid-column:1/-1;}
   .jt-edit-actions{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end;margin-top:2px;}
+  .jt-edit-label{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;color:var(--ink-faint);display:block;margin:4px 0 -2px;}
+  .jt-edit-label:first-child{margin-top:0;}
+  .jt-edit-details-toggle{font-family:var(--font-mono);font-size:11px;background:transparent;color:var(--ink-soft);border:none;padding:4px 0;cursor:pointer;text-align:left;text-decoration:underline;}
+  .jt-edit-details{display:grid;grid-template-columns:1fr;gap:6px;border-top:1px dashed var(--line);padding-top:6px;margin-top:2px;}
   .jt-btn-mini{font-family:var(--font-mono);font-size:11.5px;background:transparent;color:var(--ink-soft);border:1px solid var(--line);padding:4px 10px;cursor:pointer;border-radius:var(--radius-pill);}
   .jt-btn-mini:disabled{opacity:.4;cursor:default;}
   .jt-btn-mini:hover{color:var(--ink);border-color:var(--ink-soft);}
@@ -1041,6 +1045,7 @@ var state = { opportunities: seedOpportunities, networking: seedNetworking, prof
 var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"", region:"" };
 var saveTimer = null;
 var editingOppId = null;
+var editDetailsExpanded = false;
 var editingNetId = null;
 var netFilterText = "";
 var expandedTasksId = null;
@@ -1542,6 +1547,25 @@ function populateMatchOppSelect(){
   if(state.opportunities.some(function(o){ return o.id === current; })) sel.value = current;
 }
 
+// renderBoard() reconstruye el innerHTML completo de #jt-board (ver nota de
+// "Render pipeline" — no hay diffing), así que cada .jt-col (que tiene su
+// propio scroll interno, overflow-y:auto) queda como un nodo del DOM
+// totalmente nuevo y su scrollTop vuelve a 0. Eso se sentía como "la
+// pantalla salta arriba y me saca de la edición" al abrir/cerrar/guardar una
+// tarjeta dentro de una columna larga — se guarda el scroll de cada columna
+// antes de re-renderizar y se restaura después, en vez de tocar el
+// mecanismo de render en sí.
+function renderBoardKeepScroll(){
+  var board = document.getElementById("jt-board");
+  var scrolls = board ? Array.prototype.map.call(board.querySelectorAll(".jt-col"), function(col){ return col.scrollTop; }) : [];
+  renderBoard();
+  var newBoard = document.getElementById("jt-board");
+  if(newBoard){
+    var newCols = newBoard.querySelectorAll(".jt-col");
+    newCols.forEach(function(col, i){ if(scrolls[i] !== undefined) col.scrollTop = scrolls[i]; });
+  }
+}
+
 function renderBoard(){
   var cols = STATUSES;
   var filtered = state.opportunities.filter(function(o){
@@ -1588,22 +1612,40 @@ function renderBoard(){
         var fCargo = seedField(o.cargo, "Cargo por confirmar");
         var fSector = seedField(o.sector, "Sin especificar");
         var fRenta = seedField(o.renta, "No especificada");
-        html += '<div class="jt-card" id="opp-'+o.id+'"><div class="jt-edit-form">'
-          + '<input type="text" id="edit-empresa" value="'+fEmpresa.val+'"'+(fEmpresa.ph || ' placeholder="Empresa"')+' />'
-          + '<input type="text" id="edit-cargo" value="'+fCargo.val+'"'+(fCargo.ph || ' placeholder="Cargo"')+' />'
+        var detailsHtml = !editDetailsExpanded ? "" : (
+          '<div class="jt-edit-details">'
+          + '<label class="jt-edit-label">Sector</label>'
           + '<input type="text" id="edit-sector" value="'+fSector.val+'"'+(fSector.ph || ' placeholder="Sector"')+' />'
+          + '<label class="jt-edit-label">Región</label>'
+          + '<select id="edit-region">'+regionOptionsHtml(o.region||"")+'</select>'
+          + '<label class="jt-edit-label">Renta estimada</label>'
+          + '<input type="text" id="edit-renta" value="'+fRenta.val+'"'+(fRenta.ph || ' placeholder="Ej. $4M–$6M"')+' />'
+          + '<label class="jt-edit-label">Página general de empleos de la empresa (para vigilar cambios)</label>'
+          + '<input type="text" id="edit-career-url" value="'+esc(o.careerUrl||"")+'" placeholder="Distinta al link del aviso de arriba" />'
+          + '<label class="jt-edit-label">Contacto vinculado</label>'
+          + '<select id="edit-contact">'+contactOptions+'</select>'
+          + '<label class="jt-edit-label">Notas (contacto interno, feedback, próximos pasos)</label>'
+          + '<textarea id="edit-notas" placeholder="Ej. hablé con RRHH, piden 2 referencias...">'+esc(o.notas||"")+'</textarea>'
+          + '<label class="jt-edit-label">Carta usada en esta postulación</label>'
+          + '<textarea id="edit-carta" placeholder="Pega aquí la versión final que enviaste (opcional)">'+esc(o.carta||"")+'</textarea>'
+          + '</div>'
+        );
+        html += '<div class="jt-card" id="opp-'+o.id+'"><div class="jt-edit-form">'
+          + '<label class="jt-edit-label">Empresa</label>'
+          + '<input type="text" id="edit-empresa" value="'+fEmpresa.val+'"'+(fEmpresa.ph || ' placeholder="Empresa"')+' />'
+          + '<label class="jt-edit-label">Cargo</label>'
+          + '<input type="text" id="edit-cargo" value="'+fCargo.val+'"'+(fCargo.ph || ' placeholder="Cargo"')+' />'
+          + '<label class="jt-edit-label">Link del aviso (para postular)</label>'
+          + '<input type="text" id="edit-link" value="'+esc(o.link||"")+'" placeholder="https://..." />'
+          + '<label class="jt-edit-label">Prioridad</label>'
           + '<select id="edit-priority">'
           + ["Alta","Media","Baja"].map(function(p){ return '<option value="'+p+'"'+(p===o.priority?' selected':'')+'>'+p+'</option>'; }).join("")
           + '</select>'
-          + '<input type="text" id="edit-renta" value="'+fRenta.val+'"'+(fRenta.ph || ' placeholder="Renta"')+' />'
-          + '<select id="edit-region">'+regionOptionsHtml(o.region||"")+'</select>'
-          + '<input type="text" id="edit-link" value="'+esc(o.link||"")+'" placeholder="Link del aviso — para postular" style="grid-column:1/-1;" />'
-          + '<input type="text" id="edit-career-url" value="'+esc(o.careerUrl||"")+'" placeholder="Página general de empleos de la empresa (opcional, distinta al link de arriba — la vigilamos por cambios)" style="grid-column:1/-1;" />'
-          + '<select id="edit-contact">'+contactOptions+'</select>'
-          + '<div><label style="font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:2px;">Fecha límite de postulación</label><input type="date" id="edit-fechalimite" value="'+esc(o.fechaLimite||"")+'" /></div>'
-          + '<label style="font-size:11.5px;display:flex;align-items:center;gap:6px;grid-column:1/-1;"><input type="checkbox" id="edit-incompleta" '+(o.incompleta?'checked':'')+' /> Postulación incompleta — falta información de mi parte</label>'
-          + '<textarea id="edit-notas" placeholder="Notas: contacto interno, feedback, próximos pasos...">'+esc(o.notas||"")+'</textarea>'
-          + '<textarea id="edit-carta" placeholder="Carta usada en esta postulación (opcional) — pega aquí la versión final que enviaste...">'+esc(o.carta||"")+'</textarea>'
+          + '<label class="jt-edit-label">Fecha límite de postulación</label>'
+          + '<input type="date" id="edit-fechalimite" value="'+esc(o.fechaLimite||"")+'" />'
+          + '<label style="font-size:11.5px;display:flex;align-items:center;gap:6px;margin-top:4px;"><input type="checkbox" id="edit-incompleta" '+(o.incompleta?'checked':'')+' /> Postulación incompleta — falta información de mi parte</label>'
+          + '<button class="jt-edit-details-toggle" data-toggle-edit-details="1" type="button">'+(editDetailsExpanded?'▴ Ocultar detalles':'▾ Más detalles (sector, región, renta, notas, carta...)')+'</button>'
+          + detailsHtml
           + '<div class="jt-edit-actions">'
           + '<button class="jt-btn-mini" data-cancel-edit-opp="1" type="button">Cancelar</button>'
           + '<button class="jt-btn-mini primary" data-save-edit-opp="'+o.id+'" type="button">Guardar</button>'
@@ -1738,13 +1780,20 @@ function renderBoard(){
   document.querySelectorAll('[data-edit-id]').forEach(function(btn){
     btn.addEventListener("click", function(){
       editingOppId = btn.getAttribute("data-edit-id");
-      renderBoard();
+      editDetailsExpanded = false;
+      renderBoardKeepScroll();
+    });
+  });
+  document.querySelectorAll('[data-toggle-edit-details]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      editDetailsExpanded = !editDetailsExpanded;
+      renderBoardKeepScroll();
     });
   });
   document.querySelectorAll('[data-cancel-edit-opp]').forEach(function(btn){
     btn.addEventListener("click", function(){
       editingOppId = null;
-      renderBoard();
+      renderBoardKeepScroll();
     });
   });
   document.querySelectorAll('[data-save-edit-opp]').forEach(function(btn){
@@ -1752,25 +1801,36 @@ function renderBoard(){
       var id = btn.getAttribute("data-save-edit-opp");
       var opp = state.opportunities.find(function(o){ return o.id===id; });
       if(!opp) return;
-      var empresa = document.getElementById("edit-empresa").value.trim();
-      var cargo = document.getElementById("edit-cargo").value.trim();
-      var sector = document.getElementById("edit-sector").value.trim();
-      opp.empresa = empresa || "Empresa por confirmar";
-      opp.cargo = cargo || "Cargo por confirmar";
-      opp.sector = sector || "Sin especificar";
+      // "Más detalles" puede seguir colapsado al guardar — esos campos no
+      // existen en el DOM en ese caso, así que se conserva el valor que ya
+      // tenía la oportunidad en vez de intentar leer un elemento inexistente.
+      function fieldVal(id){ var el = document.getElementById(id); return el ? el.value.trim() : null; }
+      var empresa = fieldVal("edit-empresa");
+      var cargo = fieldVal("edit-cargo");
+      var sector = fieldVal("edit-sector");
+      opp.empresa = (empresa || opp.empresa) || "Empresa por confirmar";
+      opp.cargo = (cargo || opp.cargo) || "Cargo por confirmar";
+      if(sector !== null) opp.sector = sector || "Sin especificar";
       opp.priority = document.getElementById("edit-priority").value;
-      opp.renta = document.getElementById("edit-renta").value.trim() || opp.renta;
-      opp.region = document.getElementById("edit-region").value || "";
-      opp.link = document.getElementById("edit-link").value.trim() || null;
-      opp.careerUrl = document.getElementById("edit-career-url").value.trim() || null;
+      var renta = fieldVal("edit-renta");
+      if(renta) opp.renta = renta;
+      var region = document.getElementById("edit-region");
+      if(region) opp.region = region.value || "";
+      var link = fieldVal("edit-link");
+      opp.link = link || null;
+      var careerUrl = fieldVal("edit-career-url");
+      if(careerUrl !== null) opp.careerUrl = careerUrl || null;
       syncWatchedPage(opp);
       opp.fechaLimite = document.getElementById("edit-fechalimite").value || null;
       opp.incompleta = document.getElementById("edit-incompleta").checked;
-      opp.contactId = document.getElementById("edit-contact").value || null;
-      opp.notas = document.getElementById("edit-notas").value.trim();
-      opp.carta = document.getElementById("edit-carta").value.trim();
+      var contact = document.getElementById("edit-contact");
+      if(contact) opp.contactId = contact.value || null;
+      var notas = fieldVal("edit-notas");
+      if(notas !== null) opp.notas = notas;
+      var carta = fieldVal("edit-carta");
+      if(carta !== null) opp.carta = carta;
       editingOppId = null;
-      populateFilterSector(); renderBoard(); renderStats(); renderMetrics(); persist();
+      populateFilterSector(); renderBoardKeepScroll(); renderStats(); renderMetrics(); persist();
     });
   });
 
