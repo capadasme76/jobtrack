@@ -12,11 +12,33 @@
 //
 // Al terminar imprime el planId — ese valor (no es secreto, es solo un
 // identificador) es el que va en la variable de entorno FLOW_PLAN_ID de Vercel.
+//
+// BUG REAL ya encontrado y corregido acá (2026-09-02), en dos partes:
+//
+// 1) Este script no forzaba el ambiente de Flow, así que dependía de que
+//    FLOW_ENV=production ya estuviera en el entorno de quien lo corría — no
+//    lo estaba (no había forma de saberlo, no estaba documentado en ningún
+//    lado), así que el plan quedó creado en el ambiente de PRUEBAS de Flow
+//    (sandbox) en vez del real. Por eso los cobros de $14.000 nunca se
+//    generaban aunque el resto del pago (registro de tarjeta, $50 CLP) sí
+//    funcionaba — ese otro paso no depende de ningún plan, este sí. Este
+//    Plan es siempre para el sitio real, así que ahora se fija
+//    FLOW_ENV=production a la fuerza, sin depender de nada más.
+//
+// 2) Ese fix (y la lectura de .env.flow.local de abajo) tenían que dejar de
+//    usar "import" normal para _flow-client.js: en JavaScript los imports se
+//    adelantan y se evalúan ANTES que cualquier otra línea del archivo,
+//    aunque estén escritos más abajo en el texto — así que asignar
+//    process.env.FLOW_ENV (o los valores de .env.flow.local) arriba del
+//    import no tenía ningún efecto real, _flow-client.js ya había leído
+//    process.env vacío para entonces (confirmado con una prueba mínima
+//    aparte, no adivinado). La solución es un import "dinámico" — el que
+//    se usa más abajo — que sí espera a que el código de arriba termine
+//    antes de cargar _flow-client.js.
 
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { flowPost } from "../api/_flow-client.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const envFile = join(__dirname, ".env.flow.local");
@@ -28,6 +50,8 @@ if (existsSync(envFile)) {
   }
 }
 
+process.env.FLOW_ENV = "production";
+
 if (!process.env.FLOW_API_KEY || !process.env.FLOW_SECRET_KEY) {
   console.error("Faltan FLOW_API_KEY y/o FLOW_SECRET_KEY.");
   console.error("Crea scripts/.env.flow.local con esas dos líneas (ver comentario arriba del archivo).");
@@ -35,6 +59,7 @@ if (!process.env.FLOW_API_KEY || !process.env.FLOW_SECRET_KEY) {
 }
 
 async function main() {
+  const { flowPost } = await import("../api/_flow-client.js");
   const plan = await flowPost("/plans/create", {
     planId: "jobtrack-trimestral",
     name: "JobTrack — Plan trimestral",
