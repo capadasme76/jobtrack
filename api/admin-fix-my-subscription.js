@@ -70,10 +70,17 @@ export default async function handler(req, res) {
     }
 
     if (row.flow_subscription_id) {
-      await flowPost("/subscription/cancel", {
-        subscriptionId: row.flow_subscription_id,
-        at_period_end: 0,
-      });
+      try {
+        await flowPost("/subscription/cancel", {
+          subscriptionId: row.flow_subscription_id,
+          at_period_end: 0,
+        });
+      } catch (e) {
+        // Si ya se había cancelado en un intento anterior, Flow puede
+        // responder error acá — no debe tumbar el resto (el cobro es lo
+        // que realmente importa, cancelar dos veces la misma es inofensivo).
+        console.error("admin-fix-my-subscription: no se pudo cancelar (puede que ya estuviera cancelada):", e.message || e);
+      }
     }
 
     const commerceOrder = `jobtrack-fix-${user.id}-${Date.now()}`;
@@ -86,7 +93,8 @@ export default async function handler(req, res) {
     });
 
     if (charge.status !== PAID) {
-      res.status(200).json({ ok: false, error: "El cobro no fue aprobado.", charge });
+      console.error("admin-fix-my-subscription: cobro no aprobado:", charge);
+      res.status(200).json({ ok: false, error: "El cobro no fue aprobado: " + JSON.stringify(charge), charge });
       return;
     }
 
