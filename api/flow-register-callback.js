@@ -68,10 +68,13 @@ export default async function handler(req, res) {
       const subscription = await flowPost("/subscription/create", {
         planId: FLOW_PLAN_ID,
         customerId: registration.customerId,
-        // Alinea el primer cobro real de Flow con el fin de nuestro propio
-        // trial de 7 días (trigger de Supabase, Fase D.1) — trial_period_days
-        // se deja en 0 a propósito, ver nota en _flow-client.js.
-        subscription_start: (row.trial_ends_at || new Date().toISOString()).slice(0, 10),
+        // El cobro real se hace al momento de pagar, no cuando termina el
+        // trial de 7 días — los 7 días gratis son un beneficio aparte, para
+        // quien todavía no decide pagar. Si alguien paga durante su trial,
+        // se le cobra ahora y pierde el resto de los días gratis que le
+        // quedaban (decisión explícita del dueño del producto, 2026-09-02).
+        // trial_period_days se deja en 0 a propósito, ver nota en _flow-client.js.
+        subscription_start: new Date().toISOString().slice(0, 10),
         trial_period_days: 0,
       });
       await setFlowSubscriptionId(row.user_id, subscription.subscriptionId);
