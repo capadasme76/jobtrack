@@ -25,15 +25,27 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const PAID = 2;
 const REJECTED = 3;
 
+// El endpoint admin/users de Supabase NO filtra de forma confiable por el
+// query param "email" — devuelve la lista sin filtrar y antes tomábamos
+// ciegamente el primer resultado, lo que activaba la cuenta equivocada en
+// cada cobro real. Acá se trae la lista paginada completa y se compara el
+// correo a mano, sin depender de un filtro del lado del servidor.
 async function findUserIdByEmail(email) {
-  const url = `${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;
-  const res = await fetch(url, {
-    headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const users = Array.isArray(data) ? data : data.users || [];
-  return users[0] ? users[0].id : null;
+  const target = email.trim().toLowerCase();
+  const perPage = 200;
+  for (let page = 1; page <= 10; page++) { // tope de seguridad: hasta 2000 cuentas
+    const url = `${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=${perPage}`;
+    const res = await fetch(url, {
+      headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const users = Array.isArray(data) ? data : data.users || [];
+    const match = users.find((u) => (u.email || "").toLowerCase() === target);
+    if (match) return match.id;
+    if (users.length < perPage) return null; // última página, no se encontró
+  }
+  return null;
 }
 
 async function updateSubscriptionStatus(userId, status, currentPeriodEnd) {
