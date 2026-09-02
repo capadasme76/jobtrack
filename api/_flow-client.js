@@ -1,15 +1,13 @@
-// Cliente compartido para la API REST de Flow.cl (pagos/suscripciones, Fase D.3).
+// Cliente compartido para la API REST de Flow.cl (pagos, Fase D.3/D.3.1).
 // No es un endpoint propio (el "_" al inicio evita que Vercel lo trate como
-// una ruta) — lo importan create-checkout.js y los webhooks de Flow.
+// una ruta) — lo importan create-checkout.js y flow-payment-confirm.js.
 //
 // Documentación fuente: https://www.flow.cl/docs/api.html (spec OpenAPI
-// descargada y revisada el 2026-08-27, no adivinada).
+// descargada y revisada el 2026-08-27 y 2026-09-02, no adivinada).
 //
 // Env vars requeridas (nunca hardcodeadas, mismo patrón que ANTHROPIC_API_KEY):
 //   FLOW_API_KEY, FLOW_SECRET_KEY — desde "Mi cuenta" en Flow (sandbox o producción).
 //   FLOW_ENV — "sandbox" (default) o "production".
-//   FLOW_PLAN_ID — el identificador del Plan de suscripción ya creado en Flow
-//     (ver setup en el comentario al final de este archivo).
 
 import { createHmac } from "node:crypto";
 
@@ -56,21 +54,3 @@ export async function flowPost(path, params) {
   if (!res.ok) throw new Error(`Flow ${path} respondió ${res.status}: ${JSON.stringify(data)}`);
   return data;
 }
-
-// ---------------------------------------------------------------------------
-// Setup de una sola vez (NO corre en producción automáticamente): crear el
-// Plan de suscripción en Flow antes de que create-checkout.js pueda usarlo.
-// Se puede hacer con un curl firmado a mano, o pidiéndomelo cuando tengas las
-// keys — parámetros según la doc:
-//   planId: "jobtrack-trimestral" (o el nombre que prefieras, sin espacios)
-//   name: "JobTrack — Plan trimestral"
-//   currency: "CLP"
-//   amount: 14000
-//   interval: 3        (3 = mensual)
-//   interval_count: 3  (cada 3 intervalos = trimestral)
-//   urlCallback: "https://jobtrack.cl/api/flow-payment-webhook"
-// trial_period_days se deja en 0 acá: nuestro propio trial de 7 días ya lo
-// maneja el trigger de Supabase (Fase D.1) — subscription/create usa
-// subscription_start para alinear el primer cobro real de Flow con el fin de
-// ese trial, en vez de que Flow lleve un segundo reloj de trial aparte.
-// ---------------------------------------------------------------------------

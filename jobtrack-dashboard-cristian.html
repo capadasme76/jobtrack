@@ -449,8 +449,6 @@
     <a href="#sec-portales" data-target="sec-portales"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-6-4-9s1.5-6.5 4-9z"></path></svg></i>Portales</a>
     <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a2.9 2.9 0 0 1 5.6 1c0 2-2.9 2.5-2.9 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.5"></line></svg></i>Guía</a>
     <button type="button" class="jt-sidebar-subscribe" id="jt-subscribe-link">Contratar tu plan</button>
-    <div id="jt-canceled-note" class="jt-sidebar-note" style="display:none;"></div>
-    <button type="button" class="jt-sidebar-footlink" id="jt-cancel-subscription-link" style="display:none;">Cancelar suscripción</button>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
   </nav>
 
@@ -1288,38 +1286,6 @@ async function startSidebarCheckout(btn){
   }
 }
 
-// El usuario puede decidir no renovar en cualquier momento — cancela la
-// renovación automática en Flow, pero no le corta el acceso al tiro: sigue
-// pudiendo usar JobTrack hasta el final del período que ya pagó (se lo
-// aclara en la confirmación con la fecha real, no en abstracto).
-async function startCancelSubscription(){
-  var btn = document.getElementById("jt-cancel-subscription-link");
-  var untilText = currentSubscription && currentSubscription.current_period_end
-    ? " Vas a seguir teniendo acceso hasta el " + new Date(currentSubscription.current_period_end).toLocaleDateString("es-CL") + "."
-    : "";
-  if(!window.confirm("¿Cancelar la renovación automática de tu plan?" + untilText + " No se te va a volver a cobrar.")) return;
-  var original = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = "Cancelando...";
-  try{
-    var sessionRes = await supabase.auth.getSession();
-    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
-    var res = await fetch("/api/cancel-subscription", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + (token || "") }
-    });
-    var data = await res.json();
-    if(!res.ok || !data.ok) throw new Error(data.error || ("Error " + res.status));
-    window.alert("Listo — tu suscripción no se va a renovar." + untilText);
-    checkSubscriptionAndGate(null);
-  }catch(e){
-    window.alert("No se pudo cancelar: " + e.message + "\n\nEscríbenos a hola@jobtrack.cl si el problema sigue.");
-  }finally{
-    btn.disabled = false;
-    btn.textContent = original;
-  }
-}
-
 async function startCheckout(){
   var btn = document.getElementById("jt-paywall-subscribe-btn");
   var errEl = document.getElementById("jt-paywall-error");
@@ -1351,11 +1317,11 @@ function showPaywall(sub, pagoParam){
   var status = sub ? sub.status : null;
   refreshBtn.style.display = "none";
   if(pagoParam === "listo"){
-    title.textContent = "¡Tarjeta registrada!";
+    title.textContent = "¡Pago recibido!";
     msg.textContent = "Estamos confirmando tu pago, puede tomar unos minutos. Si ya pasó un rato, revisa de nuevo.";
     refreshBtn.style.display = "block";
   } else if(pagoParam === "fallido"){
-    title.textContent = "No se pudo registrar tu tarjeta";
+    title.textContent = "No se pudo procesar el pago";
     msg.textContent = "Intenta de nuevo o usa otro método de pago.";
   } else if(pagoParam === "error"){
     title.textContent = "Hubo un problema técnico";
@@ -1405,27 +1371,17 @@ async function checkSubscriptionAndGate(pagoParam){
   }
 }
 
-// El botón "Contratar tu plan" (sidebar + tarjeta destacada en Home) y el
-// link de cancelar solo tienen sentido según si la cuenta ya está pagando
-// de verdad — antes se mostraban siempre, sin importar el estado. La
-// tarjeta de Home la decide renderHome() mismo (lee currentSubscription
-// directo) — se le pide reconstruirse acá para que quede al día apenas se
-// sepa/cambie el estado, sin esperar al próximo renderAll() que la toque.
+// El botón "Contratar tu plan" (sidebar + tarjeta destacada en Home) solo
+// tiene sentido si la cuenta no está pagando ya — antes se mostraba
+// siempre, sin importar el estado. La tarjeta de Home la decide renderHome()
+// mismo (lee currentSubscription directo) — se le pide reconstruirse acá
+// para que quede al día apenas se sepa/cambie el estado, sin esperar al
+// próximo renderAll() que la toque.
 function updateSubscribeButtonVisibility(sub){
   var status = sub ? sub.status : null;
   var isPaying = status === "active" || status === "past_due";
-  var isCanceledButActive = status === "canceled" && sub.current_period_end && new Date(sub.current_period_end) > new Date();
   var sidebarBtn = document.getElementById("jt-subscribe-link");
-  var cancelLink = document.getElementById("jt-cancel-subscription-link");
-  var canceledNote = document.getElementById("jt-canceled-note");
   if(sidebarBtn) sidebarBtn.style.display = isPaying ? "none" : "";
-  if(cancelLink) cancelLink.style.display = isPaying ? "block" : "none";
-  if(canceledNote){
-    canceledNote.style.display = isCanceledButActive ? "block" : "none";
-    if(isCanceledButActive){
-      canceledNote.textContent = "Tu plan no se renovará — acceso hasta el " + new Date(sub.current_period_end).toLocaleDateString("es-CL");
-    }
-  }
   if(document.getElementById("jt-home-grid-featured")) renderHome();
 }
 
@@ -3535,7 +3491,6 @@ function wireNav(){
   initSectionViews();
   document.getElementById("jt-logout-btn").addEventListener("click", logout);
   document.getElementById("jt-subscribe-link").addEventListener("click", function(){ startSidebarCheckout(document.getElementById("jt-subscribe-link")); });
-  document.getElementById("jt-cancel-subscription-link").addEventListener("click", startCancelSubscription);
   document.getElementById("jt-paywall-subscribe-btn").addEventListener("click", startCheckout);
   document.getElementById("jt-paywall-transfer-toggle").addEventListener("click", function(){
     var el = document.getElementById("jt-paywall-transfer-details");
