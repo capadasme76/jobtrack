@@ -147,15 +147,27 @@ async function getUserEmail(userId) {
 
 // Solo para el modo prueba (TEST_DIGEST_EMAIL) — resuelve un correo a su
 // user_id para encontrar la fila correspondiente en jobtrack_state.
+// El endpoint admin/users de Supabase no filtra de forma confiable por el
+// query param "email" (confirmado: devolvía la primera cuenta de la lista
+// sin importar el correo pedido, lo que mandó un correo de prueba a la
+// cuenta equivocada). Por eso acá se trae la lista paginada completa y se
+// compara el correo a mano, sin depender de un filtro del lado del servidor.
 async function getUserIdByEmail(email) {
-  const url = `${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;
-  const res = await fetch(url, {
-    headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
-  });
-  if (!res.ok) return null;
-  const body = await res.json();
-  const users = Array.isArray(body) ? body : Array.isArray(body.users) ? body.users : [];
-  return users[0] ? users[0].id : null;
+  const target = email.trim().toLowerCase();
+  const perPage = 200;
+  for (let page = 1; page <= 10; page++) { // tope de seguridad: hasta 2000 cuentas
+    const url = `${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=${perPage}`;
+    const res = await fetch(url, {
+      headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+    });
+    if (!res.ok) return null;
+    const body = await res.json();
+    const users = Array.isArray(body) ? body : Array.isArray(body.users) ? body.users : [];
+    const match = users.find((u) => (u.email || "").toLowerCase() === target);
+    if (match) return match.id;
+    if (users.length < perPage) return null; // última página, no se encontró
+  }
+  return null;
 }
 
 // Label/cargo/empresa vienen de texto que el propio usuario escribió en su
