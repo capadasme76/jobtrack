@@ -450,6 +450,7 @@
     <a href="#sec-guia" data-target="sec-guia"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a2.9 2.9 0 0 1 5.6 1c0 2-2.9 2.5-2.9 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.5"></line></svg></i>Guía</a>
     <button type="button" class="jt-sidebar-subscribe" id="jt-subscribe-link">Contratar tu plan</button>
     <button type="button" class="jt-sidebar-subscribe" id="jt-admin-check-flow-sub-btn" style="background:#201E1D;">TEMP: Ver estado real en Flow</button>
+    <button type="button" class="jt-sidebar-subscribe" id="jt-admin-fix-sub-btn" style="background:#7A1F1F;">TEMP: Cobrar $14.000 ahora</button>
     <div id="jt-canceled-note" class="jt-sidebar-note" style="display:none;"></div>
     <button type="button" class="jt-sidebar-footlink" id="jt-cancel-subscription-link" style="display:none;">Cancelar suscripción</button>
     <button type="button" class="jt-sidebar-logout" id="jt-logout-btn"><i class="jt-ic">⏻</i>Cerrar sesión</button>
@@ -1315,6 +1316,34 @@ async function runAdminCheckFlowSubscription(){
   }finally{
     btn.disabled = false;
     btn.textContent = "TEMP: Ver estado real en Flow";
+  }
+}
+
+// TEMPORAL — botón de un solo uso, mueve dinero real: cancela la
+// suscripción vieja (creada antes del fix de cobro inmediato, nunca cobró
+// nada), cobra $14.000 ahora con la tarjeta ya registrada, y crea la
+// suscripción nueva con el ciclo correcto desde hoy. Se borra apenas se use.
+async function runAdminFixMySubscription(){
+  if(!window.confirm("Esto va a cobrar $14.000 CLP AHORA MISMO a tu tarjeta ya registrada, y reemplaza tu suscripción actual por una nueva. ¿Confirmas?")) return;
+  var btn = document.getElementById("jt-admin-fix-sub-btn");
+  btn.disabled = true;
+  btn.textContent = "Cobrando...";
+  try{
+    var sessionRes = await supabase.auth.getSession();
+    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+    var res = await fetch("/api/admin-fix-my-subscription", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + (token || "") }
+    });
+    var data = await res.json();
+    if(!res.ok || !data.ok) throw new Error((data && data.error) || ("Error " + res.status));
+    window.alert("Listo — cobrado y suscripción corregida:\n\n" + JSON.stringify(data.subscription, null, 2));
+    btn.textContent = "Listo ✓";
+    checkSubscriptionAndGate(null);
+  }catch(e){
+    window.alert("Error: " + e.message);
+    btn.disabled = false;
+    btn.textContent = "TEMP: Cobrar $14.000 ahora";
   }
 }
 
@@ -3563,6 +3592,7 @@ function wireNav(){
   document.getElementById("jt-subscribe-link").addEventListener("click", function(){ startSidebarCheckout(document.getElementById("jt-subscribe-link")); });
   document.getElementById("jt-cancel-subscription-link").addEventListener("click", startCancelSubscription);
   document.getElementById("jt-admin-check-flow-sub-btn").addEventListener("click", runAdminCheckFlowSubscription);
+  document.getElementById("jt-admin-fix-sub-btn").addEventListener("click", runAdminFixMySubscription);
   document.getElementById("jt-paywall-subscribe-btn").addEventListener("click", startCheckout);
   document.getElementById("jt-paywall-transfer-toggle").addEventListener("click", function(){
     var el = document.getElementById("jt-paywall-transfer-details");
