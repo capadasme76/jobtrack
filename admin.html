@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobTrack — Panel interno</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<meta name="theme-color" content="#7C5CFC">
+</head>
+<body>
+<style>
+  :root{
+    --paper:#F3F2F2;
+    --paper-dim:#EAE9E9;
+    --ink:#201E1D;
+    --ink-soft:#605D5D;
+    --ink-faint:#9B9797;
+    --line:#D7D3D3;
+    --brick:#7C5CFC;
+    --brick-dark:#5A3FD9;
+    --positive:#1A7D4F;
+    --positive-bg:#E4F3EB;
+    --warn:#B8860B;
+    --warn-bg:#FBF2DC;
+    --card-bg:#FFFFFF;
+    --font-display:'Archivo',system-ui,sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-display);color:var(--ink);background:var(--paper);}
+
+  .gate{max-width:360px;margin:120px auto;padding:0 24px;text-align:center;}
+  .gate h1{font-size:20px;font-weight:800;margin:0 0 6px;}
+  .gate p{font-size:13.5px;color:var(--ink-soft);margin:0 0 20px;}
+  .gate input{width:100%;padding:12px 14px;font-family:var(--font-mono);font-size:14px;border:2px solid var(--line);background:#fff;margin-bottom:12px;}
+  .gate button{width:100%;padding:12px;font-family:var(--font-display);font-weight:600;font-size:14px;background:var(--brick);color:#fff;border:none;cursor:pointer;}
+  .gate button:hover{background:var(--brick-dark);}
+  .gate .err{color:#B3261E;font-size:13px;margin-top:10px;min-height:16px;}
+
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 24px 80px;display:none;}
+  .wrap.show{display:block;}
+
+  .top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
+  .top h1{font-size:24px;font-weight:800;margin:0;}
+  .top .meta{font-size:12.5px;color:var(--ink-faint);font-family:var(--font-mono);}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;}
+  .tile{background:var(--card-bg);border:1px solid var(--line);padding:16px 18px;}
+  .tile .k{font-size:12px;color:var(--ink-soft);margin-bottom:6px;}
+  .tile .v{font-family:var(--font-mono);font-size:26px;font-weight:500;color:var(--ink);}
+  .tile.accent .v{color:var(--brick);}
+  .tile.positive .v{color:var(--positive);}
+
+  .section-title{font-size:14px;font-weight:800;margin:28px 0 10px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);}
+
+  .status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;}
+  .status-tile{background:var(--card-bg);border:1px solid var(--line);padding:12px 14px;}
+  .status-tile .k{font-size:12px;color:var(--ink-soft);}
+  .status-tile .v{font-family:var(--font-mono);font-size:20px;}
+
+  .callout{background:var(--warn-bg);border-left:3px solid var(--warn);padding:12px 16px;font-size:13.5px;margin:16px 0;display:none;}
+  .callout.show{display:block;}
+
+  .chart-card{background:var(--card-bg);border:1px solid var(--line);padding:18px;}
+  .bars{display:flex;align-items:flex-end;gap:3px;height:120px;}
+  .bar{flex:1;background:var(--brick);min-height:2px;position:relative;}
+  .bar:hover{background:var(--brick-dark);}
+  .bar-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:6px;font-family:var(--font-mono);}
+
+  .links{margin-top:28px;font-size:13px;color:var(--ink-soft);}
+  .links a{color:var(--brick);}
+
+  .loading{color:var(--ink-faint);font-size:13px;}
+</style>
+
+<div class="gate" id="gate">
+  <h1>JobTrack<span style="color:var(--brick)">.</span> Panel interno</h1>
+  <p>Ingresa la clave para ver las métricas.</p>
+  <input type="password" id="keyInput" placeholder="Clave" autocomplete="off">
+  <button id="enterBtn">Entrar</button>
+  <div class="err" id="err"></div>
+</div>
+
+<div class="wrap" id="wrap">
+  <div class="top">
+    <h1>Panel interno</h1>
+    <div class="meta" id="updated">—</div>
+  </div>
+
+  <div class="callout" id="trialCallout"></div>
+
+  <div class="grid">
+    <div class="tile accent"><div class="k">Inscritos hoy</div><div class="v" id="mToday">—</div></div>
+    <div class="tile"><div class="k">Últimos 7 días</div><div class="v" id="m7d">—</div></div>
+    <div class="tile"><div class="k">Últimos 30 días</div><div class="v" id="m30d">—</div></div>
+    <div class="tile"><div class="k">Inscritos totales</div><div class="v" id="mTotal">—</div></div>
+  </div>
+
+  <div class="section-title">Suscripciones por estado</div>
+  <div class="status-grid" id="statusGrid"></div>
+
+  <div class="grid" style="margin-top:16px;">
+    <div class="tile positive"><div class="k">Ingreso estimado (activas × $14.000)</div><div class="v" id="mRevenue">—</div></div>
+  </div>
+
+  <div class="section-title">Altas por día — últimos 30 días</div>
+  <div class="chart-card">
+    <div class="bars" id="bars"></div>
+    <div class="bar-labels" id="barLabels"></div>
+  </div>
+
+  <div class="links">
+    Tráfico del sitio (visitas, sesiones, funnels) vive en PostHog, no acá — <a href="https://eu.posthog.com" target="_blank" rel="noopener">ver panel de PostHog ↗</a>.
+    Este panel se actualiza solo cada 60 segundos.
+  </div>
+  <div class="links" id="excludedNote" style="margin-top:8px;"></div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = "jt_admin_key";
+  const gate = document.getElementById("gate");
+  const wrap = document.getElementById("wrap");
+  const keyInput = document.getElementById("keyInput");
+  const enterBtn = document.getElementById("enterBtn");
+  const err = document.getElementById("err");
+
+  function fmt(n){ return new Intl.NumberFormat("es-CL").format(n); }
+  function fmtCLP(n){ return "$" + new Intl.NumberFormat("es-CL").format(n) + " CLP"; }
+
+  const STATUS_LABELS = {
+    trial: "En prueba",
+    active: "Pagadas (activas)",
+    past_due: "Pago pendiente",
+    canceled: "Canceladas",
+    expired: "Expiradas",
+    grandfathered: "Cuentas gratis",
+  };
+
+  async function loadMetrics(key){
+    const res = await fetch("/api/admin-metrics?key=" + encodeURIComponent(key));
+    if (res.status === 401) throw new Error("unauthorized");
+    if (!res.ok) throw new Error("server error");
+    return res.json();
+  }
+
+  function render(data){
+    document.getElementById("updated").textContent = "Actualizado " + new Date(data.generatedAt).toLocaleTimeString("es-CL");
+    document.getElementById("mToday").textContent = fmt(data.signupsToday);
+    document.getElementById("m7d").textContent = fmt(data.signups7d);
+    document.getElementById("m30d").textContent = fmt(data.signups30d);
+    document.getElementById("mTotal").textContent = fmt(data.totalSignups);
+    document.getElementById("mRevenue").textContent = fmtCLP(data.estimatedRevenueActive);
+    document.getElementById("excludedNote").textContent = data.excludedTestAccounts
+      ? "Excluidas " + data.excludedTestAccounts + " cuenta(s) de prueba: " + data.excludedTestEmails.join(", ")
+      : "";
+
+    const statusGrid = document.getElementById("statusGrid");
+    statusGrid.innerHTML = "";
+    for (const [key, label] of Object.entries(STATUS_LABELS)) {
+      const div = document.createElement("div");
+      div.className = "status-tile";
+      div.innerHTML = '<div class="k">' + label + '</div><div class="v">' + fmt(data.byStatus[key] || 0) + '</div>';
+      statusGrid.appendChild(div);
+    }
+
+    const callout = document.getElementById("trialCallout");
+    if (data.trialsEndingSoon > 0) {
+      callout.textContent = data.trialsEndingSoon + " prueba(s) gratis vencen en las próximas 72 horas.";
+      callout.classList.add("show");
+    } else {
+      callout.classList.remove("show");
+    }
+
+    const bars = document.getElementById("bars");
+    const barLabels = document.getElementById("barLabels");
+    bars.innerHTML = "";
+    barLabels.innerHTML = "";
+    const max = Math.max(1, ...data.dailySignups.map(d => d.count));
+    data.dailySignups.forEach((d, i) => {
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      bar.style.height = Math.max(2, (d.count / max) * 100) + "%";
+      bar.title = d.date + ": " + d.count;
+      bars.appendChild(bar);
+    });
+    const first = data.dailySignups[0]?.date.slice(5);
+    const last = data.dailySignups[data.dailySignups.length - 1]?.date.slice(5);
+    barLabels.innerHTML = "<span>" + first + "</span><span>" + last + "</span>";
+  }
+
+  let refreshTimer = null;
+
+  async function boot(key){
+    try {
+      const data = await loadMetrics(key);
+      localStorage.setItem(STORAGE_KEY, key);
+      gate.style.display = "none";
+      wrap.classList.add("show");
+      render(data);
+      if (refreshTimer) clearInterval(refreshTimer);
+      refreshTimer = setInterval(async () => {
+        try { render(await loadMetrics(key)); } catch (e) { /* silencioso — se reintenta en 60s */ }
+      }, 60000);
+    } catch (e) {
+      err.textContent = e.message === "unauthorized" ? "Clave incorrecta." : "No se pudo cargar (revisa tu conexión).";
+    }
+  }
+
+  enterBtn.addEventListener("click", () => {
+    const key = keyInput.value.trim();
+    if (!key) return;
+    err.textContent = "";
+    boot(key);
+  });
+  keyInput.addEventListener("keydown", (e) => { if (e.key === "Enter") enterBtn.click(); });
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) boot(saved);
+})();
+</script>
+</body>
+</html>

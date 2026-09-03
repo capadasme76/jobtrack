@@ -1,5 +1,6 @@
 User-agent: *
 Disallow: /login.html
 Disallow: /jobtrack-dashboard-cristian.html
+Disallow: /admin.html
 
 Sitemap: https://jobtrack.cl/sitemap.xml
