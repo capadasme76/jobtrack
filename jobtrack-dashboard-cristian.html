@@ -3341,7 +3341,7 @@ function runMatchAnalysis(){
     + '<div class="jt-tailor-box">'
     + '<p class="jt-lead">Borrador ajustado a esta vacante — revísalo antes de enviar.</p>'
     + '<div class="jt-tailor-inputs"><input type="text" id="jt-tailor-cargo" placeholder="Cargo (ej. Gerente de Comunicaciones)" /><input type="text" id="jt-tailor-empresa" placeholder="Empresa" /></div>'
-    + '<div style="font-size:11.5px;margin-bottom:6px;"><label style="margin-right:14px;"><input type="radio" name="jt-tailor-source" value="base" checked /> Usar mi carta base</label><label><input type="radio" name="jt-tailor-source" value="custom" /> Cargar mi propia carta para esto</label></div>'
+    + '<div style="font-size:11.5px;margin-bottom:6px;"><label style="margin-right:14px;"><input type="radio" name="jt-tailor-source" value="base" checked /> Generar con IA (según tu perfil)</label><label><input type="radio" name="jt-tailor-source" value="custom" /> Cargar mi propia carta para esto</label></div>'
     + '<textarea id="jt-tailor-custom" placeholder="Pega aquí tu propia carta para esta vacante..." style="display:none;"></textarea>'
     + '<div style="margin-top:8px;"><button class="jt-btn-mini primary" id="jt-tailor-btn" type="button">Generar carta para esta vacante</button></div>'
     + '<div class="jt-tailor-output" id="jt-tailor-output"></div>'
@@ -3360,31 +3360,68 @@ function runMatchAnalysis(){
     });
   });
 
-  document.getElementById("jt-tailor-btn").addEventListener("click", function(){
-    var cargo = document.getElementById("jt-tailor-cargo").value.trim() || "[CARGO]";
-    var empresa = document.getElementById("jt-tailor-empresa").value.trim() || "[EMPRESA]";
+  document.getElementById("jt-tailor-btn").addEventListener("click", async function(){
+    var cargo = document.getElementById("jt-tailor-cargo").value.trim();
+    var empresa = document.getElementById("jt-tailor-empresa").value.trim();
     var useCustom = document.querySelector('input[name="jt-tailor-source"]:checked').value === "custom";
     var customText = document.getElementById("jt-tailor-custom").value.trim();
     if(useCustom && !customText){
-      window.alert("Pega tu propia carta en el cuadro de texto, o vuelve a 'Usar mi carta base'.");
+      window.alert("Pega tu propia carta en el cuadro de texto, o vuelve a 'Generar con IA'.");
       return;
     }
-    var p2 = state.profile;
-    var source = useCustom ? customText : p2.cartaBase;
-    var letter = source.split("[CARGO]").join(cargo).split("[EMPRESA]").join(empresa);
-    if(!useCustom){
-      var topHits = (window.__lastMatchHits || []).slice(0, 5);
-      if(topHits.length){
-        var insertLine = "\n\nEn particular, veo que el cargo pone énfasis en " + topHits.join(", ") + " — áreas donde tengo experiencia directa y puedo aportar desde el primer día.";
-        var parts = letter.split("\n\n");
-        parts.splice(2, 0, insertLine.trim());
-        letter = parts.join("\n\n");
-      }
-    }
     var outEl = document.getElementById("jt-tailor-output");
-    outEl.innerHTML = '<div style="white-space:pre-wrap;">'+esc(letter)+'</div><div style="margin-top:10px;"><button class="jt-copybtn" id="jt-tailor-copy" type="button">Copiar carta</button></div>';
+    var btn = this;
+
+    if(useCustom){
+      var letter = customText.split("[CARGO]").join(cargo || "[CARGO]").split("[EMPRESA]").join(empresa || "[EMPRESA]");
+      outEl.innerHTML = '<div style="white-space:pre-wrap;">'+esc(letter)+'</div><div style="margin-top:10px;"><button class="jt-copybtn" id="jt-tailor-copy" type="button">Copiar carta</button></div>';
+      outEl.style.display = "block";
+      document.getElementById("jt-tailor-copy").addEventListener("click", function(){ copyText(letter, this); });
+      return;
+    }
+
+    var p2 = state.profile;
+    if(!p2.resumen || !p2.resumen.trim()){
+      window.alert("Completa al menos el resumen profesional en \"Mi perfil\" antes de generar una carta con IA.");
+      return;
+    }
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.textContent = "Redactando…";
     outEl.style.display = "block";
-    document.getElementById("jt-tailor-copy").addEventListener("click", function(){ copyText(letter, this); });
+    outEl.innerHTML = '<div class="jt-io-note">Escribiendo una carta a partir de tu perfil real — puede tardar unos segundos…</div>';
+    try{
+      var sessionRes = await supabase.auth.getSession();
+      var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+      if(!token){
+        outEl.innerHTML = '<div class="jt-io-note">Tu sesión expiró — recarga la página e intenta de nuevo.</div>';
+        return;
+      }
+      var jdText = document.getElementById("jt-match-input").value.trim();
+      var res = await fetch("/api/generate-cover-letter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({
+          cargo: cargo, empresa: empresa, jobDescription: jdText,
+          profile: { tituloProfesional: p2.tituloProfesional, resumen: p2.resumen, habilidades: p2.habilidades, experiencia: p2.experiencia, formacion: p2.formacion }
+        })
+      });
+      var out = await res.json();
+      if(!res.ok){
+        outEl.innerHTML = '<div class="jt-io-note">'+esc(out.error || "No se pudo generar la carta.")+'</div>';
+        return;
+      }
+      var letter2 = out.carta || "";
+      var placeholdersHtml = (out.notaPlaceholders||[]).length
+        ? '<div class="jt-io-note" style="margin-top:8px;">Completa antes de enviarla: '+esc(out.notaPlaceholders.join(" · "))+'</div>' : "";
+      outEl.innerHTML = '<div style="white-space:pre-wrap;">'+esc(letter2)+'</div>'+placeholdersHtml+'<div style="margin-top:10px;"><button class="jt-copybtn" id="jt-tailor-copy" type="button">Copiar carta</button></div>';
+      document.getElementById("jt-tailor-copy").addEventListener("click", function(){ copyText(letter2, this); });
+    } catch(e){
+      outEl.innerHTML = '<div class="jt-io-note">No se pudo generar la carta — intenta de nuevo.</div>';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
   });
 }
 
