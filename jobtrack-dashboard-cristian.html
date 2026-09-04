@@ -183,6 +183,10 @@
   .jt-dispatch-priority{font-family:var(--font-mono);font-size:11.5px;padding:4px 6px;border-radius:var(--radius-ctrl);width:auto;}
   .jt-io-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
   .jt-io-note{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);width:100%;}
+  .jt-link-check-result{font-size:12.5px;margin-top:4px;}
+  .jt-link-check-result.active{color:var(--teal-dark,var(--teal));}
+  .jt-link-check-result.expired{color:#B3261E;}
+  .jt-link-check-result.unknown,.jt-link-check-result.error{color:var(--ink-faint);}
   .jt-wizard-bar{background:var(--brick-100);border:1px solid var(--brick);padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;}
   .jt-wizard-step{font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--brick-800);}
   .jt-wizard-hint{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
@@ -1786,7 +1790,8 @@ function renderBoard(){
           + '</div>'
           + notasPreview
           + linkedContact
-          + (applyLink || deadlineCalLink ? '<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'+applyLink+deadlineCalLink+'</div>' : '')
+          + (applyLink || deadlineCalLink ? '<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'+applyLink+deadlineCalLink+(o.link?'<button class="jt-btn-mini" data-check-link="'+o.id+'" type="button">Revisar antes de postular</button>':'')+'</div>' : '')
+          + (o.link ? '<div class="jt-link-check-result" data-link-check-result="'+o.id+'"></div>' : '')
           + cartaBadge
           + '<div class="jt-tasks"><button class="jt-tasks-toggle" data-toggle-tasks="'+o.id+'" type="button">'+(tasksExpanded?'Ocultar tareas':'Tareas ('+doneCount+'/'+tasks.length+')')+'</button>'+taskListHtml+'</div>'
           + '<div class="card-actions">'
@@ -1833,6 +1838,47 @@ function renderBoard(){
     btn.addEventListener("click", function(){
       var opp = state.opportunities.find(function(o){ return o.id === btn.getAttribute("data-copy-opp-carta"); });
       if(opp && opp.carta) copyText(opp.carta, btn);
+    });
+  });
+  document.querySelectorAll('[data-check-link]').forEach(function(btn){
+    btn.addEventListener("click", async function(){
+      var id = btn.getAttribute("data-check-link");
+      var opp = state.opportunities.find(function(o){ return o.id === id; });
+      var resultEl = document.querySelector('[data-link-check-result="'+id+'"]');
+      if(!opp || !opp.link || !resultEl) return;
+      btn.disabled = true;
+      var originalLabel = btn.textContent;
+      btn.textContent = "Revisando…";
+      resultEl.className = "jt-link-check-result";
+      resultEl.textContent = "";
+      try{
+        var sessionRes = await supabase.auth.getSession();
+        var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+        if(!token){
+          resultEl.className = "jt-link-check-result error";
+          resultEl.textContent = "Tu sesión expiró — recarga la página e intenta de nuevo.";
+        } else {
+          var res = await fetch("/api/check-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({ link: opp.link })
+          });
+          var out = await res.json();
+          if(!res.ok){
+            resultEl.className = "jt-link-check-result error";
+            resultEl.textContent = out.error || "No se pudo revisar el link.";
+          } else {
+            var icons = { active:"✅ ", expired:"⚠️ ", unknown:"❔ " };
+            resultEl.className = "jt-link-check-result " + out.status;
+            resultEl.textContent = (icons[out.status]||"") + out.reason;
+          }
+        }
+      } catch(e){
+        resultEl.className = "jt-link-check-result error";
+        resultEl.textContent = "No se pudo revisar el link — intenta de nuevo.";
+      }
+      btn.disabled = false;
+      btn.textContent = originalLabel;
     });
   });
   document.querySelectorAll(".jt-status-select").forEach(function(sel){
