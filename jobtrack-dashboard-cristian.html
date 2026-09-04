@@ -115,6 +115,7 @@
   .jt-col-empty h3{margin-bottom:0;}
   .jt-col h3{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin:0 0 8px;display:flex;justify-content:space-between;position:sticky;top:0;background:var(--paper-dim);padding-top:2px;z-index:2;}
   .jt-card{background:var(--card-bg);border:1px solid var(--line);padding:12px 30px 12px 14px;margin-bottom:10px;font-size:14px;border-radius:var(--radius-ctrl);box-shadow:0 1px 2px rgba(32,30,29,.14);position:relative;cursor:pointer;transition:box-shadow .12s;}
+  .jt-card.jt-card-highlight{border-color:var(--brick);box-shadow:0 0 0 3px var(--brick-100,rgba(124,92,252,.25));transition:box-shadow .3s,border-color .3s;}
   .jt-card:hover{box-shadow:0 2px 8px rgba(32,30,29,.2);}
   .jt-card .co{font-family:var(--font-display);font-weight:600;font-size:15.5px;}
   .jt-card-del{position:absolute;top:8px;right:8px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--ink-faint);font-size:13px;line-height:1;cursor:pointer;border-radius:50%;}
@@ -1503,7 +1504,7 @@ function computeHoyTasks(){
   state.opportunities.forEach(function(o){
     if(o.status === "Descartado") return;
     if(isIncomplete(o)){
-      tasks.push({ id:"inc-"+o.id, kind:"incompleta", weight:3, dismissible:false,
+      tasks.push({ id:"inc-"+o.id, kind:"incompleta", weight:3, dismissible:false, oppId:o.id, oppEmpresa:o.empresa,
         headline:"Falta información en "+(o.empresa||"una oportunidad"),
         meta:"Completa empresa, cargo o el link del aviso.",
         targetSection:"sec-pipeline", targetAnchor:"opp-"+o.id });
@@ -1511,12 +1512,12 @@ function computeHoyTasks(){
     if(o.fechaLimite && o.status!=="Oferta"){
       var du = daysUntil(o.fechaLimite);
       if(du!==null && du<0){
-        tasks.push({ id:"due-"+o.id, kind:"vencida", weight:1, dismissible:false,
+        tasks.push({ id:"due-"+o.id, kind:"vencida", weight:1, dismissible:false, oppId:o.id, oppEmpresa:o.empresa,
           headline:(o.empresa||"Oportunidad")+" — plazo vencido hace "+Math.abs(du)+"d",
           meta:"Revisa si aún puedes postular o descártala.",
           targetSection:"sec-pipeline", targetAnchor:"opp-"+o.id });
       } else if(du!==null && du<=3){
-        tasks.push({ id:"soon-"+o.id, kind:"porvencer", weight:2, dismissible:false,
+        tasks.push({ id:"soon-"+o.id, kind:"porvencer", weight:2, dismissible:false, oppId:o.id, oppEmpresa:o.empresa,
           headline:(o.empresa||"Oportunidad")+" — vence en "+du+"d",
           meta:"Postula pronto antes de que cierre.",
           targetSection:"sec-pipeline", targetAnchor:"opp-"+o.id });
@@ -1525,7 +1526,7 @@ function computeHoyTasks(){
     if(o.status!=="Por postular" && o.status!=="Oferta" && o.fechaContacto){
       var d = daysSince(o.fechaContacto);
       if(d!==null && d>=7){
-        tasks.push({ id:"fu-"+o.id, kind:"seguimiento", weight:4, dismissible:false,
+        tasks.push({ id:"fu-"+o.id, kind:"seguimiento", weight:4, dismissible:false, oppId:o.id, oppEmpresa:o.empresa,
           headline:"Sin seguimiento con "+(o.empresa||"esta oportunidad")+" hace "+d+" días",
           meta:"Considera escribir para retomar contacto.",
           targetSection:"sec-pipeline", targetAnchor:"opp-"+o.id });
@@ -1639,6 +1640,12 @@ function renderHoy(){
     if(t.link) actions += '<a class="link" href="'+esc(t.link)+'" target="_blank" rel="noopener">Ver ↗</a>';
     actions += '<button class="jt-btn-mini" data-hoy-goto="'+t.id+'" type="button">Revisar</button>';
     if(t.dismissible) actions += '<button class="jt-btn-mini" data-hoy-dismiss="'+t.id+'" type="button">Descartar</button>';
+    // Las tareas ligadas a una oportunidad no tienen "Descartar" (ver nota de
+    // computeHoyTasks — se quedan mientras el hecho siga siendo cierto), pero
+    // si el usuario decide que esa oportunidad ya no le sirve, eliminarla acá
+    // mismo SÍ es una forma legítima de resolver el pendiente — no esconde el
+    // problema, lo borra de raíz.
+    if(t.oppId) actions += '<button class="jt-btn-mini" data-hoy-delete-opp="'+t.oppId+'" data-empresa="'+esc(t.oppEmpresa||"")+'" type="button">Eliminar</button>';
     return actions;
   }
 
@@ -1670,7 +1677,23 @@ function renderHoy(){
       var t = tasks.find(function(x){ return x.id===btn.getAttribute("data-hoy-goto"); });
       if(!t) return;
       if(t.watchId){ markWatchReviewed(t.watchKind, t.watchId); persist(); }
+      // Un tester reportó que llegar a Agenda no dejaba claro CUÁL tarjeta
+      // era la que había que revisar entre varias — se expande de una vez
+      // (para que se vea el motivo sin un clic extra) y se resalta unos
+      // segundos para que sea obvio cuál es, en vez de solo hacer scroll.
+      if(t.oppId && expandedCardIds.indexOf(t.oppId) === -1){
+        expandedCardIds.push(t.oppId);
+        renderBoard();
+      }
       goToSection(t.targetSection, t.targetAnchor);
+      if(t.targetAnchor){
+        setTimeout(function(){
+          var el = document.getElementById(t.targetAnchor);
+          if(!el) return;
+          el.classList.add("jt-card-highlight");
+          setTimeout(function(){ el.classList.remove("jt-card-highlight"); }, 2600);
+        }, 260);
+      }
     });
   });
   document.querySelectorAll('[data-hoy-dismiss]').forEach(function(btn){
@@ -1679,6 +1702,17 @@ function renderHoy(){
       if(!t || !t.watchId) return;
       markWatchReviewed(t.watchKind, t.watchId);
       renderHoy(); renderHome(); persist();
+    });
+  });
+  document.querySelectorAll('[data-hoy-delete-opp]').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-hoy-delete-opp");
+      var empresa = btn.getAttribute("data-empresa") || "esta oportunidad";
+      if(!window.confirm('¿Eliminar "'+empresa+'" de tu agenda de postulaciones? Esta acción no se puede deshacer.')) return;
+      state.opportunities = state.opportunities.filter(function(o){ return o.id!==id; });
+      removeWatchedPage(id);
+      renderStats(); renderTicker(); populateFilterSector(); renderBoard(); renderMetrics(); persist();
+      renderHoy(); renderHome();
     });
   });
 }
