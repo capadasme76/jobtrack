@@ -236,6 +236,8 @@
   .jt-ws-row.changed .jt-ws-status{color:var(--teal-dark,var(--teal));}
   .jt-ws-summary{font-size:13px;color:var(--ink-soft);background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:8px 12px;margin-bottom:10px;}
   .jt-ws-day-heading{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;color:var(--ink-faint);margin:14px 0 2px;}
+  .jt-ws-group-heading{font-family:var(--font-display);font-size:13.5px;font-weight:700;color:var(--ink);margin:20px 0 4px;padding-top:12px;border-top:1px solid var(--line);}
+  .jt-ws-group-heading:first-of-type{border-top:none;padding-top:0;margin-top:6px;}
   .jt-ws-day-heading:first-of-type{margin-top:0;}
   .jt-ws-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brick);margin-right:6px;vertical-align:middle;}
   .jt-chips{display:flex;flex-wrap:wrap;gap:6px;}
@@ -2395,33 +2397,50 @@ function renderWatchedSearches(){
     if(!b.createdAt) return -1;
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
-  var unreviewedCount = list.filter(function(w){ return !w.lastReviewedAt; }).length;
+  var unreviewedList = list.filter(function(w){ return !w.lastReviewedAt; });
+  var reviewedList = list.filter(function(w){ return !!w.lastReviewedAt; });
+  var unreviewedCount = unreviewedList.length;
   var summaryHtml = list.length === 0 ? "" :
     '<div class="jt-ws-summary">'+(unreviewedCount > 0
       ? 'Tienes <strong>'+unreviewedCount+'</strong> búsqueda'+(unreviewedCount===1?'':'s')+' sin revisar.'
       : 'Ya revisaste todas tus búsquedas — al día ✓')+'</div>';
 
+  // Agrupadas primero por revisada/sin revisar (lo que el usuario de verdad
+  // necesita distinguir de un vistazo), y dentro de cada grupo por día, como
+  // antes — un tester pidió esto explícito: el punto lila era fácil de
+  // perder mezclado por fecha con todo lo demás.
+  function renderGroup(rows){
+    var html = "";
+    var lastLabel = null;
+    rows.forEach(function(w){
+      var dayLabel = watchedSearchDayLabel(w.createdAt);
+      if(dayLabel !== lastLabel){
+        html += '<div class="jt-ws-day-heading">'+esc(dayLabel)+'</div>';
+        lastLabel = dayLabel;
+      }
+      var monitored = w.monitored !== false;
+      var changed = !!w.lastChangedAt;
+      var unreviewed = !w.lastReviewedAt;
+      var statusText = !monitored
+        ? "Link listo — ábrelo cuando quieras, no lo vigilamos automáticamente"
+        : (changed
+          ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
+          : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario"));
+      html += '<div class="jt-ws-row'+(changed?' changed':'')+'" id="ws-'+w.id+'">'
+        + '<div><div class="jt-ws-label">'+(unreviewed?'<span class="jt-ws-dot" title="Sin revisar"></span>':'')+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
+        + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" data-mark-reviewed="'+w.id+'" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-mark-postule="'+w.id+'" type="button">Guardar</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
+        + '</div>';
+    });
+    return html;
+  }
+
   var groupsHtml = "";
-  var lastLabel = null;
-  list.forEach(function(w){
-    var dayLabel = watchedSearchDayLabel(w.createdAt);
-    if(dayLabel !== lastLabel){
-      groupsHtml += '<div class="jt-ws-day-heading">'+esc(dayLabel)+'</div>';
-      lastLabel = dayLabel;
-    }
-    var monitored = w.monitored !== false;
-    var changed = !!w.lastChangedAt;
-    var unreviewed = !w.lastReviewedAt;
-    var statusText = !monitored
-      ? "Link listo — ábrelo cuando quieras, no lo vigilamos automáticamente"
-      : (changed
-        ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
-        : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario"));
-    groupsHtml += '<div class="jt-ws-row'+(changed?' changed':'')+'" id="ws-'+w.id+'">'
-      + '<div><div class="jt-ws-label">'+(unreviewed?'<span class="jt-ws-dot" title="Sin revisar"></span>':'')+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
-      + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" data-mark-reviewed="'+w.id+'" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-mark-postule="'+w.id+'" type="button">Guardar</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
-      + '</div>';
-  });
+  if(unreviewedList.length){
+    groupsHtml += '<div class="jt-ws-group-heading">Por revisar ('+unreviewedList.length+')</div>' + renderGroup(unreviewedList);
+  }
+  if(reviewedList.length){
+    groupsHtml += '<div class="jt-ws-group-heading">Revisadas ('+reviewedList.length+')</div>' + renderGroup(reviewedList);
+  }
   var html = summaryHtml + (groupsHtml || '<div class="jt-empty">Sin búsquedas generadas todavía.</div>');
   document.getElementById("jt-watched-searches-list").innerHTML = html;
   document.querySelectorAll('[data-mark-reviewed]').forEach(function(link){
