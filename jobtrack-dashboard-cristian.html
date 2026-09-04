@@ -300,6 +300,13 @@
   .jt-task-add{display:flex;gap:6px;margin-top:6px;}
   .jt-task-add input{flex:1;font-size:13px;}
   .jt-task-del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-family:var(--font-mono);font-size:11.5px;margin-left:auto;}
+  .jt-daily-task-list{margin-top:6px;display:flex;flex-direction:column;gap:4px;}
+  .jt-daily-task-row{display:flex;align-items:center;gap:6px;font-size:13.5px;}
+  .jt-daily-task-row input[type=checkbox]{margin:0;accent-color:var(--teal-dark);}
+  .jt-daily-task-row.done span{text-decoration:line-through;color:var(--ink-faint);}
+  .jt-daily-task-add{display:flex;gap:6px;margin-top:8px;}
+  .jt-daily-task-add input{flex:1;font-size:13px;}
+  .jt-daily-task-del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-family:var(--font-mono);font-size:11.5px;margin-left:auto;}
 
   /* Contact link */
   .jt-linked-contact{font-family:var(--font-mono);font-size:12px;color:var(--teal-dark);margin-top:4px;}
@@ -506,7 +513,18 @@
 
   <div class="jt-module">
   <div class="jt-section-title" id="sec-hoy">Hoy</div>
-  <div class="jt-section-sub">Tus pendientes de hoy — calculados desde tu Agenda, Búsquedas y Reuniones</div>
+  <div class="jt-section-sub">Tu plan de acción diario — lo que necesita tu atención, y tus propias tareas de hoy</div>
+
+  <div class="jt-pblock" id="jt-hoy-summary"></div>
+
+  <div class="jt-pblock">
+    <h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);margin:0 0 4px;">Mis tareas de hoy</h3>
+    <p class="jt-hint" style="margin:0 0 4px;">Tus propias tareas — se mantienen hasta que las marques hechas o las borres.</p>
+    <div class="jt-daily-task-list" id="jt-daily-task-list"></div>
+    <div class="jt-daily-task-add"><input type="text" id="jt-daily-task-input" placeholder="Ej. Postular a 3 vacantes hoy" /><button class="jt-btn-mini" id="jt-daily-task-add-btn" type="button">+ Agregar</button></div>
+  </div>
+
+  <div class="jt-hoy-rest-label" style="margin-top:6px;">Esto necesita tu atención</div>
   <div class="jt-dispatches" id="jt-dispatches"></div>
 
   </div>
@@ -1097,7 +1115,7 @@ var seedProfile = {
   linkedinUrl:""
 };
 
-var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", meetings: seedMeetings, watchedPages: [], watchedSearches: [], onboarding: { profile: false, searches: false, opportunity: false, match: false, wizardDone: false, welcomeEmailSent: false } };
+var state = { opportunities: seedOpportunities, networking: seedNetworking, profile: seedProfile, profileCvVersion: "2026-08-17-v3", meetings: seedMeetings, watchedPages: [], watchedSearches: [], dailyTasks: [], onboarding: { profile: false, searches: false, opportunity: false, match: false, wizardDone: false, welcomeEmailSent: false } };
 var filters = { sector:"", priority:"", text:"", period:"todo", deadline:"", region:"" };
 var saveTimer = null;
 var editingOppId = null;
@@ -1219,6 +1237,7 @@ async function loadState(){
         if(w.lastReviewedAt === undefined) w.lastReviewedAt = null;
       });
       if(parsed.watchedSearches) state.watchedSearches = parsed.watchedSearches;
+      if(parsed.dailyTasks) state.dailyTasks = parsed.dailyTasks;
       // Migración: búsquedas guardadas antes de sumar portales solo-link no traen
       // "monitored" — todas venían de ChileTrabajos o de una URL pegada a mano,
       // ambos casos vigilados de verdad hasta ahora, así que quedan en true. Tampoco
@@ -1557,7 +1576,59 @@ function markWatchReviewed(kind, id){
   if(w) w.lastReviewedAt = new Date().toISOString();
 }
 
+// Misma idea que el resumen del correo diario (scripts/check-watched-pages.mjs
+// digestHtml) — un vistazo rápido a "cómo voy" antes de la lista de pendientes,
+// para que "Hoy" no sea solo alertas sino también contexto.
+function renderHoySummary(){
+  var total = state.opportunities.length;
+  var enMovimiento = state.opportunities.filter(function(o){ return o.status !== "Por postular"; }).length;
+  var pendientesCount = computeHoyTasks().filter(function(t){ return t.kind !== "networking"; }).length;
+  var text = total === 0
+    ? "Todavía no tienes postulaciones registradas — agrega la primera desde Agenda de postulaciones."
+    : "Llevas <strong>"+total+"</strong> postulación"+(total===1?"":"es")+" registrada"+(total===1?"":"s")+", <strong>"+enMovimiento+"</strong> en movimiento, y <strong>"+pendientesCount+"</strong> pendiente"+(pendientesCount===1?"":"s")+" por resolver.";
+  document.getElementById("jt-hoy-summary").innerHTML =
+    '<h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px;">Resumen del día</h3>'
+    + '<p style="margin:0;font-size:14.5px;">'+text+'</p>';
+}
+
+function renderDailyTasks(){
+  var listEl = document.getElementById("jt-daily-task-list");
+  var tasks = state.dailyTasks || [];
+  listEl.innerHTML = tasks.length ? tasks.map(function(t){
+    return '<div class="jt-daily-task-row'+(t.done?' done':'')+'"><input type="checkbox" data-daily-task="'+t.id+'" class="jt-daily-task-check" '+(t.done?'checked':'')+' /><span>'+esc(t.text)+'</span><button class="jt-daily-task-del" data-daily-task="'+t.id+'" type="button">✕</button></div>';
+  }).join("") : '<div class="jt-io-note">Sin tareas agregadas todavía.</div>';
+
+  document.querySelectorAll('.jt-daily-task-check').forEach(function(cb){
+    cb.addEventListener("change", function(){
+      var task = state.dailyTasks.find(function(t){ return t.id === cb.getAttribute("data-daily-task"); });
+      if(task){ task.done = cb.checked; renderDailyTasks(); persist(); }
+    });
+  });
+  document.querySelectorAll('.jt-daily-task-del').forEach(function(btn){
+    btn.addEventListener("click", function(){
+      state.dailyTasks = state.dailyTasks.filter(function(t){ return t.id !== btn.getAttribute("data-daily-task"); });
+      renderDailyTasks(); persist();
+    });
+  });
+}
+
+function wireDailyTaskAdd(){
+  document.getElementById("jt-daily-task-add-btn").addEventListener("click", function(){
+    var input = document.getElementById("jt-daily-task-input");
+    var text = input.value.trim();
+    if(!text) return;
+    state.dailyTasks.push({ id:"dt"+Date.now(), text:text, done:false });
+    input.value = "";
+    renderDailyTasks(); persist();
+  });
+  document.getElementById("jt-daily-task-input").addEventListener("keydown", function(e){
+    if(e.key === "Enter") document.getElementById("jt-daily-task-add-btn").click();
+  });
+}
+
 function renderHoy(){
+  renderHoySummary();
+  renderDailyTasks();
   var tasks = computeHoyTasks();
   lastHoyTaskCount = tasks.length;
   var badgeLabel = {incompleta:"Incompleta", vencida:"Vencida", porvencer:"Por vencer",
@@ -3691,6 +3762,7 @@ wireForms();
 wireNav();
 wireIO();
 wireWatchedSearches();
+wireDailyTaskAdd();
 
 // Antes de que loadState() resuelva (llamada de red) se arma la grilla y se
 // aplica el hash actual, para no mostrar por un instante las 10 secciones
