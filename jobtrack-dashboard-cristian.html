@@ -237,6 +237,14 @@
   .jt-chip{font-family:var(--font-mono);font-size:12px;padding:4px 11px;border:1px solid var(--line);color:var(--ink-soft);border-radius:var(--radius-pill);background:var(--paper-dim);}
   .jt-chip-btn{cursor:pointer;}
   .jt-chip-btn:hover{border-color:var(--brick);color:var(--brick);}
+  .jt-choice-group{display:flex;flex-wrap:wrap;gap:6px;}
+  .jt-choice-btn{font-family:var(--font-mono);font-size:12.5px;padding:6px 13px;border:1px solid var(--line);color:var(--ink-soft);border-radius:var(--radius-pill);background:var(--paper-dim);cursor:pointer;}
+  .jt-choice-btn:hover{border-color:var(--brick);color:var(--brick);}
+  .jt-choice-btn.active{background:var(--brick);border-color:var(--brick);color:#fff;}
+  .jt-stepper{display:flex;align-items:center;gap:12px;}
+  .jt-stepper-btn{width:34px;height:34px;font-size:18px;line-height:1;font-family:var(--font-mono);border:1px solid var(--line);background:var(--paper-dim);color:var(--ink);cursor:pointer;border-radius:var(--radius-pill);}
+  .jt-stepper-btn:hover{border-color:var(--brick);color:var(--brick);}
+  .jt-stepper-val{font-family:var(--font-mono);font-size:16px;font-weight:600;min-width:150px;text-align:center;}
   .jt-explist{display:flex;flex-direction:column;gap:8px;}
   .jt-expitem{border-left:3px solid var(--teal);padding-left:12px;}
   .jt-expitem .h{font-weight:600;font-size:14.5px;}
@@ -1054,6 +1062,23 @@ var seedOpportunities = [];
 var seedNetworking = [];
 var seedMeetings = [];
 
+// Reemplaza al viejo campo libre "quickAnswers" (una tester de UX reportó que
+// el formato "Pregunta | Respuesta" a mano era confuso — no sabía qué
+// responder y terminaba dejando el texto de ejemplo tal cual). Estas tres
+// respuestas frecuentes de portales de empleo ahora se eligen tocando, no
+// escribiendo.
+var MODALIDAD_OPTIONS = ["Presencial", "Híbrida", "Remoto", "Me da igual"];
+var DISPONIBILIDAD_OPTIONS = ["Inmediata", "2 semanas", "1 mes", "A convenir"];
+var RENTA_STEP = 250000;
+var RENTA_MIN = 500000;
+var RENTA_MAX = 12000000;
+
+function formatRenta(v){
+  if(!v) return "Sin especificar";
+  if(v >= RENTA_MAX) return "$" + RENTA_MAX.toLocaleString("es-CL") + "+ CLP";
+  return "$" + v.toLocaleString("es-CL") + " CLP";
+}
+
 var seedProfile = {
   nombre:"Tu nombre aquí",
   tituloProfesional:"Tu cargo o especialidad (ej. Gerente de Marketing)",
@@ -1062,7 +1087,9 @@ var seedProfile = {
   experiencia:["Cargo de ejemplo | Empresa de ejemplo | 2020–Presente, Santiago | Breve descripción de tus responsabilidades y logros en este rol."],
   formacion:["Título de ejemplo | Institución de ejemplo | 2015–2019"],
   cartaBase:"Postulo al cargo de [CARGO] en [EMPRESA] porque... — este es un ejemplo de carta base, reemplázala con la tuya. Se usa como punto de partida para generar cartas ajustadas a cada vacante desde Match CV.",
-  quickAnswers:["Expectativa de renta | Completa tu rango esperado.", "Disponibilidad para iniciar | Ej. Inmediata.", "Modalidad de trabajo | Ej. Presencial, híbrido o remoto."],
+  modalidadTrabajo:"",
+  disponibilidad:"",
+  pretensionRenta:null,
   linkedinUrl:""
 };
 
@@ -1243,6 +1270,13 @@ async function loadState(){
         if(parsed.meetings) state.meetings = parsed.meetings;
       }
       state.profileCvVersion = "2026-08-17-v3";
+      // Migración: perfiles guardados antes de reemplazar "quickAnswers" (texto
+      // libre "Pregunta | Respuesta") por estos tres campos elegibles con un
+      // toque no traen los nuevos campos — se agregan vacíos, sin inventar un
+      // valor. El campo viejo "quickAnswers" simplemente deja de leerse.
+      if(state.profile.modalidadTrabajo === undefined) state.profile.modalidadTrabajo = "";
+      if(state.profile.disponibilidad === undefined) state.profile.disponibilidad = "";
+      if(state.profile.pretensionRenta === undefined) state.profile.pretensionRenta = null;
     }
   }catch(e){}
 }
@@ -3207,10 +3241,13 @@ function renderProfile(){
     : '';
   var chips = p.habilidades.map(function(h){ return '<span class="jt-chip">'+esc(h)+'</span>'; }).join("");
 
-  var qaItems = p.quickAnswers.map(function(line){
-    var parts = line.split("|").map(function(s){ return s.trim(); });
-    var q = parts[0] || "", a = parts[1] || "";
-    return '<div class="jt-qa-item"><div><div class="q">'+esc(q)+'</div><div class="a">'+esc(a)+'</div></div><button class="jt-copybtn" data-qa-copy="'+esc(a)+'" type="button">Copiar</button></div>';
+  var qaFields = [
+    { q: "Modalidad de trabajo", a: p.modalidadTrabajo || "Sin especificar" },
+    { q: "Disponibilidad para iniciar", a: p.disponibilidad || "Sin especificar" },
+    { q: "Pretensión de renta", a: formatRenta(p.pretensionRenta) }
+  ];
+  var qaItems = qaFields.map(function(f){
+    return '<div class="jt-qa-item"><div><div class="q">'+esc(f.q)+'</div><div class="a">'+esc(f.a)+'</div></div><button class="jt-copybtn" data-qa-copy="'+esc(f.a)+'" type="button">Copiar</button></div>';
   }).join("");
 
   view.innerHTML =
@@ -3428,8 +3465,8 @@ function renderProfileEdit(){
   var fHabilidades = seedField(p.habilidades.join(", "), seedProfile.habilidades.join(", "));
   var fExperiencia = seedField(p.experiencia.join("\n"), seedProfile.experiencia.join("\n"));
   var fFormacion = seedField(p.formacion.join("\n"), seedProfile.formacion.join("\n"));
-  var fQuickAnswers = seedField(p.quickAnswers.join("\n"), seedProfile.quickAnswers.join("\n"));
   var fCarta = seedField(p.cartaBase||"", seedProfile.cartaBase);
+  var currentRenta = p.pretensionRenta || 0;
   edit.innerHTML =
     '<div class="jt-profile-head"><h2>Editando perfil</h2></div>'
     + '<div class="jt-pblock" style="background:var(--paper-dim);"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">¿Tienes tu CV a mano?</h3>'
@@ -3443,7 +3480,17 @@ function renderProfileEdit(){
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Habilidades (separadas por coma)</h3><button class="jt-btn-mini" data-add-line="pe-habilidades" data-mode="comma" data-template="Nueva habilidad" type="button">+ Agregar</button></div><input class="wide" type="text" id="pe-habilidades" value="'+fHabilidades.val+'"'+fHabilidades.ph+' /></div>'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Experiencia (una por línea: Cargo | Empresa | Período | Descripción)</h3><button class="jt-btn-mini" data-add-line="pe-experiencia" data-template="Cargo | Empresa | Período | Descripción breve" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-experiencia"'+fExperiencia.ph+'>'+fExperiencia.val+'</textarea></div>'
     + '<div class="jt-pblock"><div class="jt-pblock-head"><h3>Formación (una por línea: Título | Institución | Período)</h3><button class="jt-btn-mini" data-add-line="pe-formacion" data-template="Título | Institución | Período" type="button">+ Agregar</button></div><textarea class="wide mono" id="pe-formacion"'+fFormacion.ph+'>'+fFormacion.val+'</textarea></div>'
-    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Respuestas rápidas (una por línea: Pregunta | Respuesta)</h3><textarea class="wide mono" id="pe-quickanswers"'+fQuickAnswers.ph+'>'+fQuickAnswers.val+'</textarea></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Modalidad de trabajo</h3><div class="jt-choice-group" id="pe-modalidad" data-value="'+esc(p.modalidadTrabajo||"")+'">'
+    + MODALIDAD_OPTIONS.map(function(opt){ return '<button type="button" class="jt-choice-btn'+(p.modalidadTrabajo===opt?' active':'')+'" data-choice="'+esc(opt)+'">'+esc(opt)+'</button>'; }).join("")
+    + '</div></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Disponibilidad para iniciar</h3><div class="jt-choice-group" id="pe-disponibilidad" data-value="'+esc(p.disponibilidad||"")+'">'
+    + DISPONIBILIDAD_OPTIONS.map(function(opt){ return '<button type="button" class="jt-choice-btn'+(p.disponibilidad===opt?' active':'')+'" data-choice="'+esc(opt)+'">'+esc(opt)+'</button>'; }).join("")
+    + '</div></div>'
+    + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Pretensión de renta</h3><div class="jt-stepper" id="pe-renta" data-value="'+currentRenta+'">'
+    + '<button type="button" class="jt-stepper-btn" id="pe-renta-minus">−</button>'
+    + '<span class="jt-stepper-val" id="pe-renta-val">'+esc(formatRenta(currentRenta))+'</span>'
+    + '<button type="button" class="jt-stepper-btn" id="pe-renta-plus">+</button>'
+    + '</div></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">LinkedIn — URL de tu perfil</h3>'
     + '<input class="wide" type="text" id="pe-li-url" value="'+esc(p.linkedinUrl)+'" placeholder="https://linkedin.com/in/tu-usuario" /></div>'
     + '<div class="jt-pblock"><h3 style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);">Carta de presentación base</h3><textarea class="wide" id="pe-carta" style="min-height:160px;"'+fCarta.ph+'>'+fCarta.val+'</textarea></div>'
@@ -3469,6 +3516,35 @@ function renderProfileEdit(){
       field.setSelectionRange(field.value.length - template.length, field.value.length);
     });
   });
+  // Modalidad/disponibilidad: un solo botón activo a la vez dentro de cada
+  // grupo — tocar el mismo botón ya activo lo deja sin elegir (no queda
+  // forzado a responder si de verdad no lo tiene claro).
+  function wireChoiceGroup(groupId){
+    var group = document.getElementById(groupId);
+    group.querySelectorAll('[data-choice]').forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var alreadyActive = btn.classList.contains("active");
+        group.querySelectorAll('.jt-choice-btn').forEach(function(b){ b.classList.remove("active"); });
+        group.setAttribute("data-value", alreadyActive ? "" : btn.getAttribute("data-choice"));
+        if(!alreadyActive) btn.classList.add("active");
+      });
+    });
+  }
+  wireChoiceGroup("pe-modalidad");
+  wireChoiceGroup("pe-disponibilidad");
+
+  var rentaEl = document.getElementById("pe-renta");
+  var rentaValEl = document.getElementById("pe-renta-val");
+  function stepRenta(delta){
+    var v = Number(rentaEl.getAttribute("data-value")) || 0;
+    v = v === 0 && delta > 0 ? RENTA_MIN : v + delta;
+    v = Math.max(0, Math.min(RENTA_MAX, v));
+    rentaEl.setAttribute("data-value", v);
+    rentaValEl.textContent = formatRenta(v);
+  }
+  document.getElementById("pe-renta-minus").addEventListener("click", function(){ stepRenta(-RENTA_STEP); });
+  document.getElementById("pe-renta-plus").addEventListener("click", function(){ stepRenta(RENTA_STEP); });
+
   document.getElementById("pe-cancel").addEventListener("click", function(){
     document.getElementById("jt-profile-edit").style.display = "none";
     document.getElementById("jt-profile-view").style.display = "block";
@@ -3480,7 +3556,9 @@ function renderProfileEdit(){
     p.habilidades = document.getElementById("pe-habilidades").value.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
     p.experiencia = document.getElementById("pe-experiencia").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
     p.formacion = document.getElementById("pe-formacion").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
-    p.quickAnswers = document.getElementById("pe-quickanswers").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+    p.modalidadTrabajo = document.getElementById("pe-modalidad").getAttribute("data-value") || "";
+    p.disponibilidad = document.getElementById("pe-disponibilidad").getAttribute("data-value") || "";
+    p.pretensionRenta = Number(document.getElementById("pe-renta").getAttribute("data-value")) || null;
     p.linkedinUrl = document.getElementById("pe-li-url").value.trim() || p.linkedinUrl;
     p.cartaBase = document.getElementById("pe-carta").value.trim();
     document.getElementById("jt-profile-edit").style.display = "none";
