@@ -233,6 +233,7 @@
   .jt-ws-row:last-child{border-bottom:none;}
   .jt-ws-label{font-size:13.5px;font-weight:600;}
   .jt-ws-status{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:2px;}
+  .jt-ws-saved{font-family:var(--font-mono);font-size:11px;color:var(--teal-dark,var(--teal));margin-top:2px;}
   .jt-ws-row.changed .jt-ws-status{color:var(--teal-dark,var(--teal));}
   .jt-ws-summary{font-size:13px;color:var(--ink-soft);background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius-card);padding:8px 12px;margin-bottom:10px;}
   .jt-ws-day-heading{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;color:var(--ink-faint);margin:14px 0 2px;}
@@ -2421,13 +2422,16 @@ function renderWatchedSearches(){
       var monitored = w.monitored !== false;
       var changed = !!w.lastChangedAt;
       var unreviewed = !w.lastReviewedAt;
+      var savedCount = w.savedCount || 0;
       var statusText = !monitored
         ? "Link listo — ábrelo cuando quieras, no lo vigilamos automáticamente"
         : (changed
           ? "Cambio detectado " + new Date(w.lastChangedAt).toLocaleDateString("es-CL")
           : (w.lastCheckedAt ? "Sin cambios desde " + new Date(w.lastCheckedAt).toLocaleDateString("es-CL") : "Aún no revisada — se chequea a diario"));
+      var savedBadge = savedCount > 0
+        ? '<div class="jt-ws-saved">✓ Guardaste '+savedCount+' postulación'+(savedCount===1?'':'es')+' desde aquí</div>' : '';
       html += '<div class="jt-ws-row'+(changed?' changed':'')+'" id="ws-'+w.id+'">'
-        + '<div><div class="jt-ws-label">'+(unreviewed?'<span class="jt-ws-dot" title="Sin revisar"></span>':'')+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div></div>'
+        + '<div><div class="jt-ws-label">'+(unreviewed?'<span class="jt-ws-dot" title="Sin revisar"></span>':'')+esc(w.label)+'</div><div class="jt-ws-status" data-ws-status="'+w.id+'">'+esc(statusText)+'</div>'+savedBadge+'</div>'
         + '<span>'+(monitored ? '<button class="jt-btn-mini" data-check-watched-search="'+w.id+'" type="button">Comprobar ahora</button> ' : '')+'<a class="jt-btn-mini" data-mark-reviewed="'+w.id+'" href="'+esc(w.url)+'" target="_blank" rel="noopener">Ver</a> <button class="jt-btn-mini" data-send-to-hoy="'+w.id+'" type="button">+ Agregar a Hoy</button> <button class="jt-btn-mini" data-mark-postule="'+w.id+'" type="button">Guardar</button> <button class="jt-btn-mini" data-del-watched-search="'+w.id+'" type="button">Eliminar</button></span>'
         + '</div>';
     });
@@ -2502,6 +2506,7 @@ function renderWatchedSearches(){
       state.opportunities.push(newOpp);
       state.onboarding.opportunity = true;
       w.lastReviewedAt = new Date().toISOString(); // ya se actuó sobre este cambio, no debe seguir pendiente en Hoy
+      w.savedCount = (w.savedCount || 0) + 1;
       populateFilterSector(); renderBoard(); renderStats(); renderTicker(); renderMetrics(); renderHoy(); renderHome(); persist();
       window.alert('Guardado en tu Agenda de postulaciones — "' + cargo + '" quedó en "Por postular". Edítala para agregar la empresa y el link del aviso específico cuando lo encuentres.');
     });
