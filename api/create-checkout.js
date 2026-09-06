@@ -63,7 +63,11 @@ export default async function handler(req, res) {
       amount: PLAN_AMOUNT_CLP,
       email: user.email,
       urlConfirmation: "https://jobtrack.cl/api/flow-payment-confirm",
-      urlReturn: "https://jobtrack.cl/jobtrack-dashboard-cristian.html?pago=listo",
+      // No apunta directo al archivo estático del dashboard: Flow devuelve
+      // al navegador con un POST, y un archivo estático en Vercel responde
+      // "405 Method Not Allowed" a eso (confirmado en producción). Este
+      // endpoint intermedio solo reenvía (302) al dashboard real.
+      urlReturn: "https://jobtrack.cl/api/flow-payment-return",
     });
 
     res.status(200).json({ redirectUrl: `${payment.url}?token=${payment.token}` });
