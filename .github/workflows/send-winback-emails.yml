@@ -1,0 +1,30 @@
+name: Send winback emails
+
+on:
+  schedule:
+    - cron: "15 12 * * *" # ~9:15am Chile (UTC-3), justo después de send-renewal-reminders
+  workflow_dispatch:
+    inputs:
+      test_email:
+        description: "Solo para pruebas: si lo llenas, se manda SOLO a este correo (con su data real)."
+        required: false
+      test_day:
+        description: "Solo con test_email: qué hito simular — 1 o 7 (días bloqueada). Por defecto 1."
+        required: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run winback sender
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TEST_WINBACK_EMAIL: ${{ github.event.inputs.test_email }}
+          TEST_WINBACK_DAY: ${{ github.event.inputs.test_day }}
+        run: node scripts/send-winback-emails.mjs
