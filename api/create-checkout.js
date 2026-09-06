@@ -73,10 +73,6 @@ export default async function handler(req, res) {
     res.status(200).json({ redirectUrl: `${payment.url}?token=${payment.token}` });
   } catch (e) {
     console.error("create-checkout error:", e);
-    // Detalle real incluido a propósito (temporal, mientras depuramos el
-    // primer intento real de este flujo en producción) — sin esto, el único
-    // registro del error queda en los logs del servidor, inaccesibles desde
-    // el navegador de quien reporta el problema.
-    res.status(500).json({ error: e.message || "Error desconocido." });
+    res.status(500).json({ error: "No se pudo iniciar el pago. Intenta de nuevo." });
   }
 }
