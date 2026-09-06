@@ -46,10 +46,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    // El guión bajo como separador es a propósito: un user_id (UUID) usa
-    // guiones normales, así que separar por "_" en el webhook no se
-    // confunde con los guiones del UUID.
-    const commerceOrder = `jobtrack_${user.id}_${Date.now()}`;
+    // Flow rechaza commerceOrder de más de 45 caracteres (código 1622) — un
+    // bug real que hizo fallar el 100% de los intentos de pago desde el
+    // cambio de arquitectura del 2 de septiembre: "jobtrack_" + UUID (36) +
+    // "_" + Date.now() (13 dígitos) daba 59 caracteres. Se acorta a 43: sin
+    // el prefijo "jobtrack_" (no hace falta, el user_id ya identifica la
+    // cuenta sin ambigüedad) y con la marca de tiempo en segundos y base36
+    // en vez de milisegundos decimales. El guión bajo como separador sigue
+    // siendo seguro: un UUID nunca contiene "_", así que el webhook puede
+    // separar por el último "_" sin confundirse.
+    const commerceOrder = `${user.id}_${Math.floor(Date.now() / 1000).toString(36)}`;
     const payment = await flowPost("/payment/create", {
       commerceOrder,
       subject: "JobTrack - Plan trimestral",

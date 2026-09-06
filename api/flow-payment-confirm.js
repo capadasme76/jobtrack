@@ -18,8 +18,15 @@ import { sendEmail } from "../scripts/send-email.mjs";
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const PAID = 2; // PaymentStatus.status documentado: 1 pendiente, 2 pagada, 3 rechazada, 4 anulada.
 
+// Formato actual (desde el arreglo del límite de 45 caracteres de Flow):
+// "<user_id UUID>_<timestamp en segundos, base36>" — sin prefijo "jobtrack_".
+// Se acepta también el formato viejo con prefijo por si queda algún pago
+// pendiente creado antes del arreglo.
 function extractUserId(commerceOrder) {
-  const match = /^jobtrack_(.+)_(\d+)$/.exec(commerceOrder || "");
+  const order = commerceOrder || "";
+  let match = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_[0-9a-z]+$/i.exec(order);
+  if (match) return match[1];
+  match = /^jobtrack_(.+)_\d+$/.exec(order); // formato viejo, roto (>45 caracteres), por compatibilidad
   return match ? match[1] : null;
 }
 
