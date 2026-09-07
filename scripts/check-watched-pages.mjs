@@ -341,7 +341,7 @@ async function sendDailyDigest(userId, data, changedItems, newListings, opts = {
       subject: newListings.length > 0
         ? `📬 ${newListings.length} aviso(s) nuevo(s) + tu resumen de hoy — JobTrack`
         : hasNews
-          ? `🔎 Cambios en tus búsquedas vigiladas — JobTrack`
+          ? `🔎 Cambios en las páginas que vigilas — JobTrack`
           : `No dejes tu búsqueda en pausa — JobTrack`,
       html: digestHtml({ metrics, newListings, changedItems, cargoGroups }),
     });
@@ -518,7 +518,14 @@ async function processRow(row) {
       watch.hash = result.hash;
       watch.lastChangedAt = now;
       console.log(`  CAMBIO (búsqueda) ${watch.url}`);
-      changedItems.push({ label: `Búsqueda "${watch.cargo || ""}"${watch.portalLabel ? " en " + watch.portalLabel : ""}`, url: watch.url });
+      // A diferencia de watchedPages arriba, NO se manda a changedItems (que
+      // alimenta la sección "Cambios detectados" del correo): este hash es de
+      // la página completa de resultados y cambia por cosas que no son una
+      // vacante nueva (orden, publicidad, paginación) — confirmado en
+      // producción, era la misma clase de ruido que newListings ya filtra
+      // más abajo con criterio real de relevancia. lastChangedAt sí se
+      // actualiza igual, porque eso solo alimenta el aviso en "Hoy" dentro
+      // del dashboard (revisión manual, no un correo con contenido armado).
     }
 
     // Avisos nuevos reales (solo ChileTrabajos, el único portal que este
