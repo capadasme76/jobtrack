@@ -244,7 +244,7 @@ function digestHtml({ metrics, newListings, changedItems, cargoGroups }) {
 
   const listingsHtml = newListings.length === 0 ? "" : `
     <tr><td style="padding:0 28px 8px;">
-      <p style="font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;color:#201E1D;margin:22px 0 10px;">📬 Avisos nuevos en ChileTrabajos</p>
+      <p style="font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;color:#201E1D;margin:22px 0 10px;">📬 Avisos nuevos que encontramos para ti</p>
       ${newListings.map((l) => `
         <div style="border:1px solid #EAE9E9;border-radius:6px;padding:12px 14px;margin-bottom:8px;">
           <div style="font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:13.5px;color:#201E1D;">${escapeHtml(l.title)}</div>
@@ -356,6 +356,32 @@ const HTML_ENTITIES = {
 
 function decodeEntities(s) {
   return String(s).replace(/&(#?\w+);/g, (m, code) => (code in HTML_ENTITIES ? HTML_ENTITIES[code] : m));
+}
+
+// ChileTrabajos hace match difuso: para cargos ejecutivos poco comunes en su
+// bolsa (director/gerente de marketing, comunicaciones, etc.) su buscador
+// devuelve avisos genéricos sin relación real con la búsqueda en vez de una
+// lista vacía — confirmado en producción: un mismo puñado de avisos (barista,
+// técnico automotriz, garzón...) se repetía idéntico para una docena de
+// cargos ejecutivos distintos. Se filtra acá, comparando palabras
+// significativas del título del aviso contra las del cargo buscado, en vez
+// de confiar en que el resultado de ChileTrabajos ya viene filtrado.
+const SPANISH_STOPWORDS = new Set(["de", "del", "la", "el", "los", "las", "y", "en", "con", "para", "por", "un", "una", "al", "su", "sus", "tu"]);
+
+function significantWords(s) {
+  return String(s || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length >= 4 && !SPANISH_STOPWORDS.has(w));
+}
+
+function isRelevantListing(title, cargo) {
+  const cargoWords = significantWords(cargo);
+  if (cargoWords.length === 0) return true; // sin cargo que comparar, no se puede filtrar
+  const titleWords = new Set(significantWords(title));
+  return cargoWords.some((w) => titleWords.has(w));
 }
 
 function extractChileTrabajosListings(resultsHtml) {
@@ -488,16 +514,26 @@ async function processRow(row) {
     // de aviso son nuevas desde el último chequeo.
     if (Array.isArray(result.listings)) {
       const known = new Set(Array.isArray(watch.knownListingUrls) ? watch.knownListingUrls : []);
-      const fresh = result.listings.filter((l) => !known.has(l.url));
+      const fresh = result.listings.filter((l) => !known.has(l.url) && isRelevantListing(l.title, watch.cargo));
       if (fresh.length > 0) {
-        console.log(`  ${fresh.length} aviso(s) nuevo(s) en ChileTrabajos para "${watch.cargo || ""}"`);
+        console.log(`  ${fresh.length} aviso(s) nuevo(s) relevante(s) para "${watch.cargo || ""}"`);
         fresh.forEach((l) => newListings.push({ ...l, cargo: watch.cargo || "" }));
       }
       watch.knownListingUrls = result.listings.map((l) => l.url).slice(0, 40);
     }
   }
 
-  return { checked, changed, skipped, errors, mutated, changedItems, newListings };
+  // Un mismo aviso puede calzar con más de un cargo vigilado (ej. "Director
+  // de Marketing" y "Director de Marketing y Comunicaciones") — se muestra
+  // una sola vez en el correo, no una por cada cargo que lo detectó.
+  const seenUrls = new Set();
+  const dedupedListings = newListings.filter((l) => {
+    if (seenUrls.has(l.url)) return false;
+    seenUrls.add(l.url);
+    return true;
+  });
+
+  return { checked, changed, skipped, errors, mutated, changedItems, newListings: dedupedListings };
 }
 
 async function main() {
