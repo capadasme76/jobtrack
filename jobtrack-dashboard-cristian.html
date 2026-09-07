@@ -83,7 +83,8 @@
   @media (prefers-reduced-motion: reduce){ .jt-ticker-inner{animation:none;padding-left:12px;} }
   @keyframes jt-scroll{ from{transform:translateX(0);} to{transform:translateX(-100%);} }
   .jt-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px;}
-  .jt-stat{background:var(--card-bg);border:1px solid var(--line);padding:16px 18px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);}
+  .jt-stat{background:var(--card-bg);border:1px solid var(--line);padding:16px 18px;border-radius:var(--radius-card);box-shadow:0 1px 2px rgba(32,30,29,.14);cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+  .jt-stat:hover{border-color:var(--brick);box-shadow:0 2px 6px rgba(32,30,29,.2);}
   .jt-stat .n{font-family:var(--font-display);font-size:32px;font-weight:800;line-height:1;}
   .jt-stat .l{font-family:var(--font-body);font-size:11px;color:var(--brick);text-transform:uppercase;letter-spacing:.6px;margin-top:6px;font-weight:600;}
   .jt-card-kicker{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--brick);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px;}
@@ -347,7 +348,7 @@
   .jt-tile-featured:hover{border-color:var(--brick-dark);}
   .jt-tile .jt-tile-label{font-family:var(--font-display);font-weight:700;font-size:15.5px;}
   .jt-tile .jt-tile-badge{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);}
-  .jt-back-btn{margin-bottom:16px;}
+  .jt-back-btn{margin-bottom:16px;position:sticky;top:0;z-index:20;background:var(--paper);padding-top:8px;padding-bottom:8px;}
   .jt-stat-callout{background:var(--paper-dim);border-left:4px solid var(--teal);border-radius:0 var(--radius-card) var(--radius-card) 0;padding:14px 18px;margin-bottom:16px;}
   .jt-stat-callout .num{font-family:var(--font-display);font-size:25px;font-weight:600;color:var(--teal-dark);}
   .jt-stat-callout .row{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
@@ -471,6 +472,7 @@
         <div class="jt-sidebar-user" id="jt-mast-name-side">Tu nombre aquí</div>
       </div>
     </div>
+    <a href="#" data-target="jt-home" class="jt-nav-home"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg></i>Inicio</a>
     <a href="#sec-hoy" data-target="sec-hoy"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg></i>Hoy</a>
     <a href="#sec-busquedas" data-target="sec-busquedas"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></i>Búsquedas de empleo</a>
     <a href="#sec-perfil" data-target="sec-perfil"><i class="jt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path></svg></i>Mi perfil</a>
@@ -932,8 +934,9 @@ function closeDrawerIfOpen(){
 }
 
 function updateActiveNav(id){
+  var wantTarget = id || "jt-home";
   document.querySelectorAll(".jt-nav a, .jt-tile").forEach(function(el){
-    el.classList.toggle("active", !!id && el.getAttribute("data-target") === id);
+    el.classList.toggle("active", el.getAttribute("data-target") === wantTarget);
   });
 }
 
@@ -1335,21 +1338,25 @@ function computeEntitlement(sub){
   }
 }
 
+async function redirectToCheckout(){
+  var sessionRes = await supabase.auth.getSession();
+  var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+  var res = await fetch("/api/create-checkout", {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + (token || "") }
+  });
+  var data = await res.json();
+  if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
+  location.href = data.redirectUrl;
+}
+
 async function startSidebarCheckout(btn){
   btn = btn || document.getElementById("jt-subscribe-link");
   var original = btn.textContent;
   btn.disabled = true;
   btn.textContent = "Redirigiendo...";
   try{
-    var sessionRes = await supabase.auth.getSession();
-    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
-    var res = await fetch("/api/create-checkout", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + (token || "") }
-    });
-    var data = await res.json();
-    if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
-    location.href = data.redirectUrl;
+    await redirectToCheckout();
   }catch(e){
     window.alert("No se pudo iniciar el pago: " + e.message);
     btn.disabled = false;
@@ -1364,21 +1371,29 @@ async function startCheckout(){
   btn.disabled = true;
   btn.textContent = "Redirigiendo...";
   try{
-    var sessionRes = await supabase.auth.getSession();
-    var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
-    var res = await fetch("/api/create-checkout", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + (token || "") }
-    });
-    var data = await res.json();
-    if(!res.ok || !data.redirectUrl) throw new Error(data.error || "No se pudo iniciar el pago.");
-    location.href = data.redirectUrl;
+    await redirectToCheckout();
   }catch(e){
     errEl.textContent = "No se pudo iniciar el pago. Intenta de nuevo en un momento.";
     errEl.style.display = "block";
     btn.disabled = false;
     btn.textContent = "Suscribirse";
   }
+}
+
+// Quien llegó desde el link "Actívalo directo, sin esperar la prueba" en el
+// Home público (index.html) trae ?checkout=1 desde el signup — se respeta esa
+// intención saltando directo a Flow, salvo que la cuenta ya esté pagando (no
+// tendría sentido volver a cobrarle). Si el redirect falla por lo que sea, se
+// deja caer en el dashboard normal en vez de bloquear el login.
+function autoStartCheckoutIfRequested(wantsCheckout, sub){
+  try{
+    wantsCheckout = wantsCheckout || localStorage.getItem("jt_pending_checkout") === "1";
+    localStorage.removeItem("jt_pending_checkout");
+  }catch(e){}
+  if(!wantsCheckout) return;
+  var status = sub ? sub.status : null;
+  if(status === "active" || status === "past_due") return;
+  redirectToCheckout().catch(function(){});
 }
 
 function showPaywall(sub, pagoParam){
@@ -1483,15 +1498,15 @@ function renderStats(){
   state.opportunities.forEach(function(o){ byStatus[o.status] = (byStatus[o.status]||0)+1; });
   var contactos = state.networking.filter(function(n){ return n.relacion!=="Sin contacto"; }).length;
   var stats = [
-    {n: total, l:"Oportunidades"},
-    {n: byStatus["Por postular"]||0, l:"Por postular"},
-    {n: total - (byStatus["Por postular"]||0), l:"En movimiento"},
-    {n: byStatus["Entrevista agendada"]||0, l:"Entrevistas"},
-    {n: contactos, l:"Contactos activos"}
+    {n: total, l:"Oportunidades", target:"sec-pipeline"},
+    {n: byStatus["Por postular"]||0, l:"Por postular", target:"sec-pipeline"},
+    {n: total - (byStatus["Por postular"]||0), l:"En movimiento", target:"sec-pipeline"},
+    {n: byStatus["Entrevista agendada"]||0, l:"Entrevistas", target:"sec-pipeline"},
+    {n: contactos, l:"Contactos activos", target:"sec-red"}
   ];
   var html = "";
   stats.forEach(function(s){
-    html += '<div class="jt-stat"><div class="n">'+s.n+'</div><div class="l">'+esc(s.l)+'</div></div>';
+    html += '<div class="jt-stat" data-target="'+s.target+'"><div class="n">'+s.n+'</div><div class="l">'+esc(s.l)+'</div></div>';
   });
   document.getElementById("jt-stats").innerHTML = html;
 }
@@ -3826,8 +3841,19 @@ function wireNav(){
   document.querySelectorAll('.jt-nav a').forEach(function(link){
     link.addEventListener('click', function(e){
       e.preventDefault();
-      goToSection(link.getAttribute('data-target'));
+      var target = link.getAttribute('data-target');
+      if(target === 'jt-home') showHome();
+      else goToSection(target);
     });
+  });
+  var sidebarBrand = document.querySelector('.jt-sidebar-brand');
+  if(sidebarBrand){
+    sidebarBrand.style.cursor = 'pointer';
+    sidebarBrand.addEventListener('click', showHome);
+  }
+  document.getElementById('jt-stats').addEventListener('click', function(e){
+    var stat = e.target.closest('.jt-stat[data-target]');
+    if(stat) goToSection(stat.getAttribute('data-target'));
   });
   document.addEventListener('click', function(e){
     var hint = e.target.closest('.jt-hint[title]');
@@ -3866,11 +3892,14 @@ renderHome();
 syncViewFromHash();
 
 loadState().then(function(){
-  var pagoParam = new URLSearchParams(location.search).get("pago");
-  if(pagoParam){
+  var searchParams = new URLSearchParams(location.search);
+  var pagoParam = searchParams.get("pago");
+  var checkoutParam = searchParams.get("checkout");
+  if(pagoParam || checkoutParam){
     history.replaceState(null, "", location.pathname + location.hash);
   }
   checkSubscriptionAndGate(pagoParam).then(function(entitled){
+    autoStartCheckoutIfRequested(checkoutParam, currentSubscription);
     if(!entitled) return;
     if(!state.onboarding.wizardDone){
       if(!state.onboarding.welcomeEmailSent){

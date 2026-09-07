@@ -132,6 +132,20 @@
   const params = new URLSearchParams(location.search);
   let mode = params.get("mode") === "signup" ? "signup" : "login";
 
+  // El link "Actívalo directo, sin esperar la prueba" del Home público manda
+  // acá con ?checkout=1 — la intención se guarda en localStorage (no solo en
+  // el query param) porque si Supabase exige confirmar el correo, el usuario
+  // vuelve a login.html vía emailRedirectTo SIN el parámetro, y necesitamos
+  // recordar que igual quería pagar directo cuando complete el login normal.
+  if(params.get("checkout") === "1"){
+    try{ localStorage.setItem("jt_pending_checkout", "1"); }catch(e){}
+  }
+  function checkoutSuffix(){
+    var wants = params.get("checkout") === "1";
+    try{ wants = wants || localStorage.getItem("jt_pending_checkout") === "1"; }catch(e){}
+    return wants ? "?checkout=1" : "";
+  }
+
   const title = document.getElementById("jt-login-title");
   const submitBtn = document.getElementById("jt-login-submit");
   const switchText = document.getElementById("jt-login-switch-text");
@@ -347,7 +361,7 @@
         const { data, error } = await withTimeout(supabase.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + "/login.html" } }));
         if(error) throw error;
         if(data.session){
-          location.href = "jobtrack-dashboard-cristian.html";
+          location.href = "jobtrack-dashboard-cristian.html" + checkoutSuffix();
         } else {
           infoBox.textContent = "Cuenta creada. Revisa tu correo para confirmar antes de iniciar sesión.";
           infoBox.style.display = "block";
@@ -368,7 +382,7 @@
       } else {
         const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }));
         if(error) throw error;
-        location.href = "jobtrack-dashboard-cristian.html";
+        location.href = "jobtrack-dashboard-cristian.html" + checkoutSuffix();
       }
     } catch(err){
       errBox.textContent = translateAuthError(err);
