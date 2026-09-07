@@ -228,6 +228,16 @@ function freshUrl(watch) {
 // (scripts/generate-search-insights.mjs) — se aplica sola cada día, sin
 // trabajo manual de diseño.
 function digestHtml({ metrics, newListings, changedItems, cargoGroups }) {
+  // Sin avisos nuevos ni cambios reales, el correo no tiene "noticias" que
+  // dar — en vez de fingir un resumen igual de sustancioso todos los días
+  // (lo que terminaba pareciendo ruido cuando el "resumen" no traía nada
+  // nuevo), se muestra un empujón honesto a seguir buscando en vez de un
+  // titular que no cumple lo que promete.
+  const hasNews = newListings.length > 0 || changedItems.length > 0;
+  const headline = hasNews ? "Tu resumen de hoy" : "Nada nuevo hoy — pero no dejes tu búsqueda en pausa";
+  const headlineMargin = hasNews ? "0 0 16px" : "0 0 4px";
+  const subhead = hasNews ? "" : `
+        <p style="font-family:Helvetica,Arial,sans-serif;font-size:13.5px;color:#605D5D;margin:0 0 16px;line-height:1.5;">Las oportunidades pasan rápido — vale la pena seguir atento y revisar tus búsquedas hoy.</p>`;
   const statChip = (n, l) => `
     <td align="center" style="padding:14px 6px;">
       <div style="font-family:Helvetica,Arial,sans-serif;font-weight:800;font-size:22px;color:#201E1D;">${n}</div>
@@ -277,7 +287,8 @@ function digestHtml({ metrics, newListings, changedItems, cargoGroups }) {
         <span style="font-family:Helvetica,Arial,sans-serif;font-weight:800;font-size:19px;color:#201E1D;">JobTrack<span style="color:#7C5CFC;">.</span></span>
       </td></tr>
       <tr><td style="padding:24px 28px 8px;">
-        <h1 style="font-family:Helvetica,Arial,sans-serif;font-size:19px;margin:0 0 16px;color:#201E1D;">Tu resumen de hoy</h1>
+        <h1 style="font-family:Helvetica,Arial,sans-serif;font-size:19px;margin:${headlineMargin};color:#201E1D;">${headline}</h1>
+        ${subhead}
         ${statsHtml}
       </td></tr>
       ${listingsHtml}
@@ -324,11 +335,14 @@ async function sendDailyDigest(userId, data, changedItems, newListings, opts = {
     });
     const cargoGroups = Array.from(byCargo.entries()).map(([cargo, links]) => ({ cargo, links }));
 
+    const hasNews = newListings.length > 0 || changedItems.length > 0;
     await sendEmail({
       to: email,
       subject: newListings.length > 0
         ? `📬 ${newListings.length} aviso(s) nuevo(s) + tu resumen de hoy — JobTrack`
-        : `Tu resumen de hoy — JobTrack`,
+        : hasNews
+          ? `🔎 Cambios en tus búsquedas vigiladas — JobTrack`
+          : `No dejes tu búsqueda en pausa — JobTrack`,
       html: digestHtml({ metrics, newListings, changedItems, cargoGroups }),
     });
     console.log(`  Correo enviado a ${email} (${newListings.length} aviso(s) nuevo(s), ${changedItems.length} cambio(s))`);
