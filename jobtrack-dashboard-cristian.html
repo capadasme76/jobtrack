@@ -3333,6 +3333,10 @@ function runMatchAnalysis(){
     ? { label:"Postular con ajustes", cls:"mid", text:"Cobertura parcial — ajusta tu CV o carta para destacar lo que sí cubres antes de postular." }
     : { label:"Baja prioridad", cls:"low", text:"Cobertura baja frente a lo que pide el aviso — revisa si realmente calza con tu perfil antes de invertir tiempo en postular." };
 
+  if(typeof posthog !== "undefined"){
+    posthog.capture("match_ejecutado", { resultado_score: score });
+  }
+
   var oppSelect = document.getElementById("jt-match-opp-select");
   var linkedOpp = oppSelect && oppSelect.value ? state.opportunities.find(function(o){ return o.id === oppSelect.value; }) : null;
   if(linkedOpp){
@@ -3662,6 +3666,9 @@ async function extractCvAndFillForm(file){
 
     statusEl.style.color = "var(--teal)";
     statusEl.textContent = "Listo — revisa los campos de abajo y corrige lo que haga falta antes de guardar.";
+    if(typeof posthog !== "undefined"){
+      posthog.capture("cv_cargado", { metodo: name.endsWith(".pdf") ? "pdf" : "docx" });
+    }
   } catch(e){
     statusEl.style.color = "var(--brick)";
     statusEl.textContent = "Error de red al analizar el CV. Intenta de nuevo.";
@@ -3921,6 +3928,9 @@ loadState().then(function(){
             'value': 1.0,
             'currency': 'CLP'
           });
+        }
+        if(typeof posthog !== "undefined"){
+          posthog.capture("registro_creado", { origen: searchParams.get("utm_source") || "directo" });
         }
       }
       startWizard();

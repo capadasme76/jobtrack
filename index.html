@@ -14,21 +14,22 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JobTrack — Organiza tu búsqueda de empleo en un solo lugar</title>
-<meta name="description" content="Agenda de postulaciones, red de contactos, match de CV y seguimiento de entrevistas, todo en un dashboard privado. 7 días gratis, luego $14.000 cada 3 meses.">
+<title>JobTrack — Descubre por qué no te llaman</title>
+<meta name="description" content="Compara tu CV con cada vacante y descubre qué te falta antes de postular. Avisos nuevos todos los días. 7 días gratis, sin tarjeta.">
 <link rel="canonical" href="https://jobtrack.cl/">
 <meta name="robots" content="index, follow">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="JobTrack">
-<meta property="og:title" content="JobTrack — Organiza tu búsqueda de empleo en un solo lugar">
-<meta property="og:description" content="Agenda de postulaciones, red de contactos, match de CV y seguimiento de entrevistas, todo en un dashboard privado.">
+<meta property="og:title" content="JobTrack — Descubre por qué no te llaman">
+<meta property="og:description" content="Compara tu CV con cada vacante y descubre qué te falta antes de postular. Avisos nuevos todos los días.">
 <meta property="og:url" content="https://jobtrack.cl/">
+<!-- TODO: reemplazar por una imagen 1200x630 con el titular nuevo — ver PENDIENTE_BRIEF_JOBTRACK.md -->
 <meta property="og:image" content="https://jobtrack.cl/icon-512.png">
 <meta property="og:locale" content="es_CL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="JobTrack — Organiza tu búsqueda de empleo en un solo lugar">
-<meta name="twitter:description" content="Agenda de postulaciones, red de contactos, match de CV y seguimiento de entrevistas, todo en un dashboard privado.">
+<meta name="twitter:title" content="JobTrack — Descubre por qué no te llaman">
+<meta name="twitter:description" content="Compara tu CV con cada vacante y descubre qué te falta antes de postular.">
 <meta name="twitter:image" content="https://jobtrack.cl/icon-512.png">
 
 <script type="application/ld+json">
@@ -59,8 +60,8 @@
   "mainEntity": [
     {"@type": "Question", "name": "¿Qué es JobTrack?", "acceptedAnswer": {"@type": "Answer", "text": "Un dashboard para organizar tu búsqueda de empleo: agenda de postulaciones, red de contactos, match de tu CV contra vacantes, reuniones y métricas — todo en un solo lugar, en vez de un Excel y quince pestañas."}},
     {"@type": "Question", "name": "¿Cuánto cuesta?", "acceptedAnswer": {"@type": "Answer", "text": "Los primeros 7 días son gratis. Después, $14.000 CLP cada 3 meses — pagas cuando quieras, sin cargos automáticos: te avisamos por correo antes de que venza tu plan para que renueves si quieres seguir. Las cuentas creadas durante la etapa de prueba original quedan gratis para siempre."}},
-    {"@type": "Question", "name": "¿Dónde se guardan mis datos?", "acceptedAnswer": {"@type": "Answer", "text": "En una base de datos privada, protegida con tu propia cuenta. Nadie más puede ver tu información — no se comparte ni se vende."}},
-    {"@type": "Question", "name": "¿JobTrack busca trabajos por mí automáticamente?", "acceptedAnswer": {"@type": "Answer", "text": "Todavía no: hoy tú cargas tus oportunidades y contactos, y la app te ayuda a organizarlos, compararlos contra tu perfil y darles seguimiento. La búsqueda automática de avisos está en evaluación."}},
+    {"@type": "Question", "name": "¿Dónde se guardan mis datos?", "acceptedAnswer": {"@type": "Answer", "text": "En una base de datos privada, protegida con tu propia cuenta. Tus datos son tuyos: nadie más puede verlos, no se comparten ni se venden, y son privados mientras buscas."}},
+    {"@type": "Question", "name": "¿JobTrack busca trabajos por mí automáticamente?", "acceptedAnswer": {"@type": "Answer", "text": "Sí, para las búsquedas que guardes: revisamos ChileTrabajos todos los días y te avisamos apenas aparece algo nuevo. Para los demás portales (LinkedIn, Indeed, Laborum, Trabajando.cl) te dejamos el link de búsqueda ya armado, listo para revisar en un clic."}},
     {"@type": "Question", "name": "¿Puedo exportar mis datos?", "acceptedAnswer": {"@type": "Answer", "text": "Sí. En Agenda de postulaciones y en Contactos hay un botón \"Exportar a Excel\" que descarga toda tu información."}},
     {"@type": "Question", "name": "¿Cómo actualizo mi perfil o mi CV?", "acceptedAnswer": {"@type": "Answer", "text": "Entra a \"Mi perfil\" dentro de tu cuenta y usa el botón \"Editar\". Ese perfil se reutiliza automáticamente en el match de CV y en tus cartas de presentación."}},
     {"@type": "Question", "name": "¿Cómo elimino mi cuenta o mis datos?", "acceptedAnswer": {"@type": "Answer", "text": "Escríbenos a hola@jobtrack.cl y lo hacemos por ti — todavía no existe un botón de autoservicio para esto."}},
@@ -122,19 +123,21 @@
   .jt-btn-secondary{font-family:var(--font-body);font-weight:700;font-size:14px;background:var(--card-bg);color:var(--ink);border:1px solid var(--line);padding:10px 18px;cursor:pointer;text-decoration:none;display:inline-block;}
   .jt-btn-secondary:hover{border-color:var(--ink-soft);}
 
-  .jt-hero{max-width:1100px;margin:0 auto;padding:72px 24px 56px;}
+  .jt-hero{max-width:1100px;margin:0 auto;padding:48px 24px 56px;}
   .jt-hero-inner{max-width:640px;}
   .jt-hero h1{font-family:var(--font-display);font-weight:800;font-size:52px;line-height:1.08;margin:0 0 20px;}
   .jt-hero p{font-size:17px;color:var(--ink);opacity:.75;max-width:520px;margin:0 0 28px;line-height:1.5;}
   .jt-hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
   .jt-hero .jt-btn-primary{font-size:16px;padding:14px 28px;}
-  .jt-hero .jt-btn-secondary{font-size:16px;padding:14px 28px;}
+  .jt-hero-fineprint{margin:14px 0 0;font-size:13.5px;color:var(--ink);opacity:.6;}
+  .jt-hero-shot{max-width:100%;height:auto;margin-top:36px;border:1px solid var(--line);display:block;background:var(--paper-dim);}
+  .jt-pricing-line{font-size:15px;color:var(--ink);opacity:.75;margin-top:20px;}
+  .jt-pricing-line a{color:var(--brick);text-decoration:underline;}
 
-  .jt-grid4{max-width:1100px;margin:0 auto;padding:56px 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-  .jt-card{background:var(--paper-dim);padding:24px;}
-  .jt-card .ic{color:var(--brick);margin-bottom:14px;display:block;}
-  .jt-card h3{font-family:var(--font-display);font-size:16px;font-weight:800;margin:0 0 8px;}
-  .jt-card p{font-size:14px;color:var(--ink);opacity:.75;margin:0;line-height:1.5;}
+  .jt-grid3{max-width:1100px;margin:0 auto;padding:56px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:32px;}
+  .jt-grid3 .num{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--brick-dark);margin-bottom:8px;}
+  .jt-grid3 h3{font-family:var(--font-display);font-size:16px;font-weight:800;margin:0 0 8px;}
+  .jt-grid3 p{font-size:14px;color:var(--ink);opacity:.75;margin:0;line-height:1.5;}
 
   .jt-about{max-width:1100px;margin:0 auto;padding:64px 24px;display:grid;grid-template-columns:1fr 1.3fr;gap:56px;}
   .jt-about h2{font-family:var(--font-display);font-size:32px;font-weight:800;margin:0;}
@@ -191,7 +194,7 @@
   .jt-bot-answer a{color:var(--brick);}
 
   @media (max-width:800px){
-    .jt-grid4{grid-template-columns:repeat(2,1fr);}
+    .jt-grid3{grid-template-columns:1fr;gap:24px;}
     .jt-guides-grid{grid-template-columns:repeat(2,1fr);}
     .jt-about{grid-template-columns:1fr;gap:20px;}
     .jt-how-grid{grid-template-columns:1fr;gap:24px;}
@@ -199,7 +202,6 @@
   }
   @media (max-width:560px){
     .jt-hero h1{font-size:34px;}
-    .jt-grid4{grid-template-columns:1fr;}
     .jt-guides-grid{grid-template-columns:1fr;}
     .jt-home-header-inner{flex-wrap:wrap;gap:10px;}
     .jt-bot-row{flex-direction:column;}
@@ -216,7 +218,6 @@
     </nav>
     <div class="jt-home-actions">
       <a class="jt-btn-ghost" href="login.html?mode=login">Iniciar sesión</a>
-      <a class="jt-btn-primary" href="login.html?mode=signup">Crear cuenta</a>
     </div>
   </div>
 </header>
@@ -224,66 +225,46 @@
 
 <section class="jt-hero">
   <div class="jt-hero-inner">
-    <h1>Organiza tu búsqueda de empleo en un solo lugar</h1>
-    <p>Tu apoyo real durante la búsqueda: capturas las ofertas que encuentras en los distintos portales, ordenas tus contactos y entrevistas, y todo queda en un solo lugar — para que ocupes tu tiempo en postular, no en buscar.</p>
+    <h1>Postulas y postulas. Y no te llaman.</h1>
+    <p>Casi siempre el problema no eres tú: es que tu CV no dice lo que la vacante pide. JobTrack lo compara aviso por aviso y te muestra qué cambiar antes de postular. Y busca avisos nuevos por ti todos los días, para que no llegues tarde a los que sí te calzan.</p>
     <div class="jt-hero-actions">
-      <a class="jt-btn-primary" href="login.html?mode=signup">Prueba 7 días gratis
+      <a class="jt-btn-primary" href="login.html?mode=signup">Revisar mi CV contra una vacante
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
       </a>
-      <a class="jt-btn-secondary" href="login.html?mode=login">Iniciar sesión</a>
     </div>
-    <p style="margin:14px 0 0;font-size:13.5px;">
-      <a href="login.html?mode=signup&checkout=1" style="color:inherit;opacity:.7;text-decoration:underline;">¿Ya decidiste? Actívalo directo, sin esperar la prueba →</a>
-    </p>
+    <p class="jt-hero-fineprint">7 días gratis · sin tarjeta de crédito · cancelas cuando quieras</p>
+    <!-- Captura del tablero: se reactiva cuando exista /img/dashboard-preview.webp.
+         Descomentar este bloque tal cual. Ver PENDIENTE_BRIEF_JOBTRACK.md
+    <img
+      class="jt-hero-shot"
+      src="/img/dashboard-preview.webp"
+      alt="Tablero de JobTrack mostrando postulaciones en curso y el match de CV de una vacante"
+      width="960" height="600"
+      loading="eager" fetchpriority="high"
+    >
+    -->
+    <!-- TODO: falta la captura real /img/dashboard-preview.webp — ver PENDIENTE_BRIEF_JOBTRACK.md -->
   </div>
 </section>
 
 <hr class="hr">
-<section class="jt-grid4">
-  <div class="jt-card">
-    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16"></rect><line x1="9" y1="4" x2="9" y2="20"></line><line x1="15" y1="4" x2="15" y2="20"></line></svg>
-    <h3>Agenda de postulaciones</h3>
-    <p>Sigue cada postulación de principio a fin, sin perder de vista los plazos que importan.</p>
+<section class="jt-grid3">
+  <div>
+    <div class="num">01</div>
+    <h3>Pega el aviso. Te decimos qué te falta.</h3>
+    <p>Comparamos tu perfil contra lo que pide esa vacante en concreto: qué tienes, qué no, y qué conviene reforzar antes de mandar nada.</p>
   </div>
-  <div class="jt-card">
-    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16 14c2.5 0 5 1.5 6 4"></path></svg>
-    <h3>Red de contactos</h3>
-    <p>Mantén a mano a tus reclutadores y contactos: con quién hablaste, y cuándo toca retomar.</p>
+  <div>
+    <div class="num">02</div>
+    <h3>Los avisos nuevos llegan solos.</h3>
+    <p>Revisamos los portales todos los días y te mostramos los que calzan con tu perfil. No tienes que abrir cinco pestañas cada mañana.</p>
   </div>
-  <div class="jt-card">
-    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></svg>
-    <h3>Match de CV</h3>
-    <p>Compara tu perfil con lo que pide cada vacante, para saber exactamente en qué reforzarte.</p>
+  <div>
+    <div class="num">03</div>
+    <h3>Y después no se te pierde el hilo.</h3>
+    <p>Cada postulación con su estado, sus plazos y con quién hablaste. Te avisamos antes de que se te pase una entrevista.</p>
   </div>
-  <div class="jt-card">
-    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
-    <h3>Seguimiento y alertas</h3>
-    <p>Te avisamos antes de que se te pase una entrevista o un plazo — nosotros estamos pendientes por ti.</p>
-  </div>
-</section>
-
-<hr class="hr">
-<section class="jt-grid4">
-  <div class="jt-card">
-    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16"></rect><line x1="9" y1="4" x2="9" y2="20"></line><line x1="15" y1="4" x2="15" y2="20"></line></svg>
-    <h3>Todo centralizado</h3>
-    <p>Todo en un solo lugar, sin saltar entre pestañas y portales.</p>
-  </div>
-  <div class="jt-card">
-    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-    <h3>Tus datos, solo tuyos</h3>
-    <p>Tus datos son tuyos — privacidad total mientras buscas.</p>
-  </div>
-  <div class="jt-card">
-    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16"></rect><path d="M9 9h6v6H9z"></path></svg>
-    <h3>Menos trabajo repetitivo</h3>
-    <p>Nos encargamos de las tareas repetitivas, para que tú te enfoques en postular bien.</p>
-  </div>
-  <div class="jt-card">
-    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16 14c2.5 0 5 1.5 6 4"></path></svg>
-    <h3>Pensado para tu red</h3>
-    <p>La mayoría de las oportunidades llegan por contactos, no solo por portales — y te ayudamos a no perderles el hilo.</p>
-  </div>
+  <p class="jt-pricing-line" style="grid-column:1/-1;">Después de la prueba: $14.000 cada 3 meses. Cancelas cuando quieras. <a href="login.html?mode=signup&checkout=1">¿Ya decidiste? Actívalo directo, sin esperar la prueba →</a></p>
 </section>
 
 <hr class="hr">
@@ -403,12 +384,12 @@
     },
     {
       q: "¿Dónde se guardan mis datos?",
-      a: "En una base de datos privada, protegida con tu propia cuenta. Nadie más puede ver tu información — no se comparte ni se vende.",
-      k: ["donde se guardan", "datos", "privacidad", "seguro", "informacion"]
+      a: "En una base de datos privada, protegida con tu propia cuenta. Tus datos son tuyos: nadie más puede verlos, no se comparten ni se venden, y son privados mientras buscas.",
+      k: ["donde se guardan", "datos", "privacidad", "seguro", "informacion", "tuyos"]
     },
     {
       q: "¿JobTrack busca trabajos por mí automáticamente?",
-      a: "Todavía no: hoy tú cargas tus oportunidades y contactos, y la app te ayuda a organizarlos, compararlos contra tu perfil y darles seguimiento. La búsqueda automática de avisos está en evaluación.",
+      a: "Sí, para las búsquedas que guardes: revisamos ChileTrabajos todos los días y te avisamos apenas aparece algo nuevo. Para los demás portales (LinkedIn, Indeed, Laborum, Trabajando.cl) te dejamos el link de búsqueda ya armado, listo para revisar en un clic.",
       k: ["busca trabajos", "automatico", "avisos", "busqueda automatica", "sola"]
     },
     {
