@@ -120,6 +120,7 @@
   .rc-file input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;}
   .rc-file .fname{font-size:13px;color:var(--ink);opacity:.7;}
   .rc-count{font-size:12px;color:var(--ink);opacity:.5;margin:6px 0 0;}
+  .rc-leido{font-size:12.5px;color:var(--teal-dark);background:#E4F1EA;border-left:3px solid var(--teal);padding:7px 10px;margin:8px 0 0;line-height:1.45;}
 
   .rc-go{max-width:1100px;margin:0 auto;padding:20px 24px 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
   .rc-go .jt-btn-primary{font-size:16px;padding:14px 28px;}
@@ -157,6 +158,9 @@
   .rc-req .q{font-family:var(--font-display);font-weight:800;font-size:15.5px;margin:0 0 4px;}
   .rc-req .d{font-size:14px;color:var(--ink);opacity:.78;margin:0;line-height:1.55;}
 
+  .rc-parcial{margin-top:20px;background:var(--amber-100);border-left:4px solid var(--amber);padding:16px 18px;}
+  .rc-parcial b{display:block;font-family:var(--font-display);font-size:15px;margin-bottom:5px;}
+  .rc-parcial span{font-size:14px;line-height:1.55;color:var(--ink);opacity:.85;}
   .rc-gate{margin-top:28px;background:var(--brick-100);border:1px solid var(--brick);padding:26px 28px;}
   .rc-gate h3{font-family:var(--font-display);font-weight:800;font-size:22px;margin:0 0 8px;}
   .rc-gate p{font-size:15px;color:var(--ink);opacity:.8;margin:0 0 8px;max-width:60ch;line-height:1.55;}
@@ -234,9 +238,10 @@
   <div class="rc-panes">
     <div class="rc-pane">
       <div class="rc-pane-head"><span class="rc-step">01</span><h2>El aviso de la vacante</h2></div>
-      <p class="hint">Copia el texto completo del aviso y pégalo acá — con los requisitos incluidos, que es la parte que importa.</p>
-      <textarea id="aviso" placeholder="Pega acá el aviso completo: cargo, descripción y requisitos." spellcheck="false"></textarea>
+      <p class="hint">Pega el <b>link</b> del aviso y lo leemos por ti, o pega el texto completo con los requisitos. Si el portal no nos deja leerlo, te lo decimos.</p>
+      <textarea id="aviso" placeholder="Pega acá el link del aviso, o su texto completo: cargo, descripción y requisitos." spellcheck="false"></textarea>
       <p class="rc-count" id="avisoCount">0 caracteres</p>
+      <p class="rc-leido" id="avisoLeido" hidden></p>
     </div>
 
     <div class="rc-pane">
@@ -275,6 +280,11 @@
       <p class="cargo" id="cargo"></p>
       <p class="res" id="resumen"></p>
     </div>
+  </div>
+
+  <div class="rc-parcial" id="parcial" hidden>
+    <b>Este aviso no dice qué pide</b>
+    <span>Comparamos tu CV con lo poco que el aviso declara, así que el resultado es parcial. No inventamos requisitos que el aviso no menciona — si quieres una comparación completa, busca el aviso original en el portal, copia el texto entero con los requisitos y pégalo de nuevo.</span>
   </div>
 
   <div class="rc-reqs">
@@ -376,7 +386,7 @@
     var n = el.value.trim().length;
     out.textContent = n.toLocaleString("es-CL") + (n === 1 ? " caracter" : " caracteres");
   }
-  aviso.addEventListener("input", function(){ contar(aviso, $("avisoCount")); });
+  aviso.addEventListener("input", function(){ contar(aviso, $("avisoCount")); $("avisoLeido").hidden = true; });
   cv.addEventListener("input", function(){ contar(cv, $("cvCount")); });
 
   function mostrarError(html){
@@ -439,6 +449,44 @@
   });
 
   /* ---------- comparación ---------- */
+  function esLink(t){
+    if (/^https?:\/\/\S+$/i.test(t)) return true;
+    return t.length < 300 && /^(www\.|https?:)/i.test(t) && t.split(/\s+/).length < 4;
+  }
+
+  // Devuelve el texto del aviso, o null si no se pudo (ya mostró el error).
+  async function leerDesdeLink(link){
+    var url = /^https?:\/\//i.test(link) ? link : "https://" + link;
+    go.disabled = true;
+    loading.classList.add("show");
+    loadingMsg.textContent = "Abriendo el aviso desde el link…";
+    try {
+      var res = await fetch("/api/read-aviso", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-jt-source": "revisa-tu-cv" },
+        body: JSON.stringify({ url: url })
+      });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok) {
+        mostrarError(data.mensaje || data.error || "No pudimos abrir ese link. Copia el texto del aviso y pégalo en el cuadro.");
+        aviso.focus();
+        return null;
+      }
+      aviso.value = data.texto;
+      contar(aviso, $("avisoCount"));
+      var nota = $("avisoLeido");
+      nota.textContent = "Leímos el aviso desde " + (data.portal || "el link") + ". Revisa que esté completo antes de comparar.";
+      nota.hidden = false;
+      return data.texto;
+    } catch (e) {
+      mostrarError("Se cortó la conexión al abrir el link. Copia el texto del aviso y pégalo en el cuadro.");
+      return null;
+    } finally {
+      loading.classList.remove("show");
+      go.disabled = false;
+    }
+  }
+
   var MENSAJES = [
     "Leyendo el aviso y separando lo que pide de verdad…",
     "Buscando esas mismas cosas en tu CV…",
@@ -450,7 +498,17 @@
     limpiarError();
 
     var a = aviso.value.trim(), c = cv.value.trim();
-    if (a.length < 80) { mostrarError("Pega el aviso completo, con los requisitos incluidos — con un par de líneas no se puede comparar nada."); aviso.focus(); return; }
+
+    // Pegar el link del aviso en vez del texto es lo primero que hace todo el
+    // mundo, así que en vez de rechazarlo lo leemos. Si no se detectara acá, el
+    // modelo recibiría una URL, no tendría nada que comparar y terminaría
+    // inventando los requisitos típicos del cargo.
+    if (esLink(a)) {
+      var leido = await leerDesdeLink(a);
+      if (!leido) return;
+      a = leido;
+    }
+    if (a.length < 250) { mostrarError("Ese aviso está muy corto — parece solo el título. Necesitamos el texto completo, con la descripción y los requisitos, que es la parte que se compara."); aviso.focus(); return; }
     if (c.length < 200) { mostrarError("Falta el texto de tu CV. Súbelo como archivo o pégalo en el cuadro."); cv.focus(); return; }
 
     enviando = true;
@@ -514,6 +572,8 @@
     $("cargo").textContent = d.cargoDetectado || "Vacante";
     $("resumen").textContent = d.resumenUnaLinea || "";
 
+    $("parcial").hidden = d.avisoDeclaraRequisitos !== false;
+
     var cont = $("reqs");
     cont.textContent = "";
     (d.requisitos || []).forEach(function(r){
@@ -560,6 +620,8 @@
       gate.hidden = false;
     }
 
+    document.querySelector(".rc-reqs").hidden = !(d.requisitos && d.requisitos.length);
+
     result.classList.add("show");
     result.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -570,6 +632,7 @@
     limpiarError();
     aviso.value = "";
     contar(aviso, $("avisoCount"));
+    $("avisoLeido").hidden = true;
     aviso.focus();
     aviso.scrollIntoView({ behavior: "smooth", block: "center" });
   });

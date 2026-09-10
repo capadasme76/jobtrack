@@ -29,6 +29,11 @@ function tool(conPlan) {
       description:
         "Qué tan cerca está este CV de lo que pide el aviso, de 0 a 100. Sé riguroso y realista: 100 solo si cumple todo lo excluyente y casi todo lo deseable. No infles el número para agradar.",
     },
+    avisoDeclaraRequisitos: {
+      type: "boolean",
+      description:
+        "true solo si el aviso enumera requisitos concretos (experiencia, estudios, idiomas, herramientas). false si es apenas un título, una descripción genérica de la empresa o un texto sin requisitos — en ese caso no inventes requisitos para llenar la lista.",
+    },
     resumenUnaLinea: {
       type: "string",
       description:
@@ -37,7 +42,7 @@ function tool(conPlan) {
     requisitos: {
       type: "array",
       description:
-        "Entre 5 y 8 requisitos que el aviso pide de verdad, en el orden de importancia que le da el aviso. Incluye los excluyentes primero.",
+        "SOLO los requisitos que el aviso declara de forma explícita, en el orden de importancia que le da el aviso, con los excluyentes primero. Entre 5 y 8 cuando el aviso los enumera; menos —incluso ninguno— cuando el aviso no los declara. Está prohibido inferir requisitos habituales del cargo que el aviso no menciona.",
       items: {
         type: "object",
         properties: {
@@ -85,8 +90,8 @@ function tool(conPlan) {
       type: "object",
       properties,
       required: conPlan
-        ? ["cargoDetectado", "porcentajeMatch", "resumenUnaLinea", "requisitos", "tresCambios"]
-        : ["cargoDetectado", "porcentajeMatch", "resumenUnaLinea", "requisitos"],
+        ? ["cargoDetectado", "porcentajeMatch", "avisoDeclaraRequisitos", "resumenUnaLinea", "requisitos", "tresCambios"]
+        : ["cargoDetectado", "porcentajeMatch", "avisoDeclaraRequisitos", "resumenUnaLinea", "requisitos"],
     },
   };
 }
@@ -98,7 +103,9 @@ Reglas que no se rompen:
 - Habla en segunda persona, en español de Chile, directo y sin adornos.
 - Abre siempre en positivo: nombra primero lo que la persona tiene. El problema queda implícito, nunca como reproche.
 - No prometas resultados de contratación ni des a entender que conseguirá el trabajo.
-- Si el aviso está incompleto o es muy vago, dilo en el resumen en vez de rellenar con supuestos.
+- NUNCA agregues un requisito que el aviso no declara explícitamente. Está prohibido completar la lista con los requisitos típicos del cargo: si el aviso no los pide, no existen para este análisis. Es el error más grave que puedes cometer acá, porque hace que la persona cambie su CV para cumplir algo que nadie pidió.
+- Si el aviso no declara requisitos, marca avisoDeclaraRequisitos en false, devuelve solo lo poco que el aviso sí dice (aunque sean dos ítems o ninguno) y dilo en el resumen. Una lista corta y verdadera vale más que una larga y verosímil.
+- Cuando el aviso declara poco, el porcentaje de coincidencia tiene que reflejar esa incertidumbre en vez de dar un número que parezca preciso.
 - No uses las palabras "Excel" ni "dashboard".`;
 
 function hashIp(ip) {
@@ -174,8 +181,27 @@ export default async function handler(req, res) {
   }
 
   const { avisoText, cvText } = req.body || {};
-  if (!avisoText || typeof avisoText !== "string" || avisoText.trim().length < 80) {
-    res.status(400).json({ error: "Pega el aviso completo — con menos de un par de líneas no se puede comparar nada." });
+  // Pegar el link en vez del texto es el error más común. Si llega una URL, el
+  // modelo no tiene nada que comparar y se inventa los requisitos típicos del
+  // cargo — se ve razonable y es falso. Se corta acá, además del chequeo del
+  // navegador, para que ninguna llamada a la IA salga con una URL por aviso.
+  if (typeof avisoText === "string" && /^https?:\/\/\S+$/i.test(avisoText.trim())) {
+    res.status(400).json({
+      error:
+        "Eso es el link del aviso, no el aviso. Todavía no podemos leerlo desde un link: abre el aviso en el portal, copia el texto completo con los requisitos y pégalo en el cuadro.",
+    });
+    return;
+  }
+
+  // Un aviso real con requisitos rara vez baja de 500 caracteres. Con un título
+  // suelto el modelo no tiene nada que comparar y termina inventando los
+  // requisitos típicos del cargo — se ve razonable y es falso. Preferimos no
+  // responder antes que responder de adivinanza.
+  if (!avisoText || typeof avisoText !== "string" || avisoText.trim().length < 250) {
+    res.status(400).json({
+      error:
+        "Ese aviso está muy corto — parece solo el título. Necesitamos el texto completo, con la descripción y los requisitos, que es la parte que se compara. Vuelve al portal, copia todo el aviso y pégalo de nuevo.",
+    });
     return;
   }
   if (!cvText || typeof cvText !== "string" || cvText.trim().length < 200) {
