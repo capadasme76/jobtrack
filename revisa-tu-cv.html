@@ -139,12 +139,23 @@
   /* ---- resultado ---- */
   .rc-result{max-width:1100px;margin:0 auto;padding:36px 24px 0;display:none;}
   .rc-result.show{display:block;}
-  .rc-top{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;background:var(--ink);color:#F4F3F1;padding:26px 28px;}
-  .rc-score{font-family:var(--font-display);font-weight:800;font-size:64px;line-height:.95;letter-spacing:-.03em;}
-  .rc-score .pc{font-size:26px;font-weight:800;}
-  .rc-score .lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-top:8px;white-space:nowrap;}
-  .rc-top .cargo{font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.7;margin:0 0 8px;}
-  .rc-top .res{font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1.25;margin:0;}
+  .rc-top{background:var(--ink);color:#F4F3F1;padding:26px 28px;}
+  .rc-top .cargo{font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.7;margin:0 0 14px;}
+  .rc-nums{display:grid;grid-template-columns:auto auto 1fr;gap:0 30px;align-items:end;padding-bottom:18px;border-bottom:1px solid rgba(244,243,241,.22);}
+  .rc-num .n{font-family:var(--font-display);font-weight:800;font-size:58px;line-height:.92;letter-spacing:-.035em;}
+  .rc-num .n .pc{font-size:24px;}
+  .rc-num .lbl{display:block;font-size:11.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;opacity:.62;margin-top:8px;}
+  .rc-num.dem .n{opacity:.72;}
+  .rc-brecha{align-self:end;font-size:13.5px;line-height:1.5;opacity:.75;max-width:34ch;padding-bottom:4px;}
+  .rc-brecha b{opacity:1;font-weight:700;}
+  .rc-top .res{font-family:var(--font-display);font-weight:800;font-size:20px;line-height:1.3;margin:18px 0 0;}
+  .rc-banda{display:inline-block;font-family:var(--font-body);font-weight:700;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;margin:16px 0 0;}
+  .rc-banda.b1{background:#1A7D4F;color:#fff;}
+  .rc-banda.b2{background:#3D8F66;color:#fff;}
+  .rc-banda.b3{background:#8A5A12;color:#fff;}
+  .rc-banda.b4{background:#A8442F;color:#fff;}
+  .rc-banda.b5{background:#7A2F20;color:#fff;}
+  .rc-veredicto{font-size:15px;line-height:1.55;margin:12px 0 0;opacity:.9;}
 
   .rc-reqs{margin-top:26px;}
   .rc-reqs h3{font-family:var(--font-display);font-weight:800;font-size:22px;margin:0 0 6px;}
@@ -153,8 +164,11 @@
   .rc-req:first-of-type{border-top:2px solid var(--ink);}
   .rc-tag{font-family:var(--font-body);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;display:inline-block;white-space:nowrap;}
   .rc-tag.tienes{background:#E4F1EA;color:var(--teal-dark);border:1px solid var(--teal);}
-  .rc-tag.parcial{background:var(--amber-100);color:var(--amber);border:1px solid var(--amber);}
-  .rc-tag.falta{background:var(--rust-100);color:var(--rust);border:1px solid var(--rust);}
+  .rc-tag.tienes-no-dicho{background:var(--brick-100);color:var(--brick-800);border:1px solid var(--brick);white-space:normal;}
+  .rc-tag.no-tienes{background:var(--rust-100);color:var(--rust);border:1px solid var(--rust);}
+  .rc-tag.aviso-vago{background:var(--paper-dim);color:var(--ink-soft);border:1px solid var(--line);}
+  .rc-req .exc{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rust);margin-top:6px;}
+  .rc-req .q{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
   .rc-req .q{font-family:var(--font-display);font-weight:800;font-size:15.5px;margin:0 0 4px;}
   .rc-req .d{font-size:14px;color:var(--ink);opacity:.78;margin:0;line-height:1.55;}
 
@@ -167,6 +181,9 @@
   .rc-gate ul{margin:12px 0 18px;padding-left:20px;}
   .rc-gate li{font-size:14.5px;margin-bottom:6px;color:var(--ink);opacity:.85;}
   .rc-gate .fine{font-size:13px;opacity:.65;margin:10px 0 0;}
+  .rc-legibilidad{margin-top:24px;background:var(--brick-100);border-left:4px solid var(--brick);padding:18px 20px;}
+  .rc-legibilidad b{display:block;font-family:var(--font-display);font-size:16px;margin-bottom:6px;}
+  .rc-legibilidad p{font-size:14.5px;line-height:1.55;color:var(--ink);opacity:.85;margin:0;}
   .rc-plan{margin-top:26px;}
   .rc-plan h3{font-family:var(--font-display);font-weight:800;font-size:22px;margin:0 0 14px;}
   .rc-cambio{border-top:1px solid var(--line);padding:16px 0;}
@@ -275,11 +292,26 @@
 
 <section class="rc-result" id="result" aria-live="polite">
   <div class="rc-top">
-    <div class="rc-score"><span id="scoreNum">0</span><span class="pc">%</span><span class="lbl">de coincidencia</span></div>
-    <div>
-      <p class="cargo" id="cargo"></p>
-      <p class="res" id="resumen"></p>
+    <p class="cargo" id="cargo"></p>
+    <div class="rc-nums">
+      <div class="rc-num">
+        <div class="n"><span id="numCalce">0</span><span class="pc">%</span></div>
+        <span class="lbl">Calzas</span>
+      </div>
+      <div class="rc-num dem">
+        <div class="n"><span id="numDem">0</span><span class="pc">%</span></div>
+        <span class="lbl">Tu CV lo demuestra</span>
+      </div>
+      <p class="rc-brecha" id="brecha"></p>
     </div>
+    <p class="res" id="resumen"></p>
+    <span class="rc-banda b3" id="banda"></span>
+    <p class="rc-veredicto" id="veredicto"></p>
+  </div>
+
+  <div class="rc-legibilidad" id="legibilidad" hidden>
+    <b>Esto no es un problema de perfil, es de redacción</b>
+    <p id="legibilidadTexto"></p>
   </div>
 
   <div class="rc-parcial" id="parcial" hidden>
@@ -553,7 +585,7 @@
         return;
       }
       pintar(data);
-      if (typeof gtag === "function") gtag("event", "free_match_completed", { value: data.porcentajeMatch });
+      if (typeof gtag === "function") gtag("event", "free_match_completed", { value: data.porcentajeCalce });
     } catch (err) {
       mostrarError("Se cortó la conexión antes de terminar. Inténtalo de nuevo.");
     } finally {
@@ -564,20 +596,50 @@
     }
   }
 
-  var ETIQUETAS = { tienes: "Lo tienes", parcial: "A medias", falta: "Falta" };
+  var ETIQUETAS = {
+    "tienes": "Lo tienes",
+    "tienes-no-dicho": "Lo tienes, pero tu CV no lo dice",
+    "no-tienes": "No lo tienes",
+    "aviso-vago": "El aviso no lo dice claro"
+  };
+
+  var BANDAS = {
+    "postula-hoy":        { clase: "b1", texto: "Postula hoy" },
+    "postula-ajustando":  { clase: "b2", texto: "Postula, ajustando tu CV" },
+    "solo-si-demuestras": { clase: "b3", texto: "Solo si puedes demostrarlo" },
+    "poco-probable":      { clase: "b4", texto: "Poco probable" },
+    "otra-familia":       { clase: "b5", texto: "Es otra familia de cargo" }
+  };
+
+  function acotar(v){ return Math.max(0, Math.min(100, parseInt(v, 10) || 0)); }
 
   function pintar(d){
-    var pct = Math.max(0, Math.min(100, parseInt(d.porcentajeMatch, 10) || 0));
-    $("scoreNum").textContent = String(pct);
+    var calce = acotar(d.porcentajeCalce);
+    var dem = Math.min(calce, acotar(d.porcentajeDemostrado));
+    $("numCalce").textContent = String(calce);
+    $("numDem").textContent = String(dem);
     $("cargo").textContent = d.cargoDetectado || "Vacante";
     $("resumen").textContent = d.resumenUnaLinea || "";
+
+    var dif = calce - dem;
+    $("brecha").innerHTML = dif >= 8
+      ? "Esos <b>" + dif + " puntos</b> de diferencia no los pierdes por tu experiencia: los pierdes porque tu CV no la dice con las palabras que se buscan."
+      : "Tu CV demuestra casi todo lo que tienes. La diferencia está en el perfil, no en la redacci\u00f3n.";
+
+    var banda = BANDAS[d.bandaAccion] || BANDAS["solo-si-demuestras"];
+    var elBanda = $("banda");
+    elBanda.className = "rc-banda " + banda.clase;
+    elBanda.textContent = banda.texto;
+    $("veredicto").textContent = d.veredicto || "";
 
     $("parcial").hidden = d.avisoDeclaraRequisitos !== false;
 
     var cont = $("reqs");
     cont.textContent = "";
+    var noDichos = 0;
     (d.requisitos || []).forEach(function(r){
-      var estado = ETIQUETAS[r.estado] ? r.estado : "parcial";
+      var estado = ETIQUETAS[r.estado] ? r.estado : "aviso-vago";
+      if (estado === "tienes-no-dicho") noDichos++;
       var row = document.createElement("div");
       row.className = "rc-req";
       var left = document.createElement("div");
@@ -585,6 +647,12 @@
       tag.className = "rc-tag " + estado;
       tag.textContent = ETIQUETAS[estado];
       left.appendChild(tag);
+      if (r.excluyente) {
+        var exc = document.createElement("span");
+        exc.className = "exc";
+        exc.textContent = "Excluyente";
+        left.appendChild(exc);
+      }
       var right = document.createElement("div");
       var q = document.createElement("p");
       q.className = "q";
@@ -598,6 +666,17 @@
       row.appendChild(right);
       cont.appendChild(row);
     });
+
+    var leg = $("legibilidad");
+    if (noDichos > 0) {
+      $("legibilidadTexto").textContent =
+        noDichos === 1
+          ? "Hay un requisito que sí cumples y tu CV no lo dice. Es la diferencia entre que te lean y que no: se arregla escribiéndolo, no cambiando de trabajo."
+          : "Hay " + noDichos + " requisitos que sí cumples y tu CV no dice. Es la diferencia entre que te lean y que no: se arreglan escribiéndolos, no cambiando de trabajo.";
+      leg.hidden = false;
+    } else {
+      leg.hidden = true;
+    }
 
     var plan = $("plan"), gate = $("gate"), cambios = $("cambios");
     if (d.conPlan && Array.isArray(d.tresCambios) && d.tresCambios.length) {

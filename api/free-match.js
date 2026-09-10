@@ -24,20 +24,41 @@ function tool(conPlan) {
       type: "string",
       description: "El cargo que busca el aviso, tal como lo nombra el aviso. Máximo 6 palabras.",
     },
-    porcentajeMatch: {
-      type: "integer",
-      description:
-        "Qué tan cerca está este CV de lo que pide el aviso, de 0 a 100. Sé riguroso y realista: 100 solo si cumple todo lo excluyente y casi todo lo deseable. No infles el número para agradar.",
-    },
     avisoDeclaraRequisitos: {
       type: "boolean",
       description:
         "true solo si el aviso enumera requisitos concretos (experiencia, estudios, idiomas, herramientas). false si es apenas un título, una descripción genérica de la empresa o un texto sin requisitos — en ese caso no inventes requisitos para llenar la lista.",
     },
+    excluyentesFaltantes: {
+      type: "integer",
+      description:
+        "Cuántos requisitos EXCLUYENTES del aviso la persona no cumple de verdad (no cuenta los que sí cumple pero su CV no menciona). Si el aviso no marca cuáles son excluyentes, cuenta los que cualquier reclutador trataría como condición de entrada: título requerido, años de experiencia en la función, idioma pedido como excluyente, y la función o el rubro central del cargo.",
+    },
+    porcentajeCalce: {
+      type: "integer",
+      description:
+        "De 0 a 100: qué tanto la persona REALMENTE cumple lo que el aviso pide, sin importar si su CV lo dice bien o mal. Está anclado por bandas y por topes duros que no se pueden pasar — están en las instrucciones. Nunca lo subas para agradar.",
+    },
+    porcentajeDemostrado: {
+      type: "integer",
+      description:
+        "De 0 a 100: cuánto de ese calce el CV DEMUESTRA por escrito, con las palabras que un lector o un filtro automático encontrarían. Siempre menor o igual que porcentajeCalce. La diferencia entre los dos es lo que la persona pierde por redacción y no por perfil.",
+    },
+    bandaAccion: {
+      type: "string",
+      enum: ["postula-hoy", "postula-ajustando", "solo-si-demuestras", "poco-probable", "otra-familia"],
+      description:
+        "La banda de acción que corresponde a porcentajeCalce según la escala de las instrucciones. Tiene que ser coherente con el número y con excluyentesFaltantes.",
+    },
+    veredicto: {
+      type: "string",
+      description:
+        "Una oración que le dice a la persona qué hacer con este aviso, en segunda persona. En las bandas bajas hay que decirlo derecho —que le conviene guardar la energía para otro aviso— sin dramatizar y sin dejarla sin salida. Nunca insinúes que la persona no sirve: el juicio es sobre el calce con ESTE aviso.",
+    },
     resumenUnaLinea: {
       type: "string",
       description:
-        "Una sola oración, en segunda persona y en positivo, que le diga a la persona dónde está parada. Nunca empieces con una negación ni con la palabra 'no'. Ejemplo de tono: 'Tienes la experiencia que piden; lo que falta es que tu CV lo diga con las palabras del aviso.'",
+        "Una sola oración, en segunda persona y abriendo por lo que la persona SÍ tiene, que explique dónde está parada. Nunca empieces con una negación ni con la palabra 'no'.",
     },
     requisitos: {
       type: "array",
@@ -47,19 +68,23 @@ function tool(conPlan) {
         type: "object",
         properties: {
           requisito: { type: "string", description: "El requisito en pocas palabras, como lo pide el aviso." },
+          excluyente: {
+            type: "boolean",
+            description: "true si el aviso lo marca como excluyente, o si es una condición de entrada evidente del cargo.",
+          },
           estado: {
             type: "string",
-            enum: ["tienes", "parcial", "falta"],
+            enum: ["tienes", "tienes-no-dicho", "no-tienes", "aviso-vago"],
             description:
-              "'tienes' si el CV lo demuestra con claridad; 'parcial' si algo lo insinúa pero no está explícito o le falta respaldo; 'falta' si no aparece en ninguna parte del CV.",
+              "'tienes' = el CV lo demuestra con claridad. 'tienes-no-dicho' = por la trayectoria se deduce que la persona lo tiene, pero el CV no lo dice con las palabras que se buscarían (es un problema de redacción, no de perfil). 'no-tienes' = de verdad no está en su experiencia. 'aviso-vago' = el aviso lo pide de forma tan imprecisa que no se puede evaluar. Distinguir 'tienes-no-dicho' de 'no-tienes' es lo más valioso de todo el análisis: no las mezcles.",
           },
           detalle: {
             type: "string",
             description:
-              "Una oración explicando por qué, citando lo que sí dice el CV cuando corresponda. En segunda persona, sin reprochar.",
+              "Una oración explicando por qué, citando lo que el CV sí dice cuando corresponda. En segunda persona, sin reprochar. Si el estado es 'tienes-no-dicho', di qué habría que escribir para que se vea.",
           },
         },
-        required: ["requisito", "estado", "detalle"],
+        required: ["requisito", "excluyente", "estado", "detalle"],
       },
     },
   };
@@ -67,7 +92,8 @@ function tool(conPlan) {
   if (conPlan) {
     properties.tresCambios = {
       type: "array",
-      description: "Los tres cambios concretos de mayor impacto para este CV y este aviso.",
+      description:
+        "Los tres cambios concretos de mayor impacto para este CV y este aviso, priorizando los requisitos en estado 'tienes-no-dicho', que son los que se arreglan escribiendo.",
       items: {
         type: "object",
         properties: {
@@ -83,29 +109,59 @@ function tool(conPlan) {
     };
   }
 
+  const base = [
+    "cargoDetectado",
+    "avisoDeclaraRequisitos",
+    "excluyentesFaltantes",
+    "porcentajeCalce",
+    "porcentajeDemostrado",
+    "bandaAccion",
+    "veredicto",
+    "resumenUnaLinea",
+    "requisitos",
+  ];
+
   return {
     name: "comparar_cv_vacante",
     description: "Compara un CV con un aviso de trabajo y devuelve el resultado estructurado.",
     input_schema: {
       type: "object",
       properties,
-      required: conPlan
-        ? ["cargoDetectado", "porcentajeMatch", "avisoDeclaraRequisitos", "resumenUnaLinea", "requisitos", "tresCambios"]
-        : ["cargoDetectado", "porcentajeMatch", "avisoDeclaraRequisitos", "resumenUnaLinea", "requisitos"],
+      required: conPlan ? base.concat("tresCambios") : base,
     },
   };
 }
 
-const SYSTEM = `Eres el analista de match de JobTrack. Comparas el CV de una persona con un aviso de trabajo chileno y le dices con precisión qué pide el aviso, qué de eso ya tiene y qué le falta.
+const SYSTEM = `Eres el analista de match de JobTrack. Comparas el CV de una persona con un aviso de trabajo chileno y le dices con precisión qué pide el aviso, qué de eso ya tiene, qué le falta y qué debería hacer.
+
+Tu sesgo por defecto tiene que ser el RIGOR, no la amabilidad. Un puntaje inflado hace que la persona postule, no le contesten y pierda semanas sin saber nunca que nos equivocamos: el daño es invisible para nosotros y cae entero en ella. Un puntaje duro, en cambio, se puede discutir mirando la lista de requisitos. Ante la duda, el número más bajo.
+
+ESCALA ANCLADA de porcentajeCalce — las bandas no son decorativas, definen el número:
+- 85 a 100 (postula-hoy): cumple todo lo excluyente y casi todo lo deseable.
+- 70 a 84 (postula-ajustando): cumple todo lo excluyente; le falta algo deseable.
+- 50 a 69 (solo-si-demuestras): le falta un excluyente, o lo tiene y su CV no lo dice.
+- 30 a 49 (poco-probable): le faltan dos o más excluyentes.
+- 0 a 29 (otra-familia): es otra familia de cargo o otra función.
+
+TOPES DUROS, no negociables:
+- Si excluyentesFaltantes es 1, porcentajeCalce no puede pasar de 55.
+- Si excluyentesFaltantes es 2 o más, porcentajeCalce no puede pasar de 35.
+- Si la función central del cargo es distinta a la trayectoria de la persona (por ejemplo ventas directas frente a comunicaciones corporativas), porcentajeCalce no puede pasar de 35 aunque comparta habilidades transversales como liderazgo o gestión de equipos.
+- Si el aviso no declara requisitos, porcentajeCalce no puede pasar de 50: sin requisitos no hay nada que verificar, y un número alto sería una invención.
+
+LOS DOS NÚMEROS:
+- porcentajeCalce responde "¿tiene lo que piden?".
+- porcentajeDemostrado responde "¿su CV lo demuestra por escrito?".
+- La diferencia entre ambos es lo que la persona pierde por redacción y no por perfil. Es el dato más útil que entregamos, así que calcúlalo con cuidado: cada requisito en estado 'tienes-no-dicho' baja porcentajeDemostrado sin bajar porcentajeCalce.
 
 Reglas que no se rompen:
 - Nunca inventes experiencia, títulos ni habilidades que no estén en el texto del CV.
+- NUNCA agregues un requisito que el aviso no declara explícitamente. Está prohibido completar la lista con los requisitos típicos del cargo: si el aviso no los pide, no existen para este análisis. Es el error más grave que puedes cometer acá, porque hace que la persona cambie su CV para cumplir algo que nadie pidió.
+- Si el aviso no declara requisitos, marca avisoDeclaraRequisitos en false, devuelve solo lo poco que el aviso sí dice y dilo en el resumen.
+- El número es un juicio sobre el calce con ESTE aviso, nunca sobre el valor de la persona. Sé estricto con el calce y respetuoso con quien está al otro lado.
 - Habla en segunda persona, en español de Chile, directo y sin adornos.
 - Abre siempre en positivo: nombra primero lo que la persona tiene. El problema queda implícito, nunca como reproche.
 - No prometas resultados de contratación ni des a entender que conseguirá el trabajo.
-- NUNCA agregues un requisito que el aviso no declara explícitamente. Está prohibido completar la lista con los requisitos típicos del cargo: si el aviso no los pide, no existen para este análisis. Es el error más grave que puedes cometer acá, porque hace que la persona cambie su CV para cumplir algo que nadie pidió.
-- Si el aviso no declara requisitos, marca avisoDeclaraRequisitos en false, devuelve solo lo poco que el aviso sí dice (aunque sean dos ítems o ninguno) y dilo en el resumen. Una lista corta y verdadera vale más que una larga y verosímil.
-- Cuando el aviso declara poco, el porcentaje de coincidencia tiene que reflejar esa incertidumbre en vez de dar un número que parezca preciso.
 - No uses las palabras "Excel" ni "dashboard".`;
 
 function hashIp(ip) {
@@ -240,7 +296,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: conPlan ? 2000 : 1400,
+        max_tokens: conPlan ? 2600 : 1900,
         temperature: 0,
         system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
         tools: [tool(conPlan)],
