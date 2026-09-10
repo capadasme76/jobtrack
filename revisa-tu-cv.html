@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<script src="/analytics.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18425349731"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18425349731');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisa tu CV contra una vacante, gratis — JobTrack</title>
+<meta name="description" content="Pega el aviso, sube tu CV y ve qué pide la vacante, qué tienes y qué falta. Gratis, sin crear cuenta y sin que guardemos tu CV.">
+<link rel="canonical" href="https://jobtrack.cl/revisa-tu-cv">
+<meta name="robots" content="index, follow">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="JobTrack">
+<meta property="og:title" content="Revisa tu CV contra una vacante, gratis">
+<meta property="og:description" content="Pega el aviso, sube tu CV y ve qué pide la vacante, qué tienes y qué falta. Sin crear cuenta.">
+<meta property="og:url" content="https://jobtrack.cl/revisa-tu-cv">
+<meta property="og:image" content="https://jobtrack.cl/icon-512.png">
+<meta property="og:locale" content="es_CL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Revisa tu CV contra una vacante, gratis">
+<meta name="twitter:description" content="Ve qué pide la vacante, qué tienes y qué falta. Sin crear cuenta.">
+<meta name="twitter:image" content="https://jobtrack.cl/icon-512.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Revisa tu CV contra una vacante — JobTrack",
+  "url": "https://jobtrack.cl/revisa-tu-cv",
+  "description": "Herramienta gratuita que compara tu CV con un aviso de trabajo y muestra qué pide la vacante, qué tienes y qué te falta.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "isAccessibleForFree": true,
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CLP"},
+  "inLanguage": "es-CL"
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#7C5CFC">
+</head>
+<body>
+<style>
+  :root{
+    --paper:#F3F2F2;
+    --paper-dim:#EAE9E9;
+    --ink:#201E1D;
+    --ink-soft:#605D5D;
+    --ink-faint:#9B9797;
+    --line:#D7D3D3;
+    --brick:#7C5CFC;
+    --brick-dark:#5A3FD9;
+    --brick-100:#F0EBFF;
+    --brick-800:#3D2A99;
+    --teal:#1A7D4F;
+    --teal-dark:#0F4A2E;
+    --amber:#8A5A12;
+    --amber-100:#FBF0DE;
+    --rust:#A8442F;
+    --rust-100:#F9E9E5;
+    --card-bg:#FFFFFF;
+    --font-display:'Archivo',system-ui,sans-serif;
+    --font-body:'Archivo',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--paper);}
+  .hr{border:none;border-top:2px solid var(--line);max-width:1100px;margin:0 auto;}
+
+  .jt-home-header{background:var(--paper);}
+  .jt-home-header-inner{max-width:1100px;margin:0 auto;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;}
+  .jt-home-logo{display:flex;align-items:center;gap:10px;}
+  .jt-home-logo a{text-decoration:none;color:inherit;}
+  .jt-home-logo .name{font-family:var(--font-display);font-weight:800;font-size:19px;}
+  .jt-logo-dot{display:inline-block;width:0.33em;height:0.33em;background:var(--brick);margin-left:0.12em;vertical-align:-0.06em;}
+  .jt-home-nav{display:flex;gap:24px;}
+  .jt-home-nav a{font-family:var(--font-body);font-weight:600;font-size:14px;color:var(--ink);text-decoration:none;opacity:.7;}
+  .jt-home-nav a:hover{opacity:1;color:var(--brick);}
+  .jt-home-actions{display:flex;gap:10px;align-items:center;}
+  .jt-btn-ghost{font-family:var(--font-body);font-weight:600;font-size:14px;background:transparent;color:var(--brick);border:none;padding:9px 4px;cursor:pointer;text-decoration:none;display:inline-block;}
+  .jt-btn-ghost:hover{color:var(--brick-dark);}
+  .jt-btn-primary{font-family:var(--font-body);font-weight:700;font-size:14px;background:var(--brick);color:#fff;border:1px solid var(--brick);padding:10px 18px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+  .jt-btn-primary:hover{border-color:var(--brick-dark);background:var(--brick-dark);}
+  .jt-btn-primary[disabled]{opacity:.45;cursor:not-allowed;}
+  .jt-btn-secondary{font-family:var(--font-body);font-weight:700;font-size:14px;background:var(--card-bg);color:var(--ink);border:1px solid var(--line);padding:10px 18px;cursor:pointer;text-decoration:none;display:inline-block;}
+  .jt-btn-secondary:hover{border-color:var(--ink-soft);}
+  .jt-home-footer{max-width:1100px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--font-body);font-size:13px;color:var(--ink);opacity:.6;}
+
+  /* ---- página ---- */
+  .rc-hero{max-width:1100px;margin:0 auto;padding:44px 24px 8px;}
+  .rc-hero h1{font-family:var(--font-display);font-weight:800;font-size:52px;line-height:1.06;margin:0 0 18px;max-width:16ch;}
+  .rc-hero p{font-size:17px;color:var(--ink);opacity:.75;max-width:560px;margin:0 0 14px;line-height:1.5;}
+  .rc-fineprint{font-size:13.5px;color:var(--ink);opacity:.6;margin:0;}
+  .rc-fineprint b{opacity:1;font-weight:600;}
+
+  .rc-tool{max-width:1100px;margin:0 auto;padding:28px 24px 8px;}
+  .rc-panes{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .rc-pane{background:var(--card-bg);border:1px solid var(--line);padding:20px;display:flex;flex-direction:column;}
+  .rc-pane-head{display:flex;align-items:baseline;gap:9px;margin-bottom:4px;}
+  .rc-step{font-family:var(--font-display);font-weight:800;font-size:13px;color:var(--brick-dark);}
+  .rc-pane h2{font-family:var(--font-display);font-weight:800;font-size:16px;margin:0;}
+  .rc-pane .hint{font-size:13px;color:var(--ink);opacity:.65;margin:0 0 12px;line-height:1.5;}
+  .rc-pane textarea{width:100%;min-height:200px;resize:vertical;font-family:var(--font-body);font-size:14px;line-height:1.5;color:var(--ink);background:var(--paper);border:1px solid var(--line);padding:12px;}
+  .rc-pane textarea:focus{outline:2px solid var(--brick);outline-offset:-1px;}
+  .rc-file{margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .rc-file label{font-family:var(--font-body);font-weight:700;font-size:13px;background:var(--brick-100);color:var(--brick-800);border:1px solid var(--brick);padding:9px 14px;cursor:pointer;}
+  .rc-file label:hover{background:#E5DCFF;}
+  .rc-file input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;}
+  .rc-file .fname{font-size:13px;color:var(--ink);opacity:.7;}
+  .rc-count{font-size:12px;color:var(--ink);opacity:.5;margin:6px 0 0;}
+
+  .rc-go{max-width:1100px;margin:0 auto;padding:20px 24px 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .rc-go .jt-btn-primary{font-size:16px;padding:14px 28px;}
+  .rc-go .note{font-size:13px;color:var(--ink);opacity:.6;}
+  .rc-error{max-width:1100px;margin:16px auto 0;padding:0 24px;}
+  .rc-error div{background:var(--rust-100);border-left:4px solid var(--rust);padding:14px 16px;font-size:14px;line-height:1.55;}
+  .rc-error a{color:var(--brick-800);font-weight:600;}
+
+  .rc-loading{max-width:1100px;margin:0 auto;padding:34px 24px;display:none;}
+  .rc-loading.show{display:block;}
+  .rc-loading .bar{height:3px;background:var(--paper-dim);overflow:hidden;max-width:420px;}
+  .rc-loading .bar i{display:block;height:100%;width:40%;background:var(--brick);animation:rcslide 1.1s ease-in-out infinite;}
+  @keyframes rcslide{0%{transform:translateX(-100%);}100%{transform:translateX(250%);}}
+  .rc-loading p{font-size:15px;color:var(--ink);opacity:.7;margin:14px 0 0;}
+
+  /* ---- resultado ---- */
+  .rc-result{max-width:1100px;margin:0 auto;padding:36px 24px 0;display:none;}
+  .rc-result.show{display:block;}
+  .rc-top{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;background:var(--ink);color:#F4F3F1;padding:26px 28px;}
+  .rc-score{font-family:var(--font-display);font-weight:800;font-size:64px;line-height:.95;letter-spacing:-.03em;}
+  .rc-score .pc{font-size:26px;font-weight:800;}
+  .rc-score .lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-top:8px;white-space:nowrap;}
+  .rc-top .cargo{font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.7;margin:0 0 8px;}
+  .rc-top .res{font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1.25;margin:0;}
+
+  .rc-reqs{margin-top:26px;}
+  .rc-reqs h3{font-family:var(--font-display);font-weight:800;font-size:22px;margin:0 0 6px;}
+  .rc-reqs > p{font-size:14.5px;color:var(--ink);opacity:.7;margin:0 0 18px;}
+  .rc-req{display:grid;grid-template-columns:8.5rem 1fr;gap:0 20px;padding:16px 0;border-bottom:1px solid var(--line);align-items:start;}
+  .rc-req:first-of-type{border-top:2px solid var(--ink);}
+  .rc-tag{font-family:var(--font-body);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;display:inline-block;white-space:nowrap;}
+  .rc-tag.tienes{background:#E4F1EA;color:var(--teal-dark);border:1px solid var(--teal);}
+  .rc-tag.parcial{background:var(--amber-100);color:var(--amber);border:1px solid var(--amber);}
+  .rc-tag.falta{background:var(--rust-100);color:var(--rust);border:1px solid var(--rust);}
+  .rc-req .q{font-family:var(--font-display);font-weight:800;font-size:15.5px;margin:0 0 4px;}
+  .rc-req .d{font-size:14px;color:var(--ink);opacity:.78;margin:0;line-height:1.55;}
+
+  .rc-gate{margin-top:28px;background:var(--brick-100);border:1px solid var(--brick);padding:26px 28px;}
+  .rc-gate h3{font-family:var(--font-display);font-weight:800;font-size:22px;margin:0 0 8px;}
+  .rc-gate p{font-size:15px;color:var(--ink);opacity:.8;margin:0 0 8px;max-width:60ch;line-height:1.55;}
+  .rc-gate ul{margin:12px 0 18px;padding-left:20px;}
+  .rc-gate li{font-size:14.5px;margin-bottom:6px;color:var(--ink);opacity:.85;}
+  .rc-gate .fine{font-size:13px;opacity:.65;margin:10px 0 0;}
+  .rc-plan{margin-top:26px;}
+  .rc-plan h3{font-family:var(--font-display);font-weight:800;font-size:22px;margin:0 0 14px;}
+  .rc-cambio{border-top:1px solid var(--line);padding:16px 0;}
+  .rc-cambio:last-child{border-bottom:1px solid var(--line);}
+  .rc-cambio b{font-family:var(--font-display);font-size:15.5px;display:block;margin-bottom:5px;}
+  .rc-cambio p{font-size:14px;opacity:.78;margin:0;line-height:1.55;}
+  .rc-again{margin-top:22px;}
+
+  .rc-how{max-width:1100px;margin:0 auto;padding:64px 24px;}
+  .rc-how h2{font-family:var(--font-display);font-size:32px;font-weight:800;margin:0 0 28px;}
+  .rc-how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;}
+  .rc-how-grid .num{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--brick-dark);margin-bottom:8px;}
+  .rc-how-grid h3{font-family:var(--font-display);font-size:16px;font-weight:800;margin:0 0 6px;}
+  .rc-how-grid p{font-size:14px;color:var(--ink);opacity:.75;margin:0;line-height:1.55;}
+
+  .rc-priv{max-width:1100px;margin:0 auto;padding:0 24px 64px;}
+  .rc-priv div{background:var(--paper-dim);padding:24px;max-width:760px;}
+  .rc-priv h3{font-family:var(--font-display);font-size:17px;font-weight:800;margin:0 0 8px;}
+  .rc-priv p{font-size:14.5px;line-height:1.6;color:var(--ink);opacity:.8;margin:0 0 10px;}
+  .rc-priv p:last-child{margin-bottom:0;}
+  .rc-priv a{color:var(--brick);}
+
+  .rc-cta{max-width:1100px;margin:0 auto;padding:0 24px 72px;}
+  .rc-cta div{background:var(--ink);color:#F4F3F1;padding:34px 32px;}
+  .rc-cta h2{font-family:var(--font-display);font-weight:800;font-size:30px;margin:0 0 12px;max-width:22ch;line-height:1.1;}
+  .rc-cta p{font-size:16px;opacity:.75;margin:0 0 22px;max-width:56ch;line-height:1.55;}
+  .rc-cta .jt-btn-primary{font-size:16px;padding:14px 28px;}
+  .rc-cta .fine{font-size:13px;opacity:.6;margin:14px 0 0;}
+
+  @media (max-width:860px){
+    .rc-panes{grid-template-columns:1fr;}
+    .rc-how-grid{grid-template-columns:1fr;gap:24px;}
+    .rc-top{grid-template-columns:1fr;gap:14px;}
+    .rc-req{grid-template-columns:1fr;gap:8px 0;}
+  }
+  @media (max-width:560px){
+    .rc-hero h1{font-size:34px;}
+    .jt-home-header-inner{flex-wrap:wrap;gap:10px;}
+    .rc-cta h2{font-size:24px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .rc-loading .bar i{animation:none;width:100%;}
+  }
+</style>
+
+<header class="jt-home-header">
+  <div class="jt-home-header-inner">
+    <div class="jt-home-logo">
+      <a href="/"><div class="name">JobTrack<span class="jt-logo-dot"></span></div></a>
+    </div>
+    <nav class="jt-home-nav">
+      <a href="/">Inicio</a>
+      <a href="/guias/">Guías</a>
+    </nav>
+    <div class="jt-home-actions">
+      <a class="jt-btn-ghost" href="/login.html?mode=login">Iniciar sesión</a>
+    </div>
+  </div>
+</header>
+<hr class="hr">
+
+<section class="rc-hero">
+  <h1>Que tu CV llegue a un humano.</h1>
+  <p>Pega el aviso, sube tu CV y en dos minutos ves qué pide la vacante, qué de eso ya tienes y qué le falta a tu CV para decirlo.</p>
+  <p class="rc-fineprint"><b>Gratis y sin crear cuenta.</b> No guardamos tu CV: el texto se usa para esta comparación y no queda en ninguna parte.</p>
+</section>
+
+<section class="rc-tool">
+  <div class="rc-panes">
+    <div class="rc-pane">
+      <div class="rc-pane-head"><span class="rc-step">01</span><h2>El aviso de la vacante</h2></div>
+      <p class="hint">Copia el texto completo del aviso y pégalo acá — con los requisitos incluidos, que es la parte que importa.</p>
+      <textarea id="aviso" placeholder="Pega acá el aviso completo: cargo, descripción y requisitos." spellcheck="false"></textarea>
+      <p class="rc-count" id="avisoCount">0 caracteres</p>
+    </div>
+
+    <div class="rc-pane">
+      <div class="rc-pane-head"><span class="rc-step">02</span><h2>Tu CV</h2></div>
+      <p class="hint">Sube el archivo y lo leemos en tu navegador, o pégalo como texto si prefieres.</p>
+      <div class="rc-file">
+        <label for="cvFile">Subir archivo
+          <input id="cvFile" type="file" accept=".pdf,.txt,.docx,.md,application/pdf,text/plain">
+        </label>
+        <span class="fname" id="cvFileName">PDF, DOCX o TXT</span>
+      </div>
+      <textarea id="cv" placeholder="O pega acá el texto de tu CV." spellcheck="false"></textarea>
+      <p class="rc-count" id="cvCount">0 caracteres</p>
+    </div>
+  </div>
+</section>
+
+<div class="rc-go">
+  <button class="jt-btn-primary" id="go" type="button">Comparar ahora
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+  </button>
+  <span class="note">Tarda unos 20 segundos.</span>
+</div>
+
+<div class="rc-error" id="errorBox" hidden><div id="errorMsg"></div></div>
+
+<section class="rc-loading" id="loading" aria-live="polite">
+  <div class="bar"><i></i></div>
+  <p id="loadingMsg">Leyendo el aviso y comparándolo con tu CV…</p>
+</section>
+
+<section class="rc-result" id="result" aria-live="polite">
+  <div class="rc-top">
+    <div class="rc-score"><span id="scoreNum">0</span><span class="pc">%</span><span class="lbl">de coincidencia</span></div>
+    <div>
+      <p class="cargo" id="cargo"></p>
+      <p class="res" id="resumen"></p>
+    </div>
+  </div>
+
+  <div class="rc-reqs">
+    <h3>Lo que pide esta vacante</h3>
+    <p>En el orden de importancia que le da el aviso.</p>
+    <div id="reqs"></div>
+  </div>
+
+  <div id="gate" class="rc-gate">
+    <h3>Y esto es lo que hay que cambiar</h3>
+    <p>Ya sabes qué falta. Con una cuenta ves los tres cambios concretos para este aviso —incluida la frase exacta que conviene escribir— y además:</p>
+    <ul>
+      <li>Tu CV actualizado y tus habilidades escritas, listas para usar</li>
+      <li>Una carta de presentación distinta por cada postulación</li>
+      <li>Comparaciones sin límite, guardadas junto a cada postulación</li>
+      <li>Los avisos nuevos que te calzan, todos los días, en un solo lugar</li>
+    </ul>
+    <a class="jt-btn-primary" href="/login.html?mode=signup&amp;from=revisa-tu-cv">Ver los tres cambios
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+    </a>
+    <p class="fine">7 días gratis · sin tarjeta de crédito · sin cargos automáticos</p>
+  </div>
+
+  <div id="plan" class="rc-plan" hidden>
+    <h3>Los tres cambios de mayor impacto</h3>
+    <div id="cambios"></div>
+  </div>
+
+  <div class="rc-again">
+    <button class="jt-btn-secondary" id="again" type="button">Comparar con otro aviso</button>
+  </div>
+</section>
+
+<section class="rc-how">
+  <h2>Cómo funciona</h2>
+  <div class="rc-how-grid">
+    <div>
+      <div class="num">01</div>
+      <h3>Lee el aviso como lo lee un filtro</h3>
+      <p>Separa lo que la vacante pide de verdad —lo excluyente primero— de lo que es relleno del aviso.</p>
+    </div>
+    <div>
+      <div class="num">02</div>
+      <h3>Busca esas mismas cosas en tu CV</h3>
+      <p>No las adivina: solo marca como tuyo lo que tu CV realmente dice, con las palabras que usa.</p>
+    </div>
+    <div>
+      <div class="num">03</div>
+      <h3>Te muestra la diferencia</h3>
+      <p>Qué tienes, qué está a medias porque no está explícito, y qué falta. Antes de postular, no después del silencio.</p>
+    </div>
+  </div>
+</section>
+
+<section class="rc-priv">
+  <div>
+    <h3>Qué pasa con tu CV</h3>
+    <p>El archivo no se sube a ningún servidor: se lee en tu propio navegador y solo viaja el texto, únicamente para hacer esta comparación. <strong>No lo guardamos</strong> — ni el CV, ni el aviso, ni el resultado.</p>
+    <p>Lo único que registramos es un conteo anónimo para saber cuántas comparaciones se hicieron desde una misma conexión, porque las gratis son tres por día. Puedes leer el detalle en nuestra <a href="/privacidad.html">política de privacidad</a>.</p>
+  </div>
+</section>
+
+<section class="rc-cta">
+  <div>
+    <h2>Entras con tu CV. Sales con cuatro herramientas.</h2>
+    <p>Tu CV actualizado. Tus habilidades escritas, esa lista que nunca habías visto en palabras. Una carta por postulación. Y una agenda que te avisa antes de que se te pase algo.</p>
+    <a class="jt-btn-primary" href="/login.html?mode=signup&amp;from=revisa-tu-cv">Crear mi cuenta gratis
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+    </a>
+    <p class="fine">7 días gratis · sin tarjeta de crédito</p>
+  </div>
+</section>
+
+<hr class="hr">
+<footer class="jt-home-footer">
+  <span>JobTrack</span>
+  <span><a href="/guias/" style="color:inherit;">Guías</a> · <a href="/terminos.html" style="color:inherit;">Términos y Condiciones</a> · <a href="/privacidad.html" style="color:inherit;">Privacidad</a> · <a href="https://www.linkedin.com/company/jobtrackcl/" target="_blank" rel="noopener" style="color:inherit;">LinkedIn</a> · <a href="https://www.instagram.com/jobtrackcl/" target="_blank" rel="noopener" style="color:inherit;">Instagram</a></span>
+  <span>© 2026</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var aviso = $("aviso"), cv = $("cv"), go = $("go"), again = $("again");
+  var loading = $("loading"), loadingMsg = $("loadingMsg"), result = $("result");
+  var errorBox = $("errorBox"), errorMsg = $("errorMsg");
+  var enviando = false;
+
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+
+  function contar(el, out){
+    var n = el.value.trim().length;
+    out.textContent = n.toLocaleString("es-CL") + (n === 1 ? " caracter" : " caracteres");
+  }
+  aviso.addEventListener("input", function(){ contar(aviso, $("avisoCount")); });
+  cv.addEventListener("input", function(){ contar(cv, $("cvCount")); });
+
+  function mostrarError(html){
+    errorMsg.innerHTML = html;
+    errorBox.hidden = false;
+    errorBox.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function limpiarError(){ errorBox.hidden = true; errorMsg.textContent = ""; }
+
+  /* ---------- lectura del archivo, en el navegador ---------- */
+  async function textoDePdf(file){
+    var buf = await file.arrayBuffer();
+    var pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+    var partes = [];
+    var max = Math.min(pdf.numPages, 12);
+    for (var i = 1; i <= max; i++) {
+      var page = await pdf.getPage(i);
+      var content = await page.getTextContent();
+      partes.push(content.items.map(function(it){ return it.str; }).join(" "));
+    }
+    return partes.join("\n\n");
+  }
+
+  async function textoDeDocx(file){
+    var buf = await file.arrayBuffer();
+    var res = await window.mammoth.extractRawText({ arrayBuffer: buf });
+    return (res && res.value) || "";
+  }
+
+  $("cvFile").addEventListener("change", async function(e){
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    limpiarError();
+    $("cvFileName").textContent = "Leyendo " + file.name + "…";
+    try {
+      var texto = "";
+      var nombre = file.name.toLowerCase();
+      if (nombre.endsWith(".pdf")) {
+        if (!window.pdfjsLib) throw new Error("sin-lector");
+        texto = await textoDePdf(file);
+      } else if (nombre.endsWith(".docx")) {
+        if (!window.mammoth) throw new Error("sin-lector");
+        texto = await textoDeDocx(file);
+      } else {
+        texto = await file.text();
+      }
+      texto = texto.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+      if (texto.length < 200) {
+        $("cvFileName").textContent = "PDF, DOCX o TXT";
+        mostrarError("No se pudo leer texto de <b>" + file.name + "</b>. Suele pasar con los PDF que son una imagen escaneada. Copia el texto de tu CV y pégalo en el cuadro de abajo.");
+        return;
+      }
+      cv.value = texto;
+      contar(cv, $("cvCount"));
+      $("cvFileName").textContent = file.name + " · listo";
+    } catch (err) {
+      $("cvFileName").textContent = "PDF, DOCX o TXT";
+      mostrarError("No pudimos abrir ese archivo. Copia el texto de tu CV y pégalo en el cuadro de abajo — funciona igual de bien.");
+    }
+  });
+
+  /* ---------- comparación ---------- */
+  var MENSAJES = [
+    "Leyendo el aviso y separando lo que pide de verdad…",
+    "Buscando esas mismas cosas en tu CV…",
+    "Armando la comparación…"
+  ];
+
+  async function comparar(){
+    if (enviando) return;
+    limpiarError();
+
+    var a = aviso.value.trim(), c = cv.value.trim();
+    if (a.length < 80) { mostrarError("Pega el aviso completo, con los requisitos incluidos — con un par de líneas no se puede comparar nada."); aviso.focus(); return; }
+    if (c.length < 200) { mostrarError("Falta el texto de tu CV. Súbelo como archivo o pégalo en el cuadro."); cv.focus(); return; }
+
+    enviando = true;
+    go.disabled = true;
+    result.classList.remove("show");
+    loading.classList.add("show");
+    var paso = 0;
+    loadingMsg.textContent = MENSAJES[0];
+    var tic = setInterval(function(){
+      paso = (paso + 1) % MENSAJES.length;
+      loadingMsg.textContent = MENSAJES[paso];
+    }, 6000);
+
+    var headers = { "content-type": "application/json", "x-jt-source": "revisa-tu-cv" };
+    try {
+      var token = null;
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf("-auth-token") > -1) {
+            var v = JSON.parse(localStorage.getItem(k));
+            if (v && v.access_token) { token = v.access_token; break; }
+          }
+        }
+      } catch (e) {}
+      if (token) headers.authorization = "Bearer " + token;
+
+      var res = await fetch("/api/free-match", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ avisoText: a, cvText: c })
+      });
+      var data = await res.json().catch(function(){ return {}; });
+
+      if (res.status === 429) {
+        mostrarError((data.mensaje || "Ya usaste las comparaciones gratis de hoy.") +
+          ' <a href="/login.html?mode=signup&from=revisa-tu-cv">Crear mi cuenta gratis</a>');
+        return;
+      }
+      if (!res.ok) {
+        mostrarError(data.error || "No pudimos completar la comparación. Inténtalo de nuevo en un minuto.");
+        return;
+      }
+      pintar(data);
+      if (typeof gtag === "function") gtag("event", "free_match_completed", { value: data.porcentajeMatch });
+    } catch (err) {
+      mostrarError("Se cortó la conexión antes de terminar. Inténtalo de nuevo.");
+    } finally {
+      clearInterval(tic);
+      loading.classList.remove("show");
+      go.disabled = false;
+      enviando = false;
+    }
+  }
+
+  var ETIQUETAS = { tienes: "Lo tienes", parcial: "A medias", falta: "Falta" };
+
+  function pintar(d){
+    var pct = Math.max(0, Math.min(100, parseInt(d.porcentajeMatch, 10) || 0));
+    $("scoreNum").textContent = String(pct);
+    $("cargo").textContent = d.cargoDetectado || "Vacante";
+    $("resumen").textContent = d.resumenUnaLinea || "";
+
+    var cont = $("reqs");
+    cont.textContent = "";
+    (d.requisitos || []).forEach(function(r){
+      var estado = ETIQUETAS[r.estado] ? r.estado : "parcial";
+      var row = document.createElement("div");
+      row.className = "rc-req";
+      var left = document.createElement("div");
+      var tag = document.createElement("span");
+      tag.className = "rc-tag " + estado;
+      tag.textContent = ETIQUETAS[estado];
+      left.appendChild(tag);
+      var right = document.createElement("div");
+      var q = document.createElement("p");
+      q.className = "q";
+      q.textContent = r.requisito || "";
+      var dd = document.createElement("p");
+      dd.className = "d";
+      dd.textContent = r.detalle || "";
+      right.appendChild(q);
+      right.appendChild(dd);
+      row.appendChild(left);
+      row.appendChild(right);
+      cont.appendChild(row);
+    });
+
+    var plan = $("plan"), gate = $("gate"), cambios = $("cambios");
+    if (d.conPlan && Array.isArray(d.tresCambios) && d.tresCambios.length) {
+      cambios.textContent = "";
+      d.tresCambios.forEach(function(c){
+        var box = document.createElement("div");
+        box.className = "rc-cambio";
+        var b = document.createElement("b");
+        b.textContent = c.titulo || "";
+        var p = document.createElement("p");
+        p.textContent = c.comoHacerlo || "";
+        box.appendChild(b);
+        box.appendChild(p);
+        cambios.appendChild(box);
+      });
+      plan.hidden = false;
+      gate.hidden = true;
+    } else {
+      plan.hidden = true;
+      gate.hidden = false;
+    }
+
+    result.classList.add("show");
+    result.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  go.addEventListener("click", comparar);
+  again.addEventListener("click", function(){
+    result.classList.remove("show");
+    limpiarError();
+    aviso.value = "";
+    contar(aviso, $("avisoCount"));
+    aviso.focus();
+    aviso.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+})();
+</script>
+</body>
+</html>

@@ -14,22 +14,22 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JobTrack — Descubre por qué no te llaman</title>
-<meta name="description" content="Compara tu CV con cada vacante y descubre qué te falta antes de postular. Avisos nuevos todos los días. 7 días gratis, sin tarjeta.">
+<title>JobTrack — Que llegues preparado a cada postulación</title>
+<meta name="description" content="Revisa gratis tu CV contra cualquier vacante y mira qué cambiar antes de postular. Y todos los días, los avisos que te calzan en un solo lugar.">
 <link rel="canonical" href="https://jobtrack.cl/">
 <meta name="robots" content="index, follow">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="JobTrack">
-<meta property="og:title" content="JobTrack — Descubre por qué no te llaman">
-<meta property="og:description" content="Compara tu CV con cada vacante y descubre qué te falta antes de postular. Avisos nuevos todos los días.">
+<meta property="og:title" content="JobTrack — Que llegues preparado a cada postulación">
+<meta property="og:description" content="Revisa gratis tu CV contra cualquier vacante y mira qué cambiar antes de postular. Sin crear cuenta.">
 <meta property="og:url" content="https://jobtrack.cl/">
 <!-- TODO: reemplazar por una imagen 1200x630 con el titular nuevo — ver PENDIENTE_BRIEF_JOBTRACK.md -->
 <meta property="og:image" content="https://jobtrack.cl/icon-512.png">
 <meta property="og:locale" content="es_CL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="JobTrack — Descubre por qué no te llaman">
-<meta name="twitter:description" content="Compara tu CV con cada vacante y descubre qué te falta antes de postular.">
+<meta name="twitter:title" content="JobTrack — Que llegues preparado a cada postulación">
+<meta name="twitter:description" content="Revisa gratis tu CV contra cualquier vacante y mira qué cambiar antes de postular.">
 <meta name="twitter:image" content="https://jobtrack.cl/icon-512.png">
 
 <script type="application/ld+json">
@@ -38,7 +38,7 @@
   "@type": "WebApplication",
   "name": "JobTrack",
   "url": "https://jobtrack.cl/",
-  "description": "Dashboard para organizar la búsqueda de empleo ejecutivo: agenda de postulaciones, red de contactos, match de CV contra vacantes, reuniones y métricas.",
+  "description": "Herramienta para llegar preparado a cada postulación: match del CV contra cada vacante, carta de presentación, habilidades escritas, búsqueda diaria de avisos y seguimiento de plazos.",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
   "offers": {
@@ -58,7 +58,7 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {"@type": "Question", "name": "¿Qué es JobTrack?", "acceptedAnswer": {"@type": "Answer", "text": "Un dashboard para organizar tu búsqueda de empleo: agenda de postulaciones, red de contactos, match de tu CV contra vacantes, reuniones y métricas — todo en un solo lugar, en vez de un Excel y quince pestañas."}},
+    {"@type": "Question", "name": "¿Qué es JobTrack?", "acceptedAnswer": {"@type": "Answer", "text": "Una herramienta para llegar preparado a cada postulación: compara tu CV con cada vacante y te muestra qué cambiar, te entrega la carta de presentación y tus habilidades escritas, busca todos los días los avisos que te calzan y te avisa de los plazos — todo en un solo lugar."}},
     {"@type": "Question", "name": "¿Cuánto cuesta?", "acceptedAnswer": {"@type": "Answer", "text": "Los primeros 7 días son gratis. Después, $14.000 CLP cada 3 meses — pagas cuando quieras, sin cargos automáticos: te avisamos por correo antes de que venza tu plan para que renueves si quieres seguir. Las cuentas creadas durante la etapa de prueba original quedan gratis para siempre."}},
     {"@type": "Question", "name": "¿Dónde se guardan mis datos?", "acceptedAnswer": {"@type": "Answer", "text": "En una base de datos privada, protegida con tu propia cuenta. Tus datos son tuyos: nadie más puede verlos, no se comparten ni se venden, y son privados mientras buscas."}},
     {"@type": "Question", "name": "¿JobTrack busca trabajos por mí automáticamente?", "acceptedAnswer": {"@type": "Answer", "text": "Sí, para las búsquedas que guardes: revisamos ChileTrabajos todos los días y te avisamos apenas aparece algo nuevo. Para los demás portales (LinkedIn, Indeed, Laborum, Trabajando.cl) te dejamos el link de búsqueda ya armado, listo para revisar en un clic."}},
@@ -129,7 +129,8 @@
   .jt-hero p{font-size:17px;color:var(--ink);opacity:.75;max-width:520px;margin:0 0 28px;line-height:1.5;}
   .jt-hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
   .jt-hero .jt-btn-primary{font-size:16px;padding:14px 28px;}
-  .jt-hero-fineprint{margin:14px 0 0;font-size:13.5px;color:var(--ink);opacity:.6;}
+  .jt-hero .jt-btn-secondary{font-size:16px;padding:14px 28px;}
+  .jt-hero-fineprint{margin:20px 0 0;font-size:13.5px;color:var(--ink);opacity:.6;}
   .jt-hero-shot{max-width:100%;height:auto;margin-top:36px;border:1px solid var(--line);display:block;background:var(--paper-dim);}
   .jt-pricing-line{font-size:15px;color:var(--ink);opacity:.75;margin-top:20px;}
   .jt-pricing-line a{color:var(--brick);text-decoration:underline;}
@@ -193,6 +194,28 @@
   .jt-bot-answer.show{display:block;}
   .jt-bot-answer a{color:var(--brick);}
 
+  .jt-insumos{max-width:1100px;margin:0 auto;padding:56px 24px;}
+  .jt-insumos h2{font-family:var(--font-display);font-size:32px;font-weight:800;margin:0 0 8px;max-width:20ch;line-height:1.1;}
+  .jt-insumos > p{font-size:15px;color:var(--ink);opacity:.7;margin:0 0 28px;max-width:62ch;line-height:1.55;}
+  .jt-insumos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .jt-insumo{background:var(--card-bg);border:1px solid var(--line);padding:20px;}
+  .jt-insumo .num{font-family:var(--font-display);font-weight:800;font-size:13px;color:var(--brick-dark);margin-bottom:8px;}
+  .jt-insumo h3{font-family:var(--font-display);font-size:15.5px;font-weight:800;margin:0 0 6px;line-height:1.25;}
+  .jt-insumo p{font-size:13.5px;color:var(--ink);opacity:.75;margin:0;line-height:1.5;}
+  .jt-insumos-foot{margin-top:22px;font-family:var(--font-display);font-weight:800;font-size:17px;}
+
+  .jt-promesa{max-width:1100px;margin:0 auto;padding:56px 24px;}
+  .jt-promesa-box{background:var(--ink);color:#F4F3F1;padding:34px 32px;}
+  .jt-promesa-box h2{font-family:var(--font-display);font-size:30px;font-weight:800;margin:0 0 14px;}
+  .jt-promesa-box p{font-size:16px;line-height:1.6;opacity:.82;margin:0 0 14px;max-width:64ch;}
+  .jt-promesa-box p:last-child{margin-bottom:0;}
+  .jt-promesa-box .no{border-top:1px solid rgba(244,243,241,.24);padding-top:16px;margin-top:20px;}
+  .jt-promesa-box .no b{font-weight:800;}
+  .jt-promesa-box .firma{font-size:14px;opacity:.6;margin-top:18px;}
+
+  @media (max-width:900px){
+    .jt-insumos-grid{grid-template-columns:repeat(2,1fr);}
+  }
   @media (max-width:800px){
     .jt-grid3{grid-template-columns:1fr;gap:24px;}
     .jt-guides-grid{grid-template-columns:repeat(2,1fr);}
@@ -202,6 +225,8 @@
   }
   @media (max-width:560px){
     .jt-hero h1{font-size:34px;}
+    .jt-insumos-grid{grid-template-columns:1fr;}
+    .jt-insumos h2,.jt-promesa-box h2{font-size:24px;}
     .jt-guides-grid{grid-template-columns:1fr;}
     .jt-home-header-inner{flex-wrap:wrap;gap:10px;}
     .jt-bot-row{flex-direction:column;}
@@ -214,6 +239,7 @@
       <div class="name">JobTrack<span class="jt-logo-dot"></span></div>
     </div>
     <nav class="jt-home-nav">
+      <a href="revisa-tu-cv">Revisa tu CV</a>
       <a href="guias/">Guías</a>
     </nav>
     <div class="jt-home-actions">
@@ -225,14 +251,15 @@
 
 <section class="jt-hero">
   <div class="jt-hero-inner">
-    <h1>Postulas y postulas. Y no te llaman.</h1>
-    <p>Casi siempre el problema no eres tú: es que tu CV no dice lo que la vacante pide. JobTrack lo compara aviso por aviso y te muestra qué cambiar antes de postular. Y busca avisos nuevos por ti todos los días, para que no llegues tarde a los que sí te calzan.</p>
+    <h1>Que llegues preparado a cada postulación.</h1>
+    <p>JobTrack lee tu CV, lo compara con la vacante y te muestra qué cambiar antes de postular. Y todos los días busca por ti los avisos que te calzan.</p>
     <div class="jt-hero-actions">
-      <a class="jt-btn-primary" href="login.html?mode=signup">Revisar mi CV contra una vacante
+      <a class="jt-btn-primary" href="revisa-tu-cv">Revisa tu CV gratis
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
       </a>
+      <a class="jt-btn-secondary" href="login.html?mode=signup">Crear mi cuenta</a>
     </div>
-    <p class="jt-hero-fineprint">7 días gratis · sin tarjeta de crédito · cancelas cuando quieras</p>
+    <p class="jt-hero-fineprint">Revisar tu CV es gratis y sin crear cuenta · la prueba de 7 días tampoco pide tarjeta</p>
     <img
       class="jt-hero-shot"
       src="/img/dashboard-preview.webp"
@@ -245,20 +272,49 @@
 </section>
 
 <hr class="hr">
+<section class="jt-insumos" id="sec-insumos">
+  <h2>Entras con tu CV. Sales con cuatro herramientas.</h2>
+  <p>No es ordenar lo que ya tenías: es salir con material que antes no existía. Todo esto lo tienes el primer día.</p>
+  <div class="jt-insumos-grid">
+    <div class="jt-insumo">
+      <div class="num">01</div>
+      <h3>Tu CV, actualizado</h3>
+      <p>Lo lee, lo entiende y te muestra qué cambiar para la vacante que estás mirando.</p>
+    </div>
+    <div class="jt-insumo">
+      <div class="num">02</div>
+      <h3>Tus habilidades, escritas</h3>
+      <p>La lista de lo que sabes hacer, en palabras. Casi nadie la ha visto nunca.</p>
+    </div>
+    <div class="jt-insumo">
+      <div class="num">03</div>
+      <h3>Una carta por postulación</h3>
+      <p>Distinta cada vez, armada con tu perfil y con lo que pide ese aviso.</p>
+    </div>
+    <div class="jt-insumo">
+      <div class="num">04</div>
+      <h3>Una agenda que avisa</h3>
+      <p>Plazos, entrevistas y seguimientos, antes de que se te pase alguno.</p>
+    </div>
+  </div>
+  <p class="jt-insumos-foot">Eso no es orden. Es producción.</p>
+</section>
+
+<hr class="hr">
 <section class="jt-grid3">
   <div>
     <div class="num">01</div>
-    <h3>Pega el aviso. Te decimos qué te falta.</h3>
-    <p>Comparamos tu perfil contra lo que pide esa vacante en concreto: qué tienes, qué no, y qué conviene reforzar antes de mandar nada.</p>
+    <h3>Que tu CV llegue a un humano.</h3>
+    <p>Pegas el aviso y te mostramos qué pide esa vacante en concreto, qué de eso ya tienes y qué conviene reforzar — antes de mandar nada.</p>
   </div>
   <div>
     <div class="num">02</div>
-    <h3>Los avisos nuevos llegan solos.</h3>
-    <p>Revisamos los portales todos los días y te mostramos los que calzan con tu perfil. No tienes que abrir cinco pestañas cada mañana.</p>
+    <h3>Todos los días, los avisos que te calzan.</h3>
+    <p>Tú no tienes que estar mirando: buscamos cada día y te dejamos en un solo lugar lo que corresponde a tu perfil. Y aprende de lo que postulas, así que cada semana acierta más.</p>
   </div>
   <div>
     <div class="num">03</div>
-    <h3>Y después no se te pierde el hilo.</h3>
+    <h3>Que no se te pase ninguna.</h3>
     <p>Cada postulación con su estado, sus plazos y con quién hablaste. Te avisamos antes de que se te pase una entrevista.</p>
   </div>
   <p class="jt-pricing-line" style="grid-column:1/-1;">Después de la prueba: $14.000 cada 3 meses. Cancelas cuando quieras. <a href="login.html?mode=signup&checkout=1">¿Ya decidiste? Actívalo directo, sin esperar la prueba →</a></p>
@@ -288,8 +344,8 @@
     </div>
     <div>
       <div class="num">03</div>
-      <h3>Te ayudamos a organizar</h3>
-      <p>Agrega tus oportunidades y contactos — nosotros te ayudamos a darles seguimiento.</p>
+      <h3>Postula con lo que te entregamos</h3>
+      <p>CV al día, carta lista y los avisos que te calzan esperándote cada mañana.</p>
     </div>
   </div>
 </section>
@@ -330,6 +386,19 @@
 </section>
 
 <hr class="hr">
+<section class="jt-promesa">
+  <div class="jt-promesa-box">
+    <h2>Esto es lo que prometemos.</h2>
+    <p>Que llegues preparado a cada postulación y que no te rindas antes de que aparezca la buena. Cuatro herramientas, un solo lugar y memoria de todo tu proceso — mientras más lo usas, mejor te conoce.</p>
+    <p>Se cumple el primer día y lo puedes comprobar sin pagar: <a href="revisa-tu-cv" style="color:#BBA6FF;">revisa tu CV contra una vacante ahora mismo</a>.</p>
+    <div class="no">
+      <p><b>Y esto no está incluido:</b> no conocemos reclutadores, no movemos tu CV por dentro y no podemos hacer que una empresa te responda. Eso no depende de nosotros, así que no lo prometemos.</p>
+    </div>
+    <p class="firma">JobTrack — porque preferimos que sepas exactamente qué esperar.</p>
+  </div>
+</section>
+
+<hr class="hr">
 <section class="jt-faq" id="sec-faq">
   <h2>Preguntas frecuentes</h2>
   <p>Lo que más nos preguntan.</p>
@@ -358,9 +427,12 @@
 
 <hr class="hr">
 <section class="jt-cta">
-  <a class="jt-btn-primary" href="login.html?mode=signup">Prueba 7 días gratis
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-  </a>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <a class="jt-btn-primary" href="revisa-tu-cv">Revisa tu CV gratis
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+    </a>
+    <a class="jt-btn-secondary" href="login.html?mode=signup">Prueba 7 días gratis</a>
+  </div>
   <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
     <a class="jt-btn-secondary" href="https://www.linkedin.com/company/jobtrackcl/" target="_blank" rel="noopener">Sé parte de la comunidad JobTrack en LinkedIn</a>
     <a class="jt-btn-secondary" href="https://www.instagram.com/jobtrackcl/" target="_blank" rel="noopener">Síguenos en Instagram</a>
@@ -379,7 +451,7 @@
   var FAQS = [
     {
       q: "¿Qué es JobTrack?",
-      a: "Un dashboard para organizar tu búsqueda de empleo: agenda de postulaciones, red de contactos, match de tu CV contra vacantes, reuniones y métricas — todo en un solo lugar, en vez de un Excel y quince pestañas.",
+      a: "Una herramienta para llegar preparado a cada postulación: compara tu CV con cada vacante y te muestra qué cambiar, te entrega la carta de presentación y tus habilidades escritas, busca todos los días los avisos que te calzan y te avisa de los plazos — todo en un solo lugar.",
       k: ["que es", "jobtrack", "para que sirve", "que hace"]
     },
     {

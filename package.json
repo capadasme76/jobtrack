@@ -1,5 +1,8 @@
 {
   "name": "jobtrack",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "google-ads-api": "^24.1.0"
+  }
 }

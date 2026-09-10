@@ -382,19 +382,37 @@ function decodeEntities(s) {
 // de confiar en que el resultado de ChileTrabajos ya viene filtrado.
 const SPANISH_STOPWORDS = new Set(["de", "del", "la", "el", "los", "las", "y", "en", "con", "para", "por", "un", "una", "al", "su", "sus", "tu"]);
 
-function significantWords(s) {
+// Palabras de rango/jerarqu\u00eda que aparecen en cargos de cualquier rubro
+// (un "Jefe" de comunicaciones y un "Jefe Zona Norte" no tienen nada que ver
+// entre s\u00ed) \u2014 si se cuentan como "palabra significativa" para el cruce de
+// relevancia, alcanza con compartir una sola de estas para que dos cargos
+// completamente distintos calcen. Se excluyen solo para ese cruce; el resto
+// del cargo (el sustantivo del rubro: "comunicaciones", "riesgos", etc.) es
+// lo que de verdad distingue si un aviso es relevante.
+const GENERIC_ROLE_WORDS = new Set([
+  "jefe", "jefatura", "gerente", "gerencia", "director", "directora", "directorio",
+  "subgerente", "encargado", "encargada", "coordinador", "coordinadora",
+  "especialista", "analista", "asistente", "ejecutivo", "ejecutiva", "supervisor", "supervisora",
+  "senior", "junior", "semi", "pleno", "practicante",
+]);
+
+function significantWords(s, { excludeGenericRoles = false } = {}) {
   return String(s || "")
     .toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .filter((w) => w.length >= 4 && !SPANISH_STOPWORDS.has(w));
+    .filter((w) => w.length >= 4 && !SPANISH_STOPWORDS.has(w))
+    .filter((w) => !excludeGenericRoles || !GENERIC_ROLE_WORDS.has(w));
 }
 
 function isRelevantListing(title, cargo) {
-  const cargoWords = significantWords(cargo);
-  if (cargoWords.length === 0) return true; // sin cargo que comparar, no se puede filtrar
-  const titleWords = new Set(significantWords(title));
+  // El cruce real se hace sobre las palabras del RUBRO (comunicaciones,
+  // riesgos, auditor\u00eda...), no sobre el rango del cargo \u2014 de lo contrario
+  // "Jefe de Comunicaciones" calza con cualquier otro "Jefe de algo".
+  const cargoWords = significantWords(cargo, { excludeGenericRoles: true });
+  if (cargoWords.length === 0) return true; // cargo puramente gen\u00e9rico (ej. solo "Jefe"), no se puede filtrar
+  const titleWords = new Set(significantWords(title, { excludeGenericRoles: true }));
   return cargoWords.some((w) => titleWords.has(w));
 }
 

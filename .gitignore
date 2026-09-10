@@ -12,3 +12,22 @@ files.zip
 .claude/
 .vercel
 scripts/.env.flow.local
+node_modules/
+scripts/.env.google-ads.local
+
+# --- Documentos internos y personales: NO deben llegar al sitio ---
+# Este repo se despliega en Vercel, así que cualquier archivo commiteado
+# queda descargable en jobtrack.cl/<nombre-del-archivo>.
+*.docx
+*.doc
+*.xlsx
+*.zip
+~$*
+Documentacion_Entrega/
+entrega/
+branding/
+PENDIENTE_BRIEF_JOBTRACK.md
+AGENTS.md
+copysitiojobtrack.md
+jobtrackstorytelling.html
+linkedin-header-1128x191_1.png
