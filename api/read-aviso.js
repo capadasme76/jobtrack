@@ -50,8 +50,34 @@ function dominioCoincide(hostname, dominio) {
   return hostname === dominio || hostname.endsWith(`.${dominio}`);
 }
 
+const ENTIDADES = {
+  nbsp: " ", amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", ndash: "\u2013", mdash: "\u2014",
+  hellip: "\u2026", laquo: "\u00ab", raquo: "\u00bb", ldquo: "\u201c", rdquo: "\u201d",
+  aacute: "\u00e1", eacute: "\u00e9", iacute: "\u00ed", oacute: "\u00f3", uacute: "\u00fa",
+  Aacute: "\u00c1", Eacute: "\u00c9", Iacute: "\u00cd", Oacute: "\u00d3", Uacute: "\u00da",
+  ntilde: "\u00f1", Ntilde: "\u00d1", uuml: "\u00fc", Uuml: "\u00dc", ordf: "\u00aa", ordm: "\u00ba",
+  deg: "\u00b0", euro: "\u20ac", bull: "\u2022", middot: "\u00b7", trade: "\u2122", reg: "\u00ae",
+};
+
+// Decodifica entidades con nombre y numéricas (&#243; / &#xf3;). Sin esto el
+// texto llega con "&ti" y "&aacute;" sueltos en medio de las palabras.
+function decodificarEntidades(t) {
+  return t
+    .replace(/&#x([0-9a-f]+);/gi, (m, hex) => {
+      const n = parseInt(hex, 16);
+      return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : m;
+    })
+    .replace(/&#(\d+);/g, (m, dec) => {
+      const n = parseInt(dec, 10);
+      return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : m;
+    })
+    .replace(/&([a-z]+);/gi, (m, nombre) => (nombre in ENTIDADES ? ENTIDADES[nombre] : m));
+}
+
 function limpiarHtml(html) {
-  return html
+  let t = html
+    // los CRLF de los portales dejaban decenas de líneas vacías seguidas
+    .replace(/\r\n?/g, "\n")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
@@ -60,19 +86,22 @@ function limpiarHtml(html) {
     .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
     .replace(/<aside[\s\S]*?<\/aside>/gi, " ")
     .replace(/<form[\s\S]*?<\/form>/gi, " ")
+    .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
     .replace(/<!--[\s\S]*?-->/g, " ")
-    // los saltos de línea del aviso importan para que se lean los requisitos
-    .replace(/<\/(p|div|li|h[1-6]|tr|section|br)>/gi, "\n")
+    // los saltos de línea del aviso importan: son los que separan los requisitos
+    .replace(/<\/(p|div|li|h[1-6]|tr|section|article|blockquote)>/gi, "\n")
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/[ \t]+/g, " ")
-    .replace(/ ?\n ?/g, "\n")
+    .replace(/<li[^>]*>/gi, "\n\u2022 ")
+    .replace(/<[^>]+>/g, " ");
+
+  t = decodificarEntidades(t);
+
+  return t
+    .replace(/[ \t\u00a0]+/g, " ")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l, i, arr) => l.length > 0 || (i > 0 && arr[i - 1].length > 0))
+    .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
