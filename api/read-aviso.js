@@ -57,6 +57,13 @@ const ENTIDADES = {
   Aacute: "\u00c1", Eacute: "\u00c9", Iacute: "\u00cd", Oacute: "\u00d3", Uacute: "\u00da",
   ntilde: "\u00f1", Ntilde: "\u00d1", uuml: "\u00fc", Uuml: "\u00dc", ordf: "\u00aa", ordm: "\u00ba",
   deg: "\u00b0", euro: "\u20ac", bull: "\u2022", middot: "\u00b7", trade: "\u2122", reg: "\u00ae",
+  times: "\u00d7", divide: "\u00f7", copy: "\u00a9", sect: "\u00a7", para: "\u00b6",
+  lsquo: "\u2018", rsquo: "\u2019", sbquo: "\u201a", bdquo: "\u201e", prime: "\u2032",
+  minus: "-", plusmn: "\u00b1", frac12: "\u00bd", frac14: "\u00bc", frac34: "\u00be",
+  iquest: "\u00bf", iexcl: "\u00a1", ccedil: "\u00e7", Ccedil: "\u00c7", szlig: "\u00df",
+  agrave: "\u00e0", egrave: "\u00e8", igrave: "\u00ec", ograve: "\u00f2", ugrave: "\u00f9",
+  acirc: "\u00e2", ecirc: "\u00ea", icirc: "\u00ee", ocirc: "\u00f4", ucirc: "\u00fb",
+  auml: "\u00e4", ouml: "\u00f6", Auml: "\u00c4", Ouml: "\u00d6", atilde: "\u00e3", otilde: "\u00f5",
 };
 
 // Decodifica entidades con nombre y numéricas (&#243; / &#xf3;). Sin esto el
@@ -71,7 +78,13 @@ function decodificarEntidades(t) {
       const n = parseInt(dec, 10);
       return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : m;
     })
-    .replace(/&([a-z]+);/gi, (m, nombre) => (nombre in ENTIDADES ? ENTIDADES[nombre] : m));
+    .replace(/&([a-z]+);/gi, (m, nombre) => {
+      if (nombre in ENTIDADES) return ENTIDADES[nombre];
+      // Entidad con nombre que no conocemos: si se deja, aparece como "&times;"
+      // en medio del aviso. Se descarta solo si es corta, para no comerse un
+      // texto legítimo del tipo "I&D;".
+      return nombre.length <= 8 ? " " : m;
+    });
 }
 
 function limpiarHtml(html) {
@@ -100,6 +113,9 @@ function limpiarHtml(html) {
     .replace(/[ \t\u00a0]+/g, " ")
     .split("\n")
     .map((l) => l.trim())
+    // Los menús del portal son listas cuyo contenido ya se descartó (iconos,
+    // enlaces vacíos) y dejaban una fila de viñetas solas.
+    .filter((l) => l !== "\u2022" && l !== "\u2022 " && !/^\u2022\s*$/.test(l))
     .filter((l, i, arr) => l.length > 0 || (i > 0 && arr[i - 1].length > 0))
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
