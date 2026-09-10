@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/revisa-tu-cv", "destination": "/revisa-tu-cv.html" }
+  ]
+}
