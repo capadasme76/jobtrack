@@ -229,15 +229,16 @@ function freshUrl(watch) {
 // trabajo manual de diseño.
 function digestHtml({ metrics, newListings, changedItems, cargoGroups }) {
   // Sin avisos nuevos ni cambios reales, el correo no tiene "noticias" que
-  // dar — en vez de fingir un resumen igual de sustancioso todos los días
-  // (lo que terminaba pareciendo ruido cuando el "resumen" no traía nada
-  // nuevo), se muestra un empujón honesto a seguir buscando en vez de un
-  // titular que no cumple lo que promete.
+  // dar. Antes en ese caso se imprimía el directorio completo de búsquedas
+  // vigiladas (con 22 búsquedas guardadas eran 86 links en un solo correo),
+  // lo que se leía como ruido y contradecía la promesa del producto: "todos
+  // los días, los avisos que te calzan". Ahora el correo lo dice en una
+  // línea. Preferimos no mandar nada antes que mandar cualquier cosa.
   const hasNews = newListings.length > 0 || changedItems.length > 0;
-  const headline = hasNews ? "Tu resumen de hoy" : "Nada nuevo hoy — pero no dejes tu búsqueda en pausa";
+  const headline = hasNews ? "Tu resumen de hoy" : "Hoy revisamos tus búsquedas por ti";
   const headlineMargin = hasNews ? "0 0 16px" : "0 0 4px";
   const subhead = hasNews ? "" : `
-        <p style="font-family:Helvetica,Arial,sans-serif;font-size:13.5px;color:#605D5D;margin:0 0 16px;line-height:1.5;">Las oportunidades pasan rápido — vale la pena seguir atento y revisar tus búsquedas hoy.</p>`;
+        <p style="font-family:Helvetica,Arial,sans-serif;font-size:13.5px;color:#605D5D;margin:0 0 16px;line-height:1.5;">Revisamos y hoy no apareció ninguno que te calce. Preferimos no mandarte nada antes que mandarte cualquier cosa.</p>`;
   const statChip = (n, l) => `
     <td align="center" style="padding:14px 6px;">
       <div style="font-family:Helvetica,Arial,sans-serif;font-weight:800;font-size:22px;color:#201E1D;">${n}</div>
@@ -271,7 +272,7 @@ function digestHtml({ metrics, newListings, changedItems, cargoGroups }) {
 
   const cargoHtml = cargoGroups.length === 0 ? "" : `
     <tr><td style="padding:0 28px 8px;">
-      <p style="font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;color:#201E1D;margin:22px 0 10px;">🔗 Tus búsquedas de hoy</p>
+      <p style="font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;color:#201E1D;margin:22px 0 10px;">🔗 Ver el resto de estas búsquedas</p>
       ${cargoGroups.map((g) => `
         <div style="margin-bottom:14px;">
           <div style="font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:13px;color:#201E1D;margin-bottom:6px;">${escapeHtml(g.cargo)}</div>
@@ -325,13 +326,26 @@ async function sendDailyDigest(userId, data, changedItems, newListings, opts = {
 
     const metrics = computeMetrics(data);
 
+    // Los links a las búsquedas SOLO salen para los cargos que hoy
+    // produjeron algo. Antes se imprimían todas las búsquedas guardadas
+    // todos los días, produjeran o no: con 22 búsquedas eso eran 86 links
+    // que no informaban nada y enterraban lo poco que sí era noticia.
+    // Un correo que no tiene nada que decir tiene que decir eso, no
+    // rellenar con un directorio.
+    const MAX_LINKS_POR_CARGO = 4;
+    const cargosConNovedad = new Set(
+      newListings.map((l) => (l.cargo || "").trim()).filter(Boolean)
+    );
     const byCargo = new Map();
     watchedSearches.forEach((w) => {
       if (!w.cargo || !w.url) return;
+      if (!cargosConNovedad.has(String(w.cargo).trim())) return;
       const url = freshUrl(w);
       if (!url) return;
       if (!byCargo.has(w.cargo)) byCargo.set(w.cargo, []);
-      byCargo.get(w.cargo).push({ label: w.portalLabel || "Ver búsqueda", url });
+      const links = byCargo.get(w.cargo);
+      if (links.length >= MAX_LINKS_POR_CARGO) return;
+      links.push({ label: w.portalLabel || "Ver búsqueda", url });
     });
     const cargoGroups = Array.from(byCargo.entries()).map(([cargo, links]) => ({ cargo, links }));
 
@@ -342,7 +356,7 @@ async function sendDailyDigest(userId, data, changedItems, newListings, opts = {
         ? `📬 ${newListings.length} aviso(s) nuevo(s) + tu resumen de hoy — JobTrack`
         : hasNews
           ? `🔎 Cambios en las páginas que vigilas — JobTrack`
-          : `No dejes tu búsqueda en pausa — JobTrack`,
+          : `Hoy revisamos tus búsquedas por ti — JobTrack`,
       html: digestHtml({ metrics, newListings, changedItems, cargoGroups }),
     });
     console.log(`  Correo enviado a ${email} (${newListings.length} aviso(s) nuevo(s), ${changedItems.length} cambio(s))`);
