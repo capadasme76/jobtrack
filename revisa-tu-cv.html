@@ -310,7 +310,7 @@
   </div>
 
   <div class="rc-legibilidad" id="legibilidad" hidden>
-    <b>Esto no es un problema de perfil, es de redacción</b>
+    <b id="legibilidadTitulo">Esto no es un problema de perfil, es de redacción</b>
     <p id="legibilidadTexto"></p>
   </div>
 
@@ -667,12 +667,32 @@
       cont.appendChild(row);
     });
 
+    // El bloque de legibilidad solo puede AFIRMAR que el problema es de
+    // redaccion y no de perfil cuando el perfil efectivamente calza. Antes se
+    // mostraba con ese titulo fijo siempre que hubiera un "lo tienes pero tu
+    // CV no lo dice", asi que en un aviso donde faltaban requisitos
+    // excluyentes la pagina se contradecia consigo misma: arriba decia "la
+    // diferencia esta en el perfil" y abajo "esto no es un problema de
+    // perfil". Ahora, cuando el perfil es el que no calza, lo que falta en el
+    // CV se presenta como un dato complementario y util para OTROS avisos.
     var leg = $("legibilidad");
     if (noDichos > 0) {
-      $("legibilidadTexto").textContent =
-        noDichos === 1
-          ? "Hay un requisito que sí cumples y tu CV no lo dice. Es la diferencia entre que te lean y que no: se arregla escribiéndolo, no cambiando de trabajo."
-          : "Hay " + noDichos + " requisitos que sí cumples y tu CV no dice. Es la diferencia entre que te lean y que no: se arreglan escribiéndolos, no cambiando de trabajo.";
+      var perfilNoCalza = (d.bandaAccion === "poco-probable" || d.bandaAccion === "otra-familia");
+      var redaccionEsElTema = (dif >= 8) && !perfilNoCalza;
+      if (redaccionEsElTema) {
+        $("legibilidadTitulo").textContent = "Esto no es un problema de perfil, es de redacción";
+        $("legibilidadTexto").textContent =
+          noDichos === 1
+            ? "Hay un requisito que sí cumples y tu CV no lo dice. Es la diferencia entre que te lean y que no: se arregla escribiéndolo, no cambiando de trabajo."
+            : "Hay " + noDichos + " requisitos que sí cumples y tu CV no dice. Es la diferencia entre que te lean y que no: se arreglan escribiéndolos, no cambiando de trabajo.";
+      } else {
+        $("legibilidadTitulo").textContent =
+          noDichos === 1
+            ? "Además, hay algo que tienes y tu CV no dice"
+            : "Además, hay " + noDichos + " cosas que tienes y tu CV no dice";
+        $("legibilidadTexto").textContent =
+          "No cambia el veredicto de este aviso, porque acá lo que falta son requisitos de fondo. Pero conviene escribirlo igual: en los avisos que sí calzan con tu trayectoria, eso pesa.";
+      }
       leg.hidden = false;
     } else {
       leg.hidden = true;
